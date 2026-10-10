@@ -29,7 +29,46 @@ export interface SavedComparisonRecord {
 const inMemoryScans: SavedScanRecord[] = [];
 const inMemoryComparisons: SavedComparisonRecord[] = [];
 
-let pool: Pool | null = null;
+let schemaInitialized = false;
+
+async function ensureSchema(db: Pool) {
+  if (schemaInitialized) return;
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS website_scans (
+        id VARCHAR(64) PRIMARY KEY,
+        domain VARCHAR(255) NOT NULL,
+        target_url TEXT NOT NULL,
+        seo_score INTEGER NOT NULL,
+        grade VARCHAR(8) NOT NULL,
+        response_time_ms INTEGER NOT NULL,
+        perf_score INTEGER,
+        tech_count INTEGER DEFAULT 0,
+        traffic_range VARCHAR(64),
+        full_report_json JSONB NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_website_scans_domain ON website_scans(domain);
+      CREATE INDEX IF NOT EXISTS idx_website_scans_created_at ON website_scans(created_at DESC);
+
+      CREATE TABLE IF NOT EXISTS comparisons (
+        id VARCHAR(64) PRIMARY KEY,
+        site_a_domain VARCHAR(255) NOT NULL,
+        site_b_domain VARCHAR(255) NOT NULL,
+        site_a_score INTEGER NOT NULL,
+        site_b_score INTEGER NOT NULL,
+        seo_diff INTEGER NOT NULL,
+        full_report_json JSONB NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_comparisons_sites ON comparisons(site_a_domain, site_b_domain);
+      CREATE INDEX IF NOT EXISTS idx_comparisons_created_at ON comparisons(created_at DESC);
+    `);
+    schemaInitialized = true;
+  } catch (err) {
+    console.warn("[CloudSQL] Auto-schema initialization warning:", err);
+  }
+}
 
 function getDbPool(): Pool | null {
   const dbUrl = process.env.DATABASE_URL;
@@ -44,6 +83,7 @@ function getDbPool(): Pool | null {
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 5000,
     });
+    ensureSchema(pool);
   }
   return pool;
 }
