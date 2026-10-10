@@ -29,6 +29,7 @@ export interface SavedComparisonRecord {
 const inMemoryScans: SavedScanRecord[] = [];
 const inMemoryComparisons: SavedComparisonRecord[] = [];
 
+let pool: Pool | null = null;
 let schemaInitialized = false;
 
 async function ensureSchema(db: Pool) {
@@ -289,4 +290,69 @@ export async function getRecentComparisons(limit = 10): Promise<SavedComparisonR
   }
 
   return inMemoryComparisons.slice(0, limit);
+}
+
+/**
+ * Retrieves a single saved scan by ID.
+ */
+export async function getScanById(id: string): Promise<SavedScanRecord | null> {
+  const db = getDbPool();
+  if (db) {
+    try {
+      const res = await db.query(
+        `SELECT id, domain, target_url as "targetUrl", seo_score as "seoScore", grade, 
+                response_time_ms as "responseTimeMs", perf_score as "perfScore", 
+                tech_count as "techCount", traffic_range as "trafficRange", 
+                created_at as "createdAt", full_report_json as "fullReportJson"
+         FROM website_scans 
+         WHERE id = $1
+         LIMIT 1`,
+        [id]
+      );
+      if (res.rows && res.rows.length > 0) {
+        const r = res.rows[0];
+        return {
+          ...r,
+          createdAt: typeof r.createdAt === "object" ? r.createdAt.toISOString() : String(r.createdAt),
+        };
+      }
+    } catch (err) {
+      console.warn("[CloudSQL] Failed to query scan by id:", err);
+    }
+  }
+
+  const memoryMatch = inMemoryScans.find((s) => s.id === id);
+  return memoryMatch || null;
+}
+
+/**
+ * Retrieves a single competitor comparison by ID.
+ */
+export async function getComparisonById(id: string): Promise<SavedComparisonRecord | null> {
+  const db = getDbPool();
+  if (db) {
+    try {
+      const res = await db.query(
+        `SELECT id, site_a_domain as "siteADomain", site_b_domain as "siteBDomain", 
+                site_a_score as "siteAScore", site_b_score as "siteBScore", 
+                seo_diff as "seoDiff", created_at as "createdAt", full_report_json as "fullReportJson"
+         FROM comparisons 
+         WHERE id = $1
+         LIMIT 1`,
+        [id]
+      );
+      if (res.rows && res.rows.length > 0) {
+        const r = res.rows[0];
+        return {
+          ...r,
+          createdAt: typeof r.createdAt === "object" ? r.createdAt.toISOString() : String(r.createdAt),
+        };
+      }
+    } catch (err) {
+      console.warn("[CloudSQL] Failed to query comparison by id:", err);
+    }
+  }
+
+  const memoryMatch = inMemoryComparisons.find((c) => c.id === id);
+  return memoryMatch || null;
 }

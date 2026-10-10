@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     const report = generateComparisonReport(analysisA, analysisB);
 
     // Persist comparison record for Dashboard & History
-    await saveComparisonRecord({
+    const savedComp = await saveComparisonRecord({
       siteADomain: report.siteA.page.domain,
       siteBDomain: report.siteB.page.domain,
       siteAScore: report.siteA.audit.overallScore,
@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      id: savedComp.id,
       timestamp: new Date().toISOString(),
       comparison: report,
     });

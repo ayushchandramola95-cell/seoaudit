@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Copy,
   Check,
+  Share2,
 } from "lucide-react";
 
 interface SavedScan {
@@ -396,12 +397,19 @@ export default function DashboardContent() {
                         <td className="px-6 py-4 text-slate-500 text-xs whitespace-nowrap">
                           {new Date(scan.createdAt).toLocaleString()}
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
+                          <Link
+                            href={`/report/${scan.id}`}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-800 hover:underline"
+                          >
+                            <Share2 className="w-3 h-3" />
+                            Share
+                          </Link>
                           <Link
                             href={`/analyze?url=${encodeURIComponent(scan.domain)}`}
                             className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
                           >
-                            View
+                            Re-scan
                             <ExternalLink className="w-3 h-3" />
                           </Link>
                         </td>
@@ -483,14 +491,21 @@ export default function DashboardContent() {
                           <td className="px-6 py-4 text-slate-500 whitespace-nowrap">
                             {new Date(c.createdAt).toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 text-right">
+                          <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
+                            <Link
+                              href={`/report/${c.id}`}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-800 hover:underline"
+                            >
+                              <Share2 className="w-3 h-3" />
+                              Share
+                            </Link>
                             <Link
                               href={`/compare?siteA=${encodeURIComponent(
                                 c.siteADomain
                               )}&siteB=${encodeURIComponent(c.siteBDomain)}`}
                               className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 hover:text-purple-800 hover:underline"
                             >
-                              Open
+                              Re-compare
                               <ExternalLink className="w-3 h-3" />
                             </Link>
                           </td>

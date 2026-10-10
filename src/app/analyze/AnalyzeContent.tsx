@@ -28,7 +28,9 @@ import {
   TrendingUp,
   Brain,
   Copy,
-  Check
+  Check,
+  Share2,
+  Printer,
 } from "lucide-react";
 import { ScrapedPageData } from "@/lib/modules/seo/fetcher";
 import { SeoAuditReport } from "@/lib/modules/seo/scorer";
@@ -39,6 +41,7 @@ import { AiDiagnosticReport } from "@/lib/modules/ai/service";
 
 interface ApiResponse {
   success: boolean;
+  id?: string;
   timestamp: string;
   page: ScrapedPageData;
   audit: SeoAuditReport;
@@ -64,6 +67,30 @@ export default function AnalyzeContent() {
   const [filterStatus, setFilterStatus] = useState<"all" | "passed" | "warning" | "error">("all");
   const [techCategoryFilter, setTechCategoryFilter] = useState<string>("all");
   const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
+  const [copiedShareLink, setCopiedShareLink] = useState(false);
+
+  const handleCopyShareLink = () => {
+    if (data?.id) {
+      const shareUrl = `${window.location.origin}/report/${data.id}`;
+      navigator.clipboard.writeText(shareUrl);
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+    }
+    setCopiedShareLink(true);
+    setTimeout(() => setCopiedShareLink(false), 2000);
+  };
+
+  const handleDownloadJson = () => {
+    if (!data) return;
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `audit-${data.page.domain}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const fetchAnalysis = async (urlToFetch: string) => {
     setLoading(true);
@@ -252,8 +279,34 @@ export default function AnalyzeContent() {
                 </div>
               </div>
 
-              {/* Quick Status pills */}
-              <div className="flex flex-wrap items-center gap-2 text-xs">
+              {/* Action Buttons: Share, Print PDF, Export JSON */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={handleCopyShareLink}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
+                >
+                  {copiedShareLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-slate-600" />}
+                  {copiedShareLink ? "Link Copied!" : "Share Report"}
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-600" />
+                  Print / PDF
+                </button>
+                <button
+                  onClick={handleDownloadJson}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-600" />
+                  Export JSON
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Status pills */}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
                 <div className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-medium flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-slate-400" />
                   <span>{data.page.responseTimeMs} ms</span>
@@ -279,7 +332,6 @@ export default function AnalyzeContent() {
                   <span>{data.page.isHttps ? "HTTPS Valid" : "Insecure HTTP"}</span>
                 </div>
               </div>
-            </div>
 
             {/* Score & Category breakdown banner */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">

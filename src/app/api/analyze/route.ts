@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const { rawHtml, ...clientPageData } = pageData;
 
     // Persist scan record for Dashboard & History
-    await saveScanRecord({
+    const savedRecord = await saveScanRecord({
       domain: pageData.domain,
       targetUrl: pageData.finalUrl,
       seoScore: auditReport.overallScore,
@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      id: savedRecord.id,
       timestamp: new Date().toISOString(),
       page: clientPageData,
       audit: auditReport,
