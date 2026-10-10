@@ -24,8 +24,10 @@ import {
   Hash,
   FileText,
   BookOpen,
+  Download,
 } from "lucide-react";
 import WhiteLabelPdfModal from "@/components/WhiteLabelPdfModal";
+import { exportFindingsCsv } from "@/lib/utils/csvExport";
 
 interface ReportContentProps {
   id: string;
@@ -301,6 +303,34 @@ export default function ReportContent({ id }: ReportContentProps) {
               <Printer className="w-3.5 h-3.5 text-blue-600" />
               White-Label Client PDF
             </button>
+
+            {reportType === "scan" && scanData && (
+              <button
+                onClick={() => {
+                  const rawJson = scanData.fullReportJson as any;
+                  const diagnostics = rawJson?.diagnostics || [];
+                  exportFindingsCsv(
+                    scanData.domain,
+                    scanData.seoScore,
+                    scanData.grade,
+                    diagnostics.map((d: any) => ({
+                      id: d.id,
+                      category: d.category,
+                      label: d.title || d.label,
+                      status: d.status,
+                      score: d.score || d.pointsEarned || 0,
+                      maxScore: d.maxScore || d.maxPoints || 0,
+                      message: d.message || d.evidence || "",
+                      details: d.details || d.recommendation || "",
+                    }))
+                  );
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-emerald-600" />
+                Export CSV
+              </button>
+            )}
 
             {reportType === "scan" && scanData && (
               <Link

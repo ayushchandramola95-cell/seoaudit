@@ -94,6 +94,10 @@ export interface ScrapedPageData {
   hasRobotsTxt: boolean;
   hasSitemapXml: boolean;
   securityHeaders: SecurityHeadersReport;
+  clientSideSpa?: {
+    isSpa: boolean;
+    reason?: string;
+  };
 }
 
 /**
@@ -361,6 +365,23 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
     // optional checks, fail silently
   }
 
+  // 11. Client-Side SPA Detection (CSR without Server-Side Rendering)
+  const isRootEmpty = $("#root:empty, #app:empty").length > 0;
+  const hasSpaScripts =
+    rawHtml.includes("react-dom") ||
+    rawHtml.includes("/static/js/main.") ||
+    rawHtml.includes("createRoot") ||
+    rawHtml.includes("vite/client") ||
+    rawHtml.includes("ng-version");
+  const isClientSideSpa = (wordCount < 40 && hasSpaScripts) || isRootEmpty;
+  const clientSideSpa = isClientSideSpa
+    ? {
+        isSpa: true,
+        reason:
+          "DOM contains minimal server-rendered HTML but loads heavy JavaScript hydration bundles. Crawlers without full Chromium rendering may perceive an empty page.",
+      }
+    : { isSpa: false };
+
   return {
     requestedUrl: targetUrl,
     finalUrl,
@@ -397,5 +418,6 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
     hasRobotsTxt,
     hasSitemapXml,
     securityHeaders,
+    clientSideSpa,
   };
 }

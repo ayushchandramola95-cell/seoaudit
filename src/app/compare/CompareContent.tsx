@@ -30,6 +30,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { ComparisonReport } from "@/lib/modules/compare/comparator";
+import { exportKeywordGapCsv } from "@/lib/utils/csvExport";
 
 interface ApiResponse {
   success: boolean;
@@ -330,6 +331,23 @@ export default function CompareContent() {
                 <Printer className="w-3.5 h-3.5 text-slate-600" />
                 Print / PDF
               </button>
+              {data.keywordGap && (
+                <button
+                  onClick={() => {
+                    if (data.keywordGap) {
+                      exportKeywordGapCsv(
+                        data.siteA.page.domain,
+                        data.siteB.page.domain,
+                        data.keywordGap
+                      );
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-600" />
+                  Export Gap CSV
+                </button>
+              )}
             </div>
           </div>
 

@@ -52,6 +52,10 @@ import { KeywordAnalysisReport } from "@/lib/modules/keywords/extractor";
 import { LinkDiscoveryReport } from "@/lib/modules/crawler/linkScanner";
 import { DeepRobotsSitemapReport } from "@/lib/modules/crawler/robotsSitemap";
 import WhiteLabelPdfModal from "@/components/WhiteLabelPdfModal";
+import SerpSocialPreview from "@/components/SerpSocialPreview";
+import SchemaCodeGenerator from "@/components/SchemaCodeGenerator";
+import LinkCrawlerMatrix from "@/components/LinkCrawlerMatrix";
+import { exportFindingsCsv, exportKeywordsCsv, exportTechnologiesCsv } from "@/lib/utils/csvExport";
 
 interface ApiResponse {
   success: boolean;
@@ -79,7 +83,7 @@ export default function AnalyzeContent() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "diagnostics" | "ai" | "geo" | "traffic" | "tech" | "keywords" | "links" | "performance" | "structure" | "media" | "social" | "headers"
+    "diagnostics" | "ai" | "geo" | "traffic" | "tech" | "keywords" | "links" | "performance" | "structure" | "media" | "social" | "headers" | "schema" | "deadlinks"
   >("diagnostics");
   const [serpView, setSerpView] = useState<"desktop" | "mobile" | "twitter" | "facebook">("desktop");
   const [filterStatus, setFilterStatus] = useState<"all" | "passed" | "warning" | "error">("all");
@@ -321,6 +325,29 @@ export default function AnalyzeContent() {
                   <Download className="w-3.5 h-3.5 text-slate-600" />
                   Export JSON
                 </button>
+                <button
+                  onClick={() => {
+                    exportFindingsCsv(
+                      data.page.domain,
+                      data.audit.overallScore,
+                      data.audit.grade,
+                      data.audit.diagnostics.map((d) => ({
+                        id: d.id,
+                        category: d.category,
+                        label: d.title,
+                        status: d.status,
+                        score: d.pointsEarned,
+                        maxScore: d.maxPoints,
+                        message: d.evidence,
+                        details: d.recommendation || d.impact,
+                      }))
+                    );
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-600" />
+                  Export CSV
+                </button>
               </div>
             </div>
 
@@ -410,11 +437,13 @@ export default function AnalyzeContent() {
               { id: "diagnostics", label: "SEO Diagnostics", count: data.audit.diagnostics.length },
               { id: "ai", label: "AI Recommendations", count: data.ai.prioritizedFixes.length, highlight: true },
               { id: "geo", label: "AI Search & Bots (GEO)", count: data.crawlers ? `${data.crawlers.geo.score}/100` : "GEO", highlight: true },
+              { id: "social", label: "SERP & Social Preview", count: null, highlight: true },
+              { id: "schema", label: "Fix-It & Schema Studio", count: null, highlight: true },
+              { id: "deadlinks", label: "Broken Links (404) Engine", count: null, highlight: true },
               { id: "traffic", label: "Traffic Estimator", count: null, highlight: true },
               { id: "tech", label: "Tech Stack", count: data.technologies.length },
               { id: "keywords", label: "Keyword Density", count: data.keywords?.topSingleKeywords?.length || null, highlight: true },
               { id: "links", label: "Link Footprint", count: data.links?.totalLinks || null, highlight: true },
-              { id: "social", label: "SERP & Social Preview", count: null },
               { id: "performance", label: "Core Web Vitals", count: data.performance.scores.performance },
               { id: "structure", label: "Headings & Content", count: data.page.headings.totalHeadings },
               { id: "media", label: "Images & Alt Text", count: data.page.images.totalImages },
@@ -742,7 +771,7 @@ export default function AnalyzeContent() {
                         { botName: "Google-Extended", category: "ai", status: "allowed", description: "Google Gemini training & multimodal crawler" },
                         { botName: "Bytespider", category: "ai", status: "allowed", description: "ByteDance / TikTok LLM & search scraper" },
                         { botName: "Googlebot", category: "search", status: "allowed", description: "Primary Google Search indexing crawler" },
-                      ]).map((bot, bIdx) => (
+                      ]).map((bot: any, bIdx: number) => (
                         <tr key={bIdx} className="hover:bg-slate-50/60">
                           <td className="py-2.5 px-3 font-mono font-bold text-slate-900">
                             {bot.botName}
@@ -851,7 +880,7 @@ export default function AnalyzeContent() {
                         <div>
                           <span className="text-slate-500 block mb-1 text-[11px]">Discovered XML Entries:</span>
                           <div className="space-y-1 font-mono text-[11px] text-blue-700 bg-slate-50 p-2.5 rounded border border-slate-200 max-h-28 overflow-y-auto">
-                            {data.crawlers.sitemap.sampleUrls.map((u, uIdx) => (
+                            {data.crawlers.sitemap.sampleUrls.map((u: string, uIdx: number) => (
                               <div key={uIdx} className="truncate">{u}</div>
                             ))}
                           </div>
@@ -879,7 +908,7 @@ export default function AnalyzeContent() {
                       {(data.crawlers?.geo.strengths || [
                         "Top AI bots have open crawl permissions to parse your content.",
                         "Structured headings provide clean topical section breaks.",
-                      ]).map((str, sIdx) => (
+                      ]).map((str: string, sIdx: number) => (
                         <li key={sIdx}>{str}</li>
                       ))}
                     </ul>
@@ -891,7 +920,7 @@ export default function AnalyzeContent() {
                       {(data.crawlers?.geo.recommendations || [
                         "Add FAQPage or Article schema to qualify for direct answer citations.",
                         "Ensure robots.txt explicitly allows ChatGPT-User and PerplexityBot.",
-                      ]).map((rec, rIdx) => (
+                      ]).map((rec: string, rIdx: number) => (
                         <li key={rIdx}>{rec}</li>
                       ))}
                     </ul>
@@ -1783,305 +1812,50 @@ export default function AnalyzeContent() {
             </div>
           )}
 
-          {/* TAB 8: SERP & SOCIAL PREVIEW SIMULATOR */}
+          {/* TAB: SERP & SOCIAL PREVIEW SIMULATOR */}
           {activeTab === "social" && (
-            <div className="space-y-6">
-              {/* Simulator Mode Switcher Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-700">Preview Simulator:</span>
-                  <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
-                    {[
-                      { id: "desktop", label: "Google Desktop", icon: Monitor },
-                      { id: "mobile", label: "Google Mobile", icon: Smartphone },
-                      { id: "twitter", label: "Twitter / X Card", icon: Hash },
-                      { id: "facebook", label: "Open Graph / Meta", icon: Globe },
-                    ].map((mode) => {
-                      const Icon = mode.icon;
-                      return (
-                        <button
-                          key={mode.id}
-                          onClick={() => setSerpView(mode.id as typeof serpView)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
-                            serpView === mode.id
-                              ? "bg-blue-600 text-white shadow-xs"
-                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-                          }`}
-                        >
-                          <Icon className="w-3.5 h-3.5" />
-                          <span>{mode.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+            <SerpSocialPreview
+              url={data.page.finalUrl}
+              domain={data.page.domain}
+              title={data.page.title || ""}
+              description={data.page.metaDescription || ""}
+              ogImage={data.page.openGraph?.image}
+              ogTitle={data.page.openGraph?.title}
+              ogDescription={data.page.openGraph?.description}
+              twitterCard={data.page.twitterCard?.card}
+              twitterTitle={data.page.twitterCard?.title}
+              twitterDescription={data.page.twitterCard?.description}
+              twitterImage={data.page.twitterCard?.image}
+            />
+          )}
 
-                {/* Length Metrics Quick Pill */}
-                <div className="flex items-center gap-3 text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-slate-500">Title:</span>
-                    <span
-                      className={`font-mono font-bold ${
-                        (data.page.title?.length || 0) <= 60 && (data.page.title?.length || 0) >= 30
-                          ? "text-emerald-700"
-                          : "text-amber-700"
-                      }`}
-                    >
-                      {data.page.title?.length || 0} / 60 chars
-                    </span>
-                  </div>
-                  <span className="text-slate-300">|</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-slate-500">Meta Desc:</span>
-                    <span
-                      className={`font-mono font-bold ${
-                        (data.page.metaDescription?.length || 0) <= 160 &&
-                        (data.page.metaDescription?.length || 0) >= 120
-                          ? "text-emerald-700"
-                          : "text-amber-700"
-                      }`}
-                    >
-                      {data.page.metaDescription?.length || 0} / 160 chars
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {/* TAB: FIX-IT & SCHEMA STUDIO */}
+          {activeTab === "schema" && (
+            <SchemaCodeGenerator
+              domain={data.page.domain}
+              url={data.page.finalUrl}
+              title={data.page.title || ""}
+              description={data.page.metaDescription || ""}
+            />
+          )}
 
-              {/* View 1: GOOGLE DESKTOP SERP */}
-              {serpView === "desktop" && (
-                <div className="flat-card p-6 bg-white border-slate-200">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-xs">
-                        G
-                      </div>
-                      <h3 className="text-sm font-bold text-slate-900">
-                        Google Desktop Search Result Snippet
-                      </h3>
-                    </div>
-                    <span className="text-[11px] text-slate-500 font-mono">
-                      Max pixel width ~600px
-                    </span>
-                  </div>
-
-                  <div className="p-5 bg-white border border-slate-200 rounded-xl shadow-xs max-w-2xl font-sans">
-                    {/* SERP Breadcrumb */}
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600">
-                        {data.page.domain.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="leading-tight">
-                        <div className="text-[12px] text-slate-900 font-medium">{data.page.domain}</div>
-                        <div className="text-[11px] text-slate-500 truncate max-w-md font-mono">
-                          {data.page.canonicalUrl || data.page.finalUrl}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Blue Title Link */}
-                    <h4 className="text-[18px] text-[#1a0dab] hover:underline font-normal cursor-pointer leading-snug line-clamp-1 mb-1">
-                      {data.page.title || `${data.page.domain} - Official Homepage`}
-                    </h4>
-
-                    {/* Snippet Description */}
-                    <p className="text-[13px] text-[#4d5156] leading-relaxed line-clamp-2">
-                      {data.page.metaDescription || (
-                        <span className="italic text-slate-400">
-                          No meta description tag provided. Google will generate an automatic snippet from on-page content.
-                        </span>
-                      )}
-                    </p>
-                  </div>
-
-                  {/* Character Diagnostics */}
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div className="font-semibold text-slate-800 mb-1">Title Tag Assessment</div>
-                      <p className="text-slate-600 text-[11px]">
-                        {(data.page.title?.length || 0) > 60
-                          ? `⚠️ Title is ${data.page.title?.length} characters (over 60 char limit). Google may truncate it with an ellipsis (...) on desktop.`
-                          : (data.page.title?.length || 0) < 30
-                          ? "⚠️ Title is relatively short (< 30 chars). Consider adding relevant primary keywords."
-                          : "✅ Title length is optimal for Google desktop results (30-60 characters)."}
-                      </p>
-                    </div>
-
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div className="font-semibold text-slate-800 mb-1">Meta Description Assessment</div>
-                      <p className="text-slate-600 text-[11px]">
-                        {!data.page.metaDescription
-                          ? "❌ Missing meta description tag. Adding a 140-160 character description improves organic CTR."
-                          : data.page.metaDescription.length > 160
-                          ? `⚠️ Description is ${data.page.metaDescription.length} characters (exceeds 160 limit). The trailing text will be clipped.`
-                          : "✅ Description length is well balanced (120-160 chars) without truncation risks."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* View 2: GOOGLE MOBILE SERP */}
-              {serpView === "mobile" && (
-                <div className="flat-card p-6 bg-white border-slate-200">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="w-5 h-5 text-blue-600" />
-                      <h3 className="text-sm font-bold text-slate-900">
-                        Google Mobile SERP Card Simulation
-                      </h3>
-                    </div>
-                    <span className="text-[11px] text-slate-500 font-mono">Mobile Viewport</span>
-                  </div>
-
-                  <div className="max-w-sm mx-auto p-4 bg-slate-50 border-2 border-slate-300 rounded-2xl shadow-sm">
-                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
-                          {data.page.domain.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="text-[12px] font-semibold text-slate-900">{data.page.domain}</div>
-                          <div className="text-[10px] text-slate-500 font-mono truncate max-w-[220px]">
-                            {data.page.canonicalUrl || data.page.finalUrl}
-                          </div>
-                        </div>
-                      </div>
-
-                      <h4 className="text-[16px] text-[#1a0dab] font-normal leading-snug line-clamp-2 mb-1.5">
-                        {data.page.title || `${data.page.domain} - Official Homepage`}
-                      </h4>
-
-                      <p className="text-[12px] text-[#4d5156] leading-normal line-clamp-3">
-                        {data.page.metaDescription || "No meta description provided."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* View 3: TWITTER / X CARD */}
-              {serpView === "twitter" && (
-                <div className="flat-card p-6 bg-white border-slate-200">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <Hash className="w-5 h-5 text-slate-900" />
-                      <h3 className="text-sm font-bold text-slate-900">
-                        Twitter / X Summary Large Image Card Preview
-                      </h3>
-                    </div>
-                    <span className="text-[11px] text-slate-500">summary_large_image</span>
-                  </div>
-
-                  <div className="max-w-lg border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">
-                    {data.page.openGraph.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={data.page.openGraph.image}
-                        alt="Twitter Card Preview"
-                        className="w-full h-52 object-cover border-b border-slate-200"
-                      />
-                    ) : (
-                      <div className="w-full h-36 bg-slate-100 flex flex-col items-center justify-center text-xs text-slate-500 gap-1">
-                        <AlertCircle className="w-5 h-5 text-slate-400" />
-                        <span>No twitter:image or og:image defined</span>
-                      </div>
-                    )}
-                    <div className="p-4 bg-slate-50">
-                      <span className="text-[11px] text-slate-500 uppercase tracking-wider block mb-1">
-                        {data.page.domain}
-                      </span>
-                      <h4 className="text-sm font-bold text-slate-900 line-clamp-1 mb-1">
-                        {data.page.openGraph.title || data.page.title || "No Title"}
-                      </h4>
-                      <p className="text-xs text-slate-600 line-clamp-2">
-                        {data.page.openGraph.description || data.page.metaDescription || "No summary provided."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* View 4: FACEBOOK / OPEN GRAPH */}
-              {serpView === "facebook" && (
-                <div className="flat-card p-6 bg-white border-slate-200">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-5 h-5 text-blue-600" />
-                      <h3 className="text-sm font-bold text-slate-900">
-                        Facebook & Open Graph Feed Preview
-                      </h3>
-                    </div>
-                    <span className="text-[11px] text-slate-500">og:title & og:image</span>
-                  </div>
-
-                  <div className="border border-slate-200 rounded-xl overflow-hidden max-w-lg bg-slate-50 shadow-xs">
-                    {data.page.openGraph.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={data.page.openGraph.image}
-                        alt="OG Preview"
-                        className="w-full h-48 object-cover border-b border-slate-200"
-                      />
-                    ) : (
-                      <div className="w-full h-32 bg-slate-200 flex items-center justify-center text-xs text-slate-500">
-                        No og:image specified
-                      </div>
-                    )}
-                    <div className="p-4">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                        {data.page.domain}
-                      </span>
-                      <h4 className="text-sm font-bold text-slate-900 leading-snug mb-1">
-                        {data.page.openGraph.title || data.page.title || "No Title Specified"}
-                      </h4>
-                      <p className="text-xs text-slate-600 line-clamp-2">
-                        {data.page.openGraph.description || data.page.metaDescription || "No description provided."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* JSON-LD Structured Data */}
-              <div className="flat-card p-5 bg-white">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-bold text-slate-900">
-                    JSON-LD Schema.org Structured Data ({data.page.structuredData.count} detected)
-                  </h3>
-                  <span
-                    className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                      data.page.structuredData.detected
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {data.page.structuredData.detected ? "Schemas Active" : "No Schema Detected"}
-                  </span>
-                </div>
-
-                {data.page.structuredData.detected ? (
-                  <div>
-                    <p className="text-xs text-slate-600 mb-3">
-                      Structured data helps Google generate rich snippets (e.g. sitelinks, ratings, breadcrumbs, articles) in organic search results.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {data.page.structuredData.types.map((type, idx) => (
-                        <span
-                          key={idx}
-                          className="flat-badge bg-blue-50 text-blue-700 border-blue-200 font-mono text-xs px-2.5 py-1"
-                        >
-                          Schema: {type}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-500">
-                    No Schema.org JSON-LD microdata found. Adding Organization, WebSite, or BreadcrumbList schemas will enhance SERP prominence.
-                  </p>
-                )}
-              </div>
-            </div>
+          {/* TAB: BROKEN LINKS (404) ENGINE */}
+          {activeTab === "deadlinks" && (
+            <LinkCrawlerMatrix
+              targetUrl={data.page.finalUrl}
+              initialLinks={[
+                ...(data.links?.internalLinksSample?.map((l: any) => ({
+                  href: l.href,
+                  text: l.anchorText,
+                  isInternal: true,
+                })) || []),
+                ...(data.links?.externalLinksSample?.map((l: any) => ({
+                  href: l.href,
+                  text: l.anchorText,
+                  isInternal: false,
+                })) || []),
+              ]}
+            />
           )}
 
           {/* TAB 9: SECURITY & HEADERS */}
