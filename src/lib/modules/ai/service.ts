@@ -139,9 +139,7 @@ export async function generateAiDiagnostics(params: {
     return generateHeuristicAiReport(params);
   }
 
-  // Call Google Gemini API (gemini-2.5-flash / gemini-1.5-flash)
-  try {
-    const prompt = `You are a senior technical SEO and web performance engineer. 
+  const prompt = `You are a senior technical SEO and web performance engineer. 
 Analyze the following deterministic website audit for "${params.domain}":
 - Overall Technical SEO Score: ${params.audit.overallScore}/100 (Grade ${params.audit.grade})
 - Lighthouse Performance: ${params.performance.scores.performance}/100 (LCP: ${params.performance.vitals.lcp.value}, FCP: ${params.performance.vitals.fcp.value}, CLS: ${params.performance.vitals.cls.value})
@@ -163,43 +161,52 @@ Respond strictly in valid JSON with this exact schema:
   "developerAdvice": "1-2 practical tips for the engineering team"
 }`;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(
-      apiKey
-    )}`;
+  // Call Google Gemini API (gemini-3.5-flash / gemini-3.8-flash)
+  try {
+    const candidateModels = ["gemini-3.5-flash", "gemini-3.8-flash", "gemini-flash-latest"];
+    for (const modelName of candidateModels) {
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
+          apiKey
+        )}`;
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: "application/json",
-        },
-      }),
-      signal: AbortSignal.timeout(7000), // 7s timeout
-    });
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.2,
+              responseMimeType: "application/json",
+            },
+          }),
+          signal: AbortSignal.timeout(6500),
+        });
 
-    if (response.ok) {
-      const result = await response.json();
-      const textContent = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (textContent) {
-        const parsed = JSON.parse(textContent);
-        const baseline = generateHeuristicAiReport(params);
+        if (response.ok) {
+          const result = await response.json();
+          const textContent = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (textContent) {
+            const parsed = JSON.parse(textContent);
+            const baseline = generateHeuristicAiReport(params);
 
-        return {
-          isAiGenerated: true,
-          provider: "Google Gemini",
-          executiveSummary: parsed.executiveSummary || baseline.executiveSummary,
-          keyStrengths: parsed.keyStrengths || baseline.keyStrengths,
-          criticalGaps: parsed.criticalGaps || baseline.criticalGaps,
-          prioritizedFixes: baseline.prioritizedFixes, // grounded deterministic fixes
-          developerAdvice: parsed.developerAdvice || baseline.developerAdvice,
-        };
+            return {
+              isAiGenerated: true,
+              provider: "Google Gemini",
+              executiveSummary: parsed.executiveSummary || baseline.executiveSummary,
+              keyStrengths: parsed.keyStrengths || baseline.keyStrengths,
+              criticalGaps: parsed.criticalGaps || baseline.criticalGaps,
+              prioritizedFixes: baseline.prioritizedFixes, // grounded deterministic fixes
+              developerAdvice: parsed.developerAdvice || baseline.developerAdvice,
+            };
+          }
+        }
+      } catch {
+        // Try next candidate model
       }
     }
   } catch {
-    // If Gemini fails or times out, fall back cleanly
+    // If Gemini fails, fall back cleanly
   }
 
   return generateHeuristicAiReport(params);
