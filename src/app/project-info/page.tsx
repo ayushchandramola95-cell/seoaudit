@@ -15,7 +15,7 @@ import {
   Database,
   Terminal,
   Server,
-  GraduationCap
+  BookOpen
 } from "lucide-react";
 
 export const metadata = {
@@ -96,35 +96,35 @@ export default function ProjectInfoPage() {
       {/* Breadcrumb / Badge */}
       <div className="flex items-center gap-2 mb-4">
         <span className="flat-badge text-blue-700 bg-blue-50 border-blue-200">
-          Project Specification
+          Platform Architecture Specification
         </span>
         <span className="text-xs text-slate-400">•</span>
-        <span className="text-xs text-slate-500 font-medium">BCA Final Year Capstone & Production SaaS</span>
+        <span className="text-xs text-slate-500 font-medium">Enterprise Intelligence & Deterministic Auditing</span>
       </div>
 
       {/* Main Title Banner */}
       <div className="border-b border-slate-200 pb-8 mb-10">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-          Project Quick Info & Specification
+          Platform Architecture & Technical Specification
         </h1>
         <p className="text-lg text-slate-600 max-w-3xl leading-relaxed">
-          SeoSeite is an AI-powered website intelligence and traffic estimation SaaS platform. 
-          It gives users verifiable, public domain diagnostics with high transparency and grounded metrics.
+          SeoSeite is an enterprise-grade website intelligence and competitive benchmarking SaaS platform. 
+          It gives users verifiable, public domain diagnostics with high transparency, sub-second crawling, and grounded metrics.
         </p>
 
         <div className="flex flex-wrap gap-3 mt-6">
           <Link
             href="/capstone"
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
-            <GraduationCap className="w-4 h-4" />
-            Academic Capstone & Viva Prep
+            <BookOpen className="w-4 h-4" />
+            Architecture & Scoring Methodology
           </Link>
           <Link
-            href="/worklog"
+            href="/pricing"
             className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
-            View Dev Worklog (Day-by-Day)
+            View Subscription Plans
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link

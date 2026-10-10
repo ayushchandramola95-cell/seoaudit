@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Globe, BarChart3, GitCompare, Info, FileText, ArrowRight, LayoutDashboard, GraduationCap } from "lucide-react";
+import { Globe, BarChart3, GitCompare, Info, FileText, ArrowRight, LayoutDashboard, BookOpen, CreditCard } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/analyze", label: "Website Analyzer" },
+    { href: "/analyze", label: "Analyzer" },
     { href: "/compare", label: "Compare" },
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/capstone", label: "Capstone Docs", highlight: true, icon: GraduationCap },
-    { href: "/project-info", label: "Project Info", highlight: true, icon: Info },
-    { href: "/worklog", label: "Dev Worklog", highlight: true, icon: FileText },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/capstone", label: "Methodology", icon: BookOpen },
+    { href: "/project-info", label: "Platform Spec", icon: Info },
   ];
 
   return (
@@ -62,7 +62,7 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Cloud Run & SQL Ready
+              Live Cloud Engine
             </div>
 
             <Link

@@ -60,28 +60,30 @@ export default function Footer() {
             <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-4">Project & Transparency</h4>
             <ul className="space-y-2.5 text-sm text-slate-600">
               <li>
+                <Link href="/pricing" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors font-medium text-slate-900">
+                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                  Pricing & Subscriptions
+                </Link>
+              </li>
+              <li>
                 <Link href="/capstone" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors font-medium text-slate-900">
-                  <GraduationCap className="w-3.5 h-3.5 text-purple-600" />
-                  Capstone Report & Viva Prep
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  Architecture & Methodology
                 </Link>
               </li>
               <li>
                 <Link href="/project-info" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors font-medium text-slate-900">
-                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                  Project Quick Info
-                </Link>
-              </li>
-              <li>
-                <Link href="/worklog" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors font-medium text-slate-900">
                   <Cpu className="w-3.5 h-3.5 text-indigo-600" />
-                  Day-by-Day Dev Worklog
+                  Platform Specification
                 </Link>
               </li>
               <li>
-                <span className="text-xs text-slate-500">Architecture: Next.js 16 + React 19</span>
+                <Link href="/worklog" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors text-slate-600">
+                  Engineering Changelog
+                </Link>
               </li>
               <li>
-                <span className="text-xs text-slate-500">BCA Final-Year Capstone Project</span>
+                <span className="text-xs text-slate-500">Infrastructure: Google Cloud Run & SQL</span>
               </li>
             </ul>
           </div>

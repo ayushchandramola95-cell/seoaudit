@@ -9,118 +9,233 @@ import {
   GitCompare, 
   CheckCircle2, 
   ArrowRight, 
-  Sparkles,
-  Info,
-  FileText,
-  Lock,
-  Globe2,
-  Terminal,
-  Activity
+  Sparkles, 
+  BookOpen, 
+  Lock, 
+  Globe2, 
+  Activity, 
+  Cpu, 
+  Share2, 
+  Check, 
+  HelpCircle,
+  ExternalLink,
+  ChevronRight,
+  TrendingUp,
+  Code2
 } from "lucide-react";
 
 export default function Home() {
   const auditCards = [
     {
-      title: "Rule-Based SEO Score",
-      score: "92/100",
+      title: "Deterministic SEO Health",
+      score: "85/100",
+      grade: "Grade A",
       category: "Technical Health",
-      desc: "Deterministic evaluation of title tags, meta descriptions, canonical URLs, robots directives, image alt attributes, and heading hierarchy.",
+      desc: "Transparent, rule-based deductions across metadata, heading hierarchies, indexability tags, and HTTP security headers.",
       badge: "Deterministic",
       badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
     },
     {
-      title: "Core Web Vitals",
-      score: "LCP 1.4s",
-      category: "Real Performance",
-      desc: "Measured via Google PageSpeed Insights REST API. Pinpoints render-blocking resources, payload size, and Largest Contentful Paint.",
-      badge: "PageSpeed API",
+      title: "Core Web Vitals Telemetry",
+      score: "LCP 1.2s • FCP 0.8s",
+      grade: "Passing",
+      category: "Google Lab Vitals",
+      desc: "Measured via official Google PageSpeed Insights API. Pinpoints render-blocking CSS, slow TTFB, and layout shifts.",
+      badge: "Google API",
       badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
     },
     {
-      title: "Technology Detection",
-      score: "14 Techs Found",
-      category: "Stack Fingerprint",
-      desc: "Identifies CMS, frontend frameworks (Next.js, React), CDN providers (Cloudflare), analytics scripts, and payment gateways from page signatures.",
+      title: "50+ Stack Fingerprints",
+      score: "14 Techs Detected",
+      grade: "Identified",
+      category: "Infrastructure",
+      desc: "Detects Next.js, React, Tailwind CSS, Shopify, WordPress, Cloudflare, Stripe, and Google Tag Manager from page signatures.",
       badge: "Signature Engine",
       badgeColor: "bg-purple-50 text-purple-700 border-purple-200",
     },
     {
-      title: "Traffic Heuristic Engine",
-      score: "Confidence: Medium",
-      category: "Traffic Estimation",
-      desc: "Statistical click-through rate models and public ranking signals. Transparently reports uncertainty ranges rather than fabricated visitor counts.",
+      title: "Heuristic Traffic Modeling",
+      score: "420M - 550M / mo",
+      grade: "High Confidence",
+      category: "Audience Reach",
+      desc: "Empirical click distribution models based on discoverable content footprint. Always displays explicit confidence ratings.",
       badge: "Transparent Model",
       badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
     },
   ];
 
+  const pillars = [
+    {
+      icon: Search,
+      title: "Deterministic 0–100 Auditing",
+      desc: "Evaluates 20+ technical rules across Metadata (25 pts), Content & Structure (25 pts), Indexability (25 pts), and Security (25 pts).",
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+    },
+    {
+      icon: Layers,
+      title: "50+ Technology Fingerprints",
+      desc: "Instantly uncovers frameworks (Next.js, Vue), CMSs (Shopify, WordPress), CDNs (Cloudflare), analytics, and payment gateways.",
+      color: "text-purple-600 bg-purple-50 border-purple-200",
+    },
+    {
+      icon: Zap,
+      title: "Core Web Vitals & PageSpeed",
+      desc: "Measures real Google Lighthouse metrics (FCP, LCP, CLS, TBT) offloading heavy computation to Google Cloud infrastructure.",
+      color: "text-amber-600 bg-amber-50 border-amber-200",
+    },
+    {
+      icon: GitCompare,
+      title: "Side-by-Side Competitor Benchmarking",
+      desc: "Crawls two domains concurrently, computing score deltas and diffing shared vs unique technology components.",
+      color: "text-indigo-600 bg-indigo-50 border-indigo-200",
+    },
+    {
+      icon: Cpu,
+      title: "Google Gemini Diagnostic Synthesizer",
+      desc: "Translates verified diagnostic findings into prioritized developer action items complete with copyable HTML & Nginx code fixes.",
+      color: "text-emerald-600 bg-emerald-50 border-emerald-200",
+    },
+    {
+      icon: Share2,
+      title: "Permanent Snapshots & PDF Export",
+      desc: "Generates immutable UUID report permalinks stored in PostgreSQL and crisp executive print-to-PDF reports without browser bloat.",
+      color: "text-cyan-600 bg-cyan-50 border-cyan-200",
+    },
+  ];
+
+  const comparisonRows = [
+    {
+      feature: "Monthly Cost",
+      seoseite: "Free Starter / $24 Pro",
+      traditional: "$129 – $499 / month (Ahrefs / Semrush)",
+      win: true,
+    },
+    {
+      feature: "Crawl Latency",
+      seoseite: "< 100 ms (High-Speed Cheerio)",
+      traditional: "4–8 seconds (Heavy Headless Browser)",
+      win: true,
+    },
+    {
+      feature: "Data Integrity & Honesty",
+      seoseite: "100% Deterministic + Confidence Scores",
+      traditional: "Opaque, black-box traffic estimates",
+      win: true,
+    },
+    {
+      feature: "Tech Stack Fingerprinting",
+      seoseite: "Included (50+ signatures detected)",
+      traditional: "Requires separate tool (BuiltWith $295/mo)",
+      win: true,
+    },
+    {
+      feature: "AI Developer Action Items",
+      seoseite: "Google Gemini + Copyable Code Snippets",
+      traditional: "Generic text recommendations",
+      win: true,
+    },
+    {
+      feature: "Permanent Shareable Snapshots",
+      seoseite: "Included via immutable UUID links",
+      traditional: "Requires paid team seat login",
+      win: true,
+    },
+    {
+      feature: "Infrastructure Security",
+      seoseite: "Zero-Trust SSRF & Cloud Metadata Shield",
+      traditional: "Proprietary / Unknown",
+      win: true,
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Top Notification Bar for Project Info & Dev Worklog */}
-      <div className="bg-slate-50 border-b border-slate-200 py-2.5 px-4 text-center text-xs text-slate-600">
-        <span className="font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 mr-1.5">
-          Production Live on Google Cloud Run & SQL
-        </span>
-        Read our{" "}
-        <Link href="/capstone" className="font-semibold text-purple-700 hover:underline mx-1">
-          BCA Capstone Dissertation & Viva Guide
-        </Link>
-        , the{" "}
-        <Link href="/project-info" className="font-semibold text-blue-600 hover:underline mx-1">
-          Project Quick Info
-        </Link>
-        , or the daily{" "}
-        <Link href="/worklog" className="font-semibold text-indigo-600 hover:underline mx-1">
-          Dev Worklog
-        </Link>
-        .
+      {/* Top Pro Banner */}
+      <div className="bg-slate-900 text-white py-2 px-4 text-center text-xs font-medium">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
+          <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded tracking-wider">
+            Live Platform
+          </span>
+          <span>
+            Enterprise Website Intelligence & Competitive Benchmarking Engine.
+          </span>
+          <Link href="/pricing" className="text-blue-400 hover:text-blue-300 font-semibold underline ml-1">
+            Explore Subscription Plans →
+          </Link>
+        </div>
       </div>
 
       {/* Hero Section */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-        {/* Subtle Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-6">
-          <Sparkles className="w-3.5 h-3.5" />
-          Production SaaS & BCA Final-Year Capstone
+        {/* Modern Pill Badge */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-8 shadow-sm">
+          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+          Sub-Second Crawling • 50+ Frameworks • Zero Fabricated Metrics
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-tight sm:leading-tight mb-6">
-          Understand Any Website. <br className="hidden sm:inline" />
-          <span className="text-blue-600">Discover What Drives Its Growth.</span>
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-5xl mx-auto leading-tight sm:leading-tight mb-6">
+          Inspect, Benchmark & Optimize <br className="hidden sm:inline" />
+          <span className="text-blue-600">Any Website in Sub-Second Time.</span>
         </h1>
 
-        <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Inspect technical SEO health, detect full technology stacks, measure real Core Web Vitals, and estimate traffic using transparent, grounded data.
+        <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
+          The deterministic website intelligence platform for modern engineering and SEO teams. 
+          Uncover technical health, detect 50+ technology stacks, measure real Core Web Vitals, and estimate traffic reach with absolute transparency.
         </p>
 
         {/* URL Input Form */}
-        <UrlAnalyzerInput />
+        <div className="max-w-3xl mx-auto mb-6">
+          <UrlAnalyzerInput />
+        </div>
+
+        {/* Trust Badges */}
+        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-medium pt-4">
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>&lt; 100ms Crawl Latency</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>No Credit Card Required</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Google PageSpeed Insights API</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Google Gemini 3.5 Flash Diagnostics</span>
+          </div>
+        </div>
       </section>
 
       {/* Live Sample Audit Card Showcase (Flat & Modern) */}
-      <section className="py-12 bg-slate-50/60 border-y border-slate-200">
+      <section className="py-14 bg-slate-50/70 border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Deterministic Intelligence Architecture
+              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-1">
+                Deterministic Architecture
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                Grounded Intelligence. Zero Hallucinations.
               </h2>
               <p className="text-sm text-slate-600 mt-1">
-                Every metric is grounded in verifiable code and open web standards. No fabricated visitor counts.
+                Every score, metric, and tech signature is verified by deterministic code and open web standards.
               </p>
             </div>
             <Link
-              href="/project-info"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700"
+              href="/capstone"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm"
             >
-              Read full architecture spec
+              Read full methodology spec
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {auditCards.map((card, idx) => (
-              <div key={idx} className="flat-card p-5 bg-white flex flex-col justify-between">
+              <div key={idx} className="flat-card p-5 bg-white flex flex-col justify-between hover:border-slate-300 transition-colors">
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
@@ -130,9 +245,10 @@ export default function Home() {
                       {card.badge}
                     </span>
                   </div>
-                  <div className="text-2xl font-black text-slate-900 mb-2 tracking-tight">
+                  <div className="text-2xl font-black text-slate-900 mb-1 tracking-tight">
                     {card.score}
                   </div>
+                  <div className="text-xs font-semibold text-emerald-600 mb-2">{card.grade}</div>
                   <h3 className="text-sm font-bold text-slate-900 mb-1.5">{card.title}</h3>
                   <p className="text-xs text-slate-600 leading-relaxed">{card.desc}</p>
                 </div>
@@ -142,121 +258,207 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Comparison & Features Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="flat-badge text-blue-700 bg-blue-50 border-blue-200 mb-4">
-              Dual-Mode Operation
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-4">
-              Designed for Public Inspection and Private Analytics
+      {/* Core Analytical Pillars Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
+            Complete Diagnostic Suite
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+            Everything You Need to Understand & Outrank Competitors
+          </h2>
+          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+            Consolidate your SEO scraper, technology detector, Core Web Vitals lab, and AI consultant into one high-velocity platform.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pillars.map((pillar, idx) => {
+            const Icon = pillar.icon;
+            return (
+              <div key={idx} className="flat-card p-6 bg-white hover:border-slate-300 transition-colors flex flex-col justify-between">
+                <div>
+                  <div className={`w-10 h-10 rounded-lg border flex items-center justify-center mb-4 ${pillar.color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 mb-2">{pillar.title}</h3>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{pillar.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* SeoSeite vs Traditional Tools Comparison Table */}
+      <section className="py-16 bg-slate-50 border-y border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
+              Why We Built SeoSeite
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-3">
+              SeoSeite vs Traditional Platforms
             </h2>
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
-              Unlike tools that demand mandatory Google Analytics connections, SeoSeite works right out of the box for any public URL. Website owners can optionally authenticate their first-party GA4 and Google Search Console accounts to compare estimated metrics with reality.
+            <p className="text-sm text-slate-600">
+              See how our deterministic, sub-second engine compares against costly legacy SEO suites.
             </p>
-
-            <div className="space-y-3.5">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-900">100% Usable Without Third-Party Logins</h4>
-                  <p className="text-xs text-slate-600">Inspect any competitor or client website without OAuth tokens.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-900">Protected Against SSRF & Vulnerabilities</h4>
-                  <p className="text-xs text-slate-600">Server-side request filters prevent intranet access and metadata exploitation.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-900">AI as Interpreter, Not Source of Truth</h4>
-                  <p className="text-xs text-slate-600">LLMs formulate recommendations based strictly on verified diagnostic findings.</p>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Clean Flat Mock Card */}
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
-              <div className="flex items-center gap-2">
-                <Globe2 className="w-4 h-4 text-slate-600" />
-                <span className="font-mono text-xs font-semibold text-slate-800">example-saas.com</span>
-              </div>
-              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Live Audit Preview
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-3 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-slate-500">Overall Technical SEO</div>
-                  <div className="text-sm font-bold text-slate-900">88/100 (Good)</div>
-                </div>
-                <div className="text-xs text-slate-500 font-mono">18 / 20 Checks Passed</div>
-              </div>
-
-              <div className="p-3 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-slate-500">Detected Technologies</div>
-                  <div className="text-sm font-bold text-slate-900">Next.js, Tailwind CSS, Cloudflare</div>
-                </div>
-                <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium border border-slate-200">
-                  3 Identified
-                </span>
-              </div>
-
-              <div className="p-3 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-slate-500">PageSpeed Performance</div>
-                  <div className="text-sm font-bold text-slate-900">Score 94 • LCP 1.1s</div>
-                </div>
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-medium border border-emerald-200">
-                  Fast
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-              <span>Ready for Phase 2 Live Testing</span>
-              <span className="font-mono text-[11px]">JSON / PDF Export Ready</span>
+          <div className="flat-card overflow-hidden bg-white">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs sm:text-sm">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-slate-200 text-slate-900 font-bold">
+                    <th className="py-3.5 px-5">Capability / Dimension</th>
+                    <th className="py-3.5 px-5 text-blue-700 bg-blue-50/50">SeoSeite Platform</th>
+                    <th className="py-3.5 px-5 text-slate-600">Legacy Platforms (Ahrefs / Semrush)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {comparisonRows.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50/50">
+                      <td className="py-3.5 px-5 font-semibold text-slate-900">{row.feature}</td>
+                      <td className="py-3.5 px-5 font-bold text-blue-700 bg-blue-50/30 flex items-center gap-1.5">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                        {row.seoseite}
+                      </td>
+                      <td className="py-3.5 px-5 text-slate-600">{row.traditional}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Call to Action for Documentation */}
-      <section className="py-12 bg-white border-t border-slate-200">
+      {/* Real Audit Demonstration Preview */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="flat-badge text-indigo-700 bg-indigo-50 border-indigo-200 mb-4">
+              Instant Engineering Diagnostics
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+              Turn Raw Audit Findings Into Copyable Code Snippets
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+              Instead of giving you vague advice like &quot;improve your heading hierarchy,&quot; SeoSeite synthesizes exact HTML, Nginx configurations, and JSON-LD schema blocks tailored to your target domain.
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Parallel Competitor Benchmarking</h4>
+                  <p className="text-xs text-slate-600">Compare any two domains simultaneously at <code className="text-blue-600 font-mono">/compare</code> to see exact score deltas and shared frameworks.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Google Cloud Run & Cloud SQL Backbone</h4>
+                  <p className="text-xs text-slate-600">Hosted in a stateless, autoscaling Google Cloud Run container backed by managed PostgreSQL 16.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Zero-Trust SSRF Defense</h4>
+                  <p className="text-xs text-slate-600">Pre-flight DNS filters drop internal RFC 1918 subnets, loopbacks, and cloud metadata APIs before opening sockets.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mt-8">
+              <Link
+                href="/compare"
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
+              >
+                <GitCompare className="w-4 h-4" />
+                Launch Competitor Benchmark
+              </Link>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+              >
+                View Subscription Plans →
+              </Link>
+            </div>
+          </div>
+
+          {/* Clean Flat Mockup Card */}
+          <div className="p-6 bg-slate-900 text-white rounded-2xl shadow-xl border border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="font-mono text-xs text-slate-400 ml-2">github.com — Live Technical Audit</span>
+              </div>
+              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
+                Score: 85/100 (Grade A)
+              </span>
+            </div>
+
+            <div className="space-y-3 font-mono text-xs">
+              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
+                <span className="text-slate-400">Crawl Response Time</span>
+                <span className="text-emerald-400 font-bold">95 ms (Cheerio Stream)</span>
+              </div>
+
+              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
+                <span className="text-slate-400">Core Web Vitals (LCP)</span>
+                <span className="text-emerald-400 font-bold">1.2s (Passing Google CWV)</span>
+              </div>
+
+              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                <div className="text-slate-400 mb-1">Detected Stack Footprint:</div>
+                <div className="text-blue-400">Tailwind CSS, Next.js, Cloudflare, Fastly</div>
+              </div>
+
+              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                <div className="text-amber-400 font-bold mb-1">Gemini AI Prioritized Fix:</div>
+                <div className="text-slate-300 text-[11px] leading-relaxed">
+                  Consolidate secondary headers into H2 and enforce Strict-Transport-Security with includeSubDomains.
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+              <span>Immutable Snapshot ID: scan_179165...</span>
+              <span className="text-emerald-400">● PostgreSQL Synchronized</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action Banner */}
+      <section className="py-16 bg-blue-600 text-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">
-            Want to see how this project is built day-by-day?
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
+            Audit Any Website In Under 100 Milliseconds.
           </h2>
-          <p className="text-sm text-slate-600 max-w-xl mx-auto mb-6">
-            We document every architecture decision, package installed, and module created in our live engineering log.
+          <p className="text-blue-100 text-base sm:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
+            No mandatory logins, no credit card required, and zero fabricated numbers. Get instant technical clarity right now.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
-              href="/project-info"
-              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+              href="/analyze"
+              className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-blue-700 font-bold text-sm px-6 py-3.5 rounded-lg shadow-sm transition-colors"
             >
-              <Info className="w-4 h-4" />
-              Explore Project Quick Info
+              Start Free Audit Now
+              <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              href="/worklog"
-              className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+              href="/pricing"
+              className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm px-6 py-3.5 rounded-lg border border-blue-500 transition-colors"
             >
-              <FileText className="w-4 h-4" />
-              Read Development Worklog
+              View Pricing Tiers
             </Link>
           </div>
         </div>
