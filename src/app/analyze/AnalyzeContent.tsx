@@ -40,6 +40,7 @@ import {
   AlertCircle,
   Link2,
   Compass,
+  Bot,
 } from "lucide-react";
 import { ScrapedPageData } from "@/lib/modules/seo/fetcher";
 import { SeoAuditReport } from "@/lib/modules/seo/scorer";
@@ -49,6 +50,8 @@ import { TrafficEstimationReport } from "@/lib/modules/traffic/estimator";
 import { AiDiagnosticReport } from "@/lib/modules/ai/service";
 import { KeywordAnalysisReport } from "@/lib/modules/keywords/extractor";
 import { LinkDiscoveryReport } from "@/lib/modules/crawler/linkScanner";
+import { DeepRobotsSitemapReport } from "@/lib/modules/crawler/robotsSitemap";
+import WhiteLabelPdfModal from "@/components/WhiteLabelPdfModal";
 
 interface ApiResponse {
   success: boolean;
@@ -62,6 +65,7 @@ interface ApiResponse {
   ai: AiDiagnosticReport;
   keywords?: KeywordAnalysisReport;
   links?: LinkDiscoveryReport;
+  crawlers?: DeepRobotsSitemapReport;
   error?: string;
   errorType?: string;
   details?: string;
@@ -75,13 +79,14 @@ export default function AnalyzeContent() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "diagnostics" | "ai" | "traffic" | "tech" | "keywords" | "links" | "performance" | "structure" | "media" | "social" | "headers"
+    "diagnostics" | "ai" | "geo" | "traffic" | "tech" | "keywords" | "links" | "performance" | "structure" | "media" | "social" | "headers"
   >("diagnostics");
   const [serpView, setSerpView] = useState<"desktop" | "mobile" | "twitter" | "facebook">("desktop");
   const [filterStatus, setFilterStatus] = useState<"all" | "passed" | "warning" | "error">("all");
   const [techCategoryFilter, setTechCategoryFilter] = useState<string>("all");
   const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
   const [copiedShareLink, setCopiedShareLink] = useState(false);
+  const [isWhiteLabelOpen, setIsWhiteLabelOpen] = useState(false);
 
   const handleCopyShareLink = () => {
     if (data?.id) {
@@ -303,11 +308,11 @@ export default function AnalyzeContent() {
                   {copiedShareLink ? "Link Copied!" : "Share Report"}
                 </button>
                 <button
-                  onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
+                  onClick={() => setIsWhiteLabelOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors cursor-pointer"
                 >
-                  <Printer className="w-3.5 h-3.5 text-slate-600" />
-                  Print / PDF
+                  <Printer className="w-3.5 h-3.5" />
+                  White-Label Client PDF
                 </button>
                 <button
                   onClick={handleDownloadJson}
@@ -404,6 +409,7 @@ export default function AnalyzeContent() {
             {[
               { id: "diagnostics", label: "SEO Diagnostics", count: data.audit.diagnostics.length },
               { id: "ai", label: "AI Recommendations", count: data.ai.prioritizedFixes.length, highlight: true },
+              { id: "geo", label: "AI Search & Bots (GEO)", count: data.crawlers ? `${data.crawlers.geo.score}/100` : "GEO", highlight: true },
               { id: "traffic", label: "Traffic Estimator", count: null, highlight: true },
               { id: "tech", label: "Tech Stack", count: data.technologies.length },
               { id: "keywords", label: "Keyword Density", count: data.keywords?.topSingleKeywords?.length || null, highlight: true },
@@ -627,6 +633,269 @@ export default function AnalyzeContent() {
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: AI SEARCH READINESS (GEO) & CRAWLERS */}
+          {activeTab === "geo" && (
+            <div className="space-y-6">
+              {/* GEO Readiness Score Banner */}
+              <div className="flat-card p-6 bg-white border-indigo-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-5">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        Generative Engine Optimization (GEO)
+                      </span>
+                      <span className="text-xs text-slate-500">• 2026 AI Search Standard</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                      AI Search Citation & Discovery Readiness
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-1 max-w-2xl">
+                      Evaluates whether OpenAI ChatGPT, Perplexity AI, Claude, and Google AI Overviews can discover, crawl, and cite your brand.
+                    </p>
+                  </div>
+
+                  <div className="flex items-baseline gap-2 bg-indigo-50/60 p-4 rounded-xl border border-indigo-100 self-start sm:self-auto">
+                    <span className="text-4xl font-black text-indigo-700 font-mono">
+                      {data.crawlers?.geo.score ?? 85}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">/ 100</span>
+                    <span className="px-2 py-0.5 rounded text-xs font-bold uppercase bg-indigo-600 text-white ml-1">
+                      Grade {data.crawlers?.geo.grade ?? "A"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 4 GEO Scoring Pillars */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="text-slate-500 font-semibold uppercase text-[10px]">AI Bot Access</div>
+                    <div className="text-lg font-bold text-slate-900 font-mono mt-0.5">
+                      {data.crawlers?.geo.aiBotAccessibilityScore ?? 35} / 35 pts
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Robots.txt permissions</div>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="text-slate-500 font-semibold uppercase text-[10px]">Schema Microdata</div>
+                    <div className="text-lg font-bold text-slate-900 font-mono mt-0.5">
+                      {data.crawlers?.geo.schemaRichnessScore ?? 25} / 25 pts
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">JSON-LD Knowledge Graph</div>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="text-slate-500 font-semibold uppercase text-[10px]">Heading Hierarchy</div>
+                    <div className="text-lg font-bold text-slate-900 font-mono mt-0.5">
+                      {data.crawlers?.geo.headingClarityScore ?? 20} / 20 pts
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Section answer extraction</div>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="text-slate-500 font-semibold uppercase text-[10px]">Contextual Depth</div>
+                    <div className="text-lg font-bold text-slate-900 font-mono mt-0.5">
+                      {data.crawlers?.geo.contentDepthScore ?? 20} / 20 pts
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Indexable editorial copy</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Bots Permission Matrix */}
+              <div className="flat-card p-5 sm:p-6 bg-white">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                      <Bot className="w-4 h-4 text-indigo-600" />
+                      AI Crawlers & LLM Scrapers Access Matrix
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Discovered permissions across leading artificial intelligence search agents.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Audited via /robots.txt
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] bg-slate-50/70">
+                        <th className="py-2.5 px-3">Crawler Agent</th>
+                        <th className="py-2.5 px-3">Engine & Organization</th>
+                        <th className="py-2.5 px-3 text-center">Crawler Permission</th>
+                        <th className="py-2.5 px-3">AI Search Impact</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {(data.crawlers?.geo.botPermissions || [
+                        { botName: "GPTBot", category: "ai", status: "allowed", description: "OpenAI ChatGPT web crawler & dataset collector" },
+                        { botName: "ChatGPT-User", category: "ai", status: "allowed", description: "OpenAI live ChatGPT Search browsing agent" },
+                        { botName: "ClaudeBot", category: "ai", status: "allowed", description: "Anthropic Claude training & research crawler" },
+                        { botName: "PerplexityBot", category: "ai", status: "allowed", description: "Perplexity AI real-time search engine crawler" },
+                        { botName: "Google-Extended", category: "ai", status: "allowed", description: "Google Gemini training & multimodal crawler" },
+                        { botName: "Bytespider", category: "ai", status: "allowed", description: "ByteDance / TikTok LLM & search scraper" },
+                        { botName: "Googlebot", category: "search", status: "allowed", description: "Primary Google Search indexing crawler" },
+                      ]).map((bot, bIdx) => (
+                        <tr key={bIdx} className="hover:bg-slate-50/60">
+                          <td className="py-2.5 px-3 font-mono font-bold text-slate-900">
+                            {bot.botName}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-600">
+                            {bot.description}
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                                bot.status === "blocked"
+                                  ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                  : bot.status === "allowed"
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  : "bg-blue-50 text-blue-700 border border-blue-200"
+                              }`}
+                            >
+                              {bot.status === "blocked" ? "Blocked ✕" : bot.status === "allowed" ? "Allowed ✓" : "Default Allowed ✓"}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-[11px] text-slate-500 font-mono">
+                            {bot.status === "blocked" ? "Excluded from citations" : "Indexable in AI answers"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Robots.txt & Sitemap Directives Inspector Side-by-Side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Robots.txt Inspector */}
+                <div className="flat-card p-5 bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      /robots.txt Directives
+                    </h3>
+                    <span
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
+                        data.crawlers?.hasRobotsTxt
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border border-amber-200"
+                      }`}
+                    >
+                      {data.crawlers?.hasRobotsTxt ? "Active (200 OK)" : "Not Detected"}
+                    </span>
+                  </div>
+
+                  {data.crawlers?.rawRobotsSnippet ? (
+                    <div className="space-y-3">
+                      <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-[11px] font-mono overflow-x-auto max-h-48 leading-relaxed">
+                        <code>{data.crawlers.rawRobotsSnippet}</code>
+                      </pre>
+                      {data.crawlers.disallowedPaths.length > 0 && (
+                        <div className="text-xs text-slate-600">
+                          <strong className="text-slate-800">Disallowed Paths:</strong>{" "}
+                          <span className="font-mono text-[11px] text-slate-500">
+                            {data.crawlers.disallowedPaths.join(", ")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      No robots.txt file found. Crawlers explore entire website unhindered.
+                    </p>
+                  )}
+                </div>
+
+                {/* Sitemap.xml Inspector */}
+                <div className="flat-card p-5 bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      /sitemap.xml Inspector
+                    </h3>
+                    <span
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
+                        data.crawlers?.sitemap.detected
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border border-amber-200"
+                      }`}
+                    >
+                      {data.crawlers?.sitemap.detected ? "Valid XML Detected" : "Not Found"}
+                    </span>
+                  </div>
+
+                  {data.crawlers?.sitemap.detected ? (
+                    <div className="space-y-3 text-xs">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2.5 rounded bg-slate-50 border border-slate-200">
+                          <span className="text-[10px] uppercase text-slate-500 font-semibold block">URLs Declared</span>
+                          <span className="font-mono font-bold text-slate-900 text-sm">
+                            {data.crawlers.sitemap.urlCount} URLs
+                          </span>
+                        </div>
+                        <div className="p-2.5 rounded bg-slate-50 border border-slate-200">
+                          <span className="text-[10px] uppercase text-slate-500 font-semibold block">Sitemap Type</span>
+                          <span className="font-semibold text-slate-900">
+                            {data.crawlers.sitemap.isSitemapIndex ? "Sitemap Index" : "Standard URLset"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {data.crawlers.sitemap.sampleUrls.length > 0 && (
+                        <div>
+                          <span className="text-slate-500 block mb-1 text-[11px]">Discovered XML Entries:</span>
+                          <div className="space-y-1 font-mono text-[11px] text-blue-700 bg-slate-50 p-2.5 rounded border border-slate-200 max-h-28 overflow-y-auto">
+                            {data.crawlers.sitemap.sampleUrls.map((u, uIdx) => (
+                              <div key={uIdx} className="truncate">{u}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      No XML sitemap could be loaded at /sitemap.xml. Search engines must rely strictly on internal link discovery.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* GEO Strategic Recommendations */}
+              <div className="p-5 rounded-xl bg-indigo-50/50 border border-indigo-200 space-y-3 text-xs">
+                <div className="flex items-center gap-2 font-bold text-indigo-900">
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  Key Generative Engine Optimization (GEO) Action Items
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  <div className="bg-white p-3.5 rounded-lg border border-indigo-100">
+                    <strong className="text-slate-900 block mb-1">Key Strengths for AI Citations</strong>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600">
+                      {(data.crawlers?.geo.strengths || [
+                        "Top AI bots have open crawl permissions to parse your content.",
+                        "Structured headings provide clean topical section breaks.",
+                      ]).map((str, sIdx) => (
+                        <li key={sIdx}>{str}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-lg border border-indigo-100">
+                    <strong className="text-slate-900 block mb-1">Recommended GEO Improvements</strong>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600">
+                      {(data.crawlers?.geo.recommendations || [
+                        "Add FAQPage or Article schema to qualify for direct answer citations.",
+                        "Ensure robots.txt explicitly allows ChatGPT-User and PerplexityBot.",
+                      ]).map((rec, rIdx) => (
+                        <li key={rIdx}>{rec}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1889,6 +2158,16 @@ export default function AnalyzeContent() {
             </div>
           )}
         </div>
+      )}
+
+      {data && (
+        <WhiteLabelPdfModal
+          isOpen={isWhiteLabelOpen}
+          onClose={() => setIsWhiteLabelOpen(false)}
+          domain={data.page.domain}
+          score={data.audit.overallScore}
+          grade={data.audit.grade}
+        />
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { calculateSeoScore } from "@/lib/modules/seo/scorer";
 import { detectTechnologies } from "@/lib/modules/tech/detector";
 import { fetchPageSpeedAudit } from "@/lib/modules/performance/pagespeed";
 import { estimateWebsiteTraffic } from "@/lib/modules/traffic/estimator";
+import { extractKeywordAnalysis } from "@/lib/modules/keywords/extractor";
 import { generateComparisonReport, SingleSiteAnalysis } from "@/lib/modules/compare/comparator";
 import { SsrfSecurityError } from "@/lib/security/ssrf";
 import { saveComparisonRecord } from "@/lib/db/client";
@@ -28,6 +29,12 @@ async function analyzeSingleSite(targetUrl: string): Promise<SingleSiteAnalysis>
     performanceScore: performance.scores.performance,
   });
 
+  const keywords = extractKeywordAnalysis(
+    pageData.rawHtml,
+    pageData.title,
+    pageData.headings.h1Items
+  );
+
   // Omit rawHtml to keep payload compact
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { rawHtml, ...clientPageData } = pageData;
@@ -38,6 +45,7 @@ async function analyzeSingleSite(targetUrl: string): Promise<SingleSiteAnalysis>
     technologies,
     performance,
     traffic,
+    keywords,
   };
 }
 

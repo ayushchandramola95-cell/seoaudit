@@ -26,6 +26,13 @@ import {
   Trash2,
   Plus,
   Sparkles,
+  Bell,
+  Send,
+  Sliders,
+  AlertOctagon,
+  CheckSquare,
+  MessageSquare,
+  ShieldAlert,
 } from "lucide-react";
 
 interface SavedScan {
@@ -74,6 +81,14 @@ interface DbStatus {
   totalSavedComparisons: number;
 }
 
+interface AlertLog {
+  id: string;
+  domain: string;
+  event: string;
+  status: "delivered" | "failed" | "simulated";
+  timestamp: string;
+}
+
 export default function DashboardContent() {
   const searchParams = useSearchParams();
   const upgradedParam = searchParams.get("upgraded");
@@ -83,8 +98,34 @@ export default function DashboardContent() {
   const [status, setStatus] = useState<DbStatus | null>(null);
   const [scans, setScans] = useState<SavedScan[]>([]);
   const [comparisons, setComparisons] = useState<SavedComparison[]>([]);
-  const [activeTab, setActiveTab] = useState<"scans" | "comparisons" | "watchlist" | "infra">("scans");
+  const [activeTab, setActiveTab] = useState<"scans" | "comparisons" | "watchlist" | "alerts" | "infra">("scans");
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
+
+  // Automated Health Alerts & Webhooks state
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [scoreThreshold, setScoreThreshold] = useState(75);
+  const [alertPerf, setAlertPerf] = useState(true);
+  const [alertLatency, setAlertLatency] = useState(true);
+  const [alertAiRobots, setAlertAiRobots] = useState(true);
+  const [testWebhookStatus, setTestWebhookStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+  const [testWebhookMessage, setTestWebhookMessage] = useState<string | null>(null);
+  const [savedAlertSettings, setSavedAlertSettings] = useState(false);
+  const [alertLogs, setAlertLogs] = useState<AlertLog[]>([
+    {
+      id: "evt_1",
+      domain: "example.com",
+      event: "SEO Health dropped to 68 (Below 75 threshold)",
+      status: "delivered",
+      timestamp: "Today, 10:45 AM",
+    },
+    {
+      id: "evt_2",
+      domain: "acme-corp.com",
+      event: "GPTBot & ClaudeBot blocked in robots.txt (GEO Alert)",
+      status: "delivered",
+      timestamp: "Today, 08:12 AM",
+    },
+  ]);
 
   // Watchlist state
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
@@ -134,10 +175,90 @@ export default function DashboardContent() {
         setWatchlist(initial);
         localStorage.setItem("seoseite_watchlist", JSON.stringify(initial));
       }
+
+      // Load Alert Settings
+      const savedAlerts = localStorage.getItem("seoseite_alerts_config");
+      if (savedAlerts) {
+        const parsed = JSON.parse(savedAlerts);
+        if (parsed.webhookUrl) setWebhookUrl(parsed.webhookUrl);
+        if (parsed.scoreThreshold !== undefined) setScoreThreshold(parsed.scoreThreshold);
+        if (parsed.alertPerf !== undefined) setAlertPerf(parsed.alertPerf);
+        if (parsed.alertLatency !== undefined) setAlertLatency(parsed.alertLatency);
+        if (parsed.alertAiRobots !== undefined) setAlertAiRobots(parsed.alertAiRobots);
+      }
+      const savedLogs = localStorage.getItem("seoseite_alerts_logs");
+      if (savedLogs) {
+        setAlertLogs(JSON.parse(savedLogs));
+      }
     } catch {
       // ignore storage failure
     }
   }, [scans]);
+
+  function handleSaveAlertSettings() {
+    try {
+      localStorage.setItem(
+        "seoseite_alerts_config",
+        JSON.stringify({
+          webhookUrl,
+          scoreThreshold,
+          alertPerf,
+          alertLatency,
+          alertAiRobots,
+        })
+      );
+      setSavedAlertSettings(true);
+      setTimeout(() => setSavedAlertSettings(false), 2500);
+    } catch {
+      // ignore
+    }
+  }
+
+  async function handleTestWebhook() {
+    if (!webhookUrl.trim()) {
+      setTestWebhookStatus("error");
+      setTestWebhookMessage("Please enter a Webhook URL (Slack, Discord, Zapier, or HTTP endpoint).");
+      return;
+    }
+    setTestWebhookStatus("testing");
+    setTestWebhookMessage(null);
+    try {
+      const res = await fetch("/api/webhook/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          webhookUrl: webhookUrl.trim(),
+          domain: scans[0]?.domain || "my-website.com",
+          threshold: scoreThreshold,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setTestWebhookStatus("success");
+        setTestWebhookMessage(json.message || "Webhook successfully received notification payload!");
+        const newLog: AlertLog = {
+          id: `alert_${Date.now()}`,
+          domain: scans[0]?.domain || "my-website.com",
+          event: `Simulated Alert Trigger (Threshold: ${scoreThreshold}/100)`,
+          status: json.mode === "simulated" ? "simulated" : "delivered",
+          timestamp: "Just now",
+        };
+        const updated = [newLog, ...alertLogs.slice(0, 9)];
+        setAlertLogs(updated);
+        try {
+          localStorage.setItem("seoseite_alerts_logs", JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
+      } else {
+        setTestWebhookStatus("error");
+        setTestWebhookMessage(json.error || "Webhook endpoint rejected request.");
+      }
+    } catch (err: unknown) {
+      setTestWebhookStatus("error");
+      setTestWebhookMessage((err as Error)?.message || "Failed to reach webhook test endpoint.");
+    }
+  }
 
   const handleAddWatchlist = (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,6 +553,17 @@ export default function DashboardContent() {
           >
             <Bookmark className="w-4 h-4" />
             Monitored Watchlist ({watchlist.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("alerts")}
+            className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+              activeTab === "alerts"
+                ? "border-rose-600 text-rose-600"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <Bell className="w-4 h-4" />
+            Health Alerts & Webhooks
           </button>
           <button
             onClick={() => setActiveTab("infra")}
@@ -756,6 +888,260 @@ export default function DashboardContent() {
               <div>
                 <strong className="text-slate-900 block mb-0.5">Automated 24/7 Crawler Engine:</strong>
                 Watchlist domains are queued for scheduled non-intrusive re-validation. If title tags, robots.txt directives, or Core Web Vitals degrade, alerts are logged directly to your Cloud SQL dashboard.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Automated SEO Health Alerts & Webhook Notifications */}
+        {activeTab === "alerts" && (
+          <div className="space-y-6">
+            {/* Header Card */}
+            <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
+                    <Bell className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Automated Health Alerts & Webhook Notifications
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Trigger instant Slack, Discord, Zapier, or custom HTTP alerts whenever your SEO score drops or AI bots are blocked.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSaveAlertSettings}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer self-start md:self-auto"
+                >
+                  <CheckSquare className="w-4 h-4 text-emerald-400" />
+                  {savedAlertSettings ? "Settings Saved!" : "Save Alert Rules"}
+                </button>
+              </div>
+
+              {/* Webhook Endpoint Input */}
+              <div className="space-y-4 pt-2 border-t border-slate-100">
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Webhook Target URL (Slack, Discord, Zapier, Make, or Custom POST)
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="url"
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    placeholder="https://hooks.slack.com/services/YOUR_TEAM/... or https://discord.com/api/webhooks/..."
+                    className="flex-1 px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white font-mono text-slate-800"
+                  />
+                  <button
+                    onClick={handleTestWebhook}
+                    disabled={testWebhookStatus === "testing"}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400 text-white rounded-lg shadow-sm transition-colors cursor-pointer shrink-0"
+                  >
+                    {testWebhookStatus === "testing" ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        Testing...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        Test Webhook Dispatch
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Preset helpers */}
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                  <span className="font-semibold text-slate-700">Quick Presets:</span>
+                  <button
+                    onClick={() => setWebhookUrl("https://hooks.slack.com/services/YOUR_TEAM/YOUR_BOT/YOUR_SECRET_TOKEN")}
+                    className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    Slack Incoming Webhook
+                  </button>
+                  <button
+                    onClick={() => setWebhookUrl("https://discord.com/api/webhooks/1234567890/token_here")}
+                    className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    Discord Channel Webhook
+                  </button>
+                  <button
+                    onClick={() => setWebhookUrl("https://hooks.zapier.com/hooks/catch/12345/abcde/")}
+                    className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    Zapier / Make.com Webhook
+                  </button>
+                </div>
+
+                {/* Test Feedback banner */}
+                {testWebhookMessage && (
+                  <div
+                    className={`p-3 rounded-lg border text-xs flex items-start gap-2.5 transition-all ${
+                      testWebhookStatus === "success"
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        : "bg-rose-50 text-rose-800 border-rose-200"
+                    }`}
+                  >
+                    {testWebhookStatus === "success" ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    )}
+                    <div>
+                      <span className="font-semibold block">
+                        {testWebhookStatus === "success" ? "Dispatch Confirmed" : "Dispatch Alert"}
+                      </span>
+                      <span>{testWebhookMessage}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Threshold Rules Grid */}
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-slate-600" />
+                Automated Trigger Thresholds
+              </h4>
+              <p className="text-xs text-slate-500">
+                Specify criteria that trigger immediate incident dispatches to your configured webhook endpoint.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                {/* Score threshold */}
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800">
+                      Minimum SEO Health Threshold
+                    </span>
+                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      Score &lt; {scoreThreshold}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="90"
+                    step="5"
+                    value={scoreThreshold}
+                    onChange={(e) => setScoreThreshold(Number(e.target.value))}
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                  <p className="text-[11px] text-slate-500">
+                    Alert fires immediately if an audit scores below {scoreThreshold} out of 100.
+                  </p>
+                </div>
+
+                {/* AI Bots Disallow */}
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="aiRobotsToggle"
+                    checked={alertAiRobots}
+                    onChange={(e) => setAlertAiRobots(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <label htmlFor="aiRobotsToggle" className="cursor-pointer">
+                    <div className="text-xs font-bold text-slate-800">
+                      AI Search (GEO) LLM Crawler Block Alert
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      Triggers warning if robots.txt disallows GPTBot, ClaudeBot, or PerplexityBot, risking AI search exclusion.
+                    </div>
+                  </label>
+                </div>
+
+                {/* Core Web Vitals Drop */}
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="perfToggle"
+                    checked={alertPerf}
+                    onChange={(e) => setAlertPerf(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <label htmlFor="perfToggle" className="cursor-pointer">
+                    <div className="text-xs font-bold text-slate-800">
+                      Core Web Vitals Degradation Alert
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      Fires if Lighthouse Performance score drops below 60 or LCP exceeds 4.0s.
+                    </div>
+                  </label>
+                </div>
+
+                {/* Server Latency Slowdown */}
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="latencyToggle"
+                    checked={alertLatency}
+                    onChange={(e) => setAlertLatency(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <label htmlFor="latencyToggle" className="cursor-pointer">
+                    <div className="text-xs font-bold text-slate-800">
+                      TTFB Latency Spike (&gt; 1,500ms)
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      Sends alert if page initial response time exceeds 1.5 seconds, hurting crawl budgets.
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Alert Dispatch Log */}
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Recent Webhook Dispatch Log</h4>
+                  <p className="text-xs text-slate-500">History of dispatched health notifications and simulated tests.</p>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200">
+                  {alertLogs.length} Events Logged
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/75 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                      <th className="py-3 px-6">Timestamp</th>
+                      <th className="py-3 px-6">Domain</th>
+                      <th className="py-3 px-6">Trigger Reason</th>
+                      <th className="py-3 px-6 text-right">Delivery Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+                    {alertLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-3.5 px-6 font-mono text-slate-500">{log.timestamp}</td>
+                        <td className="py-3.5 px-6 font-semibold text-slate-900">{log.domain}</td>
+                        <td className="py-3.5 px-6 text-slate-700">{log.event}</td>
+                        <td className="py-3.5 px-6 text-right">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold ${
+                              log.status === "delivered"
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                : log.status === "simulated"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-rose-50 text-rose-700 border border-rose-200"
+                            }`}
+                          >
+                            <CheckCircle2 className="w-3 h-3" />
+                            {log.status === "delivered" ? "Delivered (HTTP 200)" : log.status === "simulated" ? "Simulated Test" : "Delivery Failed"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

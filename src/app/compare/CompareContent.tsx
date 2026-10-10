@@ -25,7 +25,9 @@ import {
   Share2,
   Printer,
   Copy,
-  Check
+  Check,
+  Hash,
+  BookOpen,
 } from "lucide-react";
 import { ComparisonReport } from "@/lib/modules/compare/comparator";
 
@@ -682,6 +684,117 @@ export default function CompareContent() {
               </div>
             </div>
           </div>
+
+          {/* Keyword Content Gap Matrix */}
+          {data.keywordGap && (
+            <div className="flat-card p-6 bg-white space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                    <Hash className="w-4 h-4 text-purple-600" />
+                    Competitor Keyword Content Gap Matrix
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Reveals shared keyword territory and exclusive topical keywords each competitor owns.
+                  </p>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                  {data.keywordGap.sharedKeywords.length} Overlapping Terms
+                </span>
+              </div>
+
+              {/* 3 Columns: Unique to A, Overlap, Unique to B */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Column 1: Unique to Site A */}
+                <div className="p-4 bg-blue-50/30 rounded-xl border border-blue-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-900 font-mono truncate max-w-[150px]">
+                      {data.siteA.page.domain} Exclusives
+                    </span>
+                    <span className="text-[10px] font-mono text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
+                      +{data.keywordGap.uniqueToA.length} terms
+                    </span>
+                  </div>
+
+                  {data.keywordGap.uniqueToA.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {data.keywordGap.uniqueToA.map((kw, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 rounded bg-white border border-blue-100 text-xs font-mono"
+                        >
+                          <span className="font-semibold text-slate-800">{kw.phrase}</span>
+                          <span className="text-blue-700 font-bold">{kw.density.toFixed(1)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">No exclusive keywords detected.</p>
+                  )}
+                </div>
+
+                {/* Column 2: Direct Shared Overlap */}
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                      Head-to-Head Overlap
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">
+                      {data.keywordGap.topOverlapKeywords.length} matched
+                    </span>
+                  </div>
+
+                  {data.keywordGap.topOverlapKeywords.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {data.keywordGap.topOverlapKeywords.map((kw, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 rounded bg-white border border-slate-200 text-xs font-mono"
+                        >
+                          <span className="font-semibold text-slate-900">{kw.phrase}</span>
+                          <div className="flex items-center gap-1.5 text-[11px]">
+                            <span className="text-blue-700 font-bold">{kw.countA}×</span>
+                            <span className="text-slate-300">vs</span>
+                            <span className="text-purple-700 font-bold">{kw.countB}×</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">Zero keyword overlap between sites.</p>
+                  )}
+                </div>
+
+                {/* Column 3: Unique to Site B */}
+                <div className="p-4 bg-purple-50/30 rounded-xl border border-purple-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-purple-900 font-mono truncate max-w-[150px]">
+                      {data.siteB.page.domain} Exclusives
+                    </span>
+                    <span className="text-[10px] font-mono text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">
+                      +{data.keywordGap.uniqueToB.length} terms
+                    </span>
+                  </div>
+
+                  {data.keywordGap.uniqueToB.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {data.keywordGap.uniqueToB.map((kw, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 rounded bg-white border border-purple-100 text-xs font-mono"
+                        >
+                          <span className="font-semibold text-slate-800">{kw.phrase}</span>
+                          <span className="text-purple-700 font-bold">{kw.density.toFixed(1)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">No exclusive keywords detected.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

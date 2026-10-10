@@ -7,6 +7,7 @@ import { estimateWebsiteTraffic } from "@/lib/modules/traffic/estimator";
 import { generateAiDiagnostics } from "@/lib/modules/ai/service";
 import { extractKeywordAnalysis } from "@/lib/modules/keywords/extractor";
 import { extractLinkAnalysis } from "@/lib/modules/crawler/linkScanner";
+import { analyzeRobotsAndSitemap } from "@/lib/modules/crawler/robotsSitemap";
 import { SsrfSecurityError } from "@/lib/security/ssrf";
 import { saveScanRecord } from "@/lib/db/client";
 
@@ -73,6 +74,16 @@ export async function GET(request: NextRequest) {
       pageData.finalUrl
     );
 
+    // 9. Deep Robots.txt, Sitemap.xml & AI Search GEO Readiness
+    const parsedUrl = new URL(pageData.finalUrl);
+    const crawlersReport = await analyzeRobotsAndSitemap(
+      parsedUrl.origin,
+      pageData.structuredData.count,
+      pageData.headings.h1Count,
+      pageData.headings.h2Count,
+      pageData.wordCount
+    );
+
     // Don't send megabytes of rawHtml to the client browser
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { rawHtml, ...clientPageData } = pageData;
@@ -96,6 +107,7 @@ export async function GET(request: NextRequest) {
         ai: aiReport,
         keywords,
         links: linkAnalysis,
+        crawlers: crawlersReport,
       },
     });
 
@@ -111,6 +123,7 @@ export async function GET(request: NextRequest) {
       ai: aiReport,
       keywords,
       links: linkAnalysis,
+      crawlers: crawlersReport,
     });
   } catch (err: unknown) {
     const errorMsg = (err as Error)?.message || "Failed to analyze target website.";

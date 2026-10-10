@@ -3,6 +3,7 @@ import { SeoAuditReport } from "../seo/scorer";
 import { DetectedTechnology } from "../tech/detector";
 import { PageSpeedReport } from "../performance/pagespeed";
 import { TrafficEstimationReport } from "../traffic/estimator";
+import { KeywordAnalysisReport } from "../keywords/extractor";
 
 export interface SingleSiteAnalysis {
   page: ScrapedPageData;
@@ -10,6 +11,7 @@ export interface SingleSiteAnalysis {
   technologies: DetectedTechnology[];
   performance: PageSpeedReport;
   traffic: TrafficEstimationReport;
+  keywords?: KeywordAnalysisReport;
 }
 
 export interface ComparisonReport {
@@ -27,6 +29,12 @@ export interface ComparisonReport {
     shared: string[];
     uniqueToA: string[];
     uniqueToB: string[];
+  };
+  keywordGap?: {
+    sharedKeywords: string[];
+    uniqueToA: Array<{ phrase: string; count: number; density: number }>;
+    uniqueToB: Array<{ phrase: string; count: number; density: number }>;
+    topOverlapKeywords: Array<{ phrase: string; countA: number; countB: number }>;
   };
   categoryWinners: {
     seoOverall: "siteA" | "siteB" | "tie";
@@ -169,6 +177,37 @@ export function generateComparisonReport(
     seoScoreDiff >= 0 ? siteA.page.domain : siteB.page.domain
   } holds the technical advantage in document markup and metadata precision, while each domain excels in different infrastructure choices.`;
 
+  // Keyword Content Gap Analysis
+  const kwsA = siteA.keywords?.topSingleKeywords || [];
+  const kwsB = siteB.keywords?.topSingleKeywords || [];
+  const mapA = new Map(kwsA.map((k) => [k.phrase.toLowerCase(), k]));
+  const mapB = new Map(kwsB.map((k) => [k.phrase.toLowerCase(), k]));
+
+  const sharedKeywords: string[] = [];
+  const uniqueKwA: Array<{ phrase: string; count: number; density: number }> = [];
+  const uniqueKwB: Array<{ phrase: string; count: number; density: number }> = [];
+  const topOverlapKeywords: Array<{ phrase: string; countA: number; countB: number }> = [];
+
+  kwsA.forEach((k) => {
+    const match = mapB.get(k.phrase.toLowerCase());
+    if (match) {
+      sharedKeywords.push(k.phrase);
+      topOverlapKeywords.push({
+        phrase: k.phrase,
+        countA: k.count,
+        countB: match.count,
+      });
+    } else {
+      uniqueKwA.push({ phrase: k.phrase, count: k.count, density: k.density });
+    }
+  });
+
+  kwsB.forEach((k) => {
+    if (!mapA.has(k.phrase.toLowerCase())) {
+      uniqueKwB.push({ phrase: k.phrase, count: k.count, density: k.density });
+    }
+  });
+
   return {
     siteA,
     siteB,
@@ -184,6 +223,12 @@ export function generateComparisonReport(
       shared,
       uniqueToA,
       uniqueToB,
+    },
+    keywordGap: {
+      sharedKeywords,
+      uniqueToA: uniqueKwA.slice(0, 8),
+      uniqueToB: uniqueKwB.slice(0, 8),
+      topOverlapKeywords: topOverlapKeywords.slice(0, 8),
     },
     categoryWinners,
     aiComparativeSummary: {
