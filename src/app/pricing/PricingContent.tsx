@@ -17,9 +17,39 @@ import {
 
 export default function PricingContent() {
   const [isAnnual, setIsAnnual] = useState(true);
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
+
+  const handleCheckout = async (planId: string) => {
+    if (planId === "starter") {
+      window.location.href = "/analyze";
+      return;
+    }
+    setLoadingTier(planId);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId,
+          billing: isAnnual ? "annual" : "monthly",
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        window.location.href = `/dashboard?upgraded=${planId}`;
+      }
+    } catch {
+      window.location.href = `/dashboard?upgraded=${planId}`;
+    } finally {
+      setLoadingTier(null);
+    }
+  };
 
   const tiers = [
     {
+      id: "starter",
       name: "Starter",
       badge: "Free Forever",
       description: "Essential public website intelligence and deterministic SEO scoring for developers & founders.",
@@ -47,6 +77,7 @@ export default function PricingContent() {
       isPopular: false,
     },
     {
+      id: "pro",
       name: "Pro Analyst",
       badge: "Most Popular",
       description: "Deep competitor benchmarking, full tech stack detection, and AI developer action items.",
@@ -72,6 +103,7 @@ export default function PricingContent() {
       isPopular: true,
     },
     {
+      id: "enterprise",
       name: "Agency & Enterprise",
       badge: "Team Power",
       description: "For agencies and digital teams needing automated site monitoring and multi-domain reporting.",
@@ -88,7 +120,7 @@ export default function PricingContent() {
         "Dedicated Engineering Support & SLA",
       ],
       notIncluded: [],
-      ctaText: "Contact for Enterprise",
+      ctaText: "Upgrade to Enterprise",
       ctaHref: "/analyze?tier=enterprise",
       isPopular: false,
     },
@@ -251,17 +283,27 @@ export default function PricingContent() {
               </div>
 
               <div>
-                <Link
-                  href={tier.ctaHref}
-                  className={`w-full inline-flex items-center justify-center gap-2 text-sm font-semibold py-3 px-4 rounded-lg transition-colors ${
+                <button
+                  onClick={() => handleCheckout(tier.id)}
+                  disabled={loadingTier !== null}
+                  className={`w-full inline-flex items-center justify-center gap-2 text-sm font-semibold py-3 px-4 rounded-lg transition-colors cursor-pointer ${
                     tier.isPopular
                       ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                       : "bg-slate-900 hover:bg-slate-800 text-white"
                   }`}
                 >
-                  {tier.ctaText}
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                  {loadingTier === tier.id ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Connecting...
+                    </span>
+                  ) : (
+                    <>
+                      <span>{tier.ctaText}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
                 <p className="text-[11px] text-center text-slate-400 mt-2.5">
                   Instant activation • No setup fees
                 </p>

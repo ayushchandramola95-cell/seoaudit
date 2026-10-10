@@ -5,6 +5,8 @@ import { detectTechnologies } from "@/lib/modules/tech/detector";
 import { fetchPageSpeedAudit } from "@/lib/modules/performance/pagespeed";
 import { estimateWebsiteTraffic } from "@/lib/modules/traffic/estimator";
 import { generateAiDiagnostics } from "@/lib/modules/ai/service";
+import { extractKeywordAnalysis } from "@/lib/modules/keywords/extractor";
+import { extractLinkAnalysis } from "@/lib/modules/crawler/linkScanner";
 import { SsrfSecurityError } from "@/lib/security/ssrf";
 import { saveScanRecord } from "@/lib/db/client";
 
@@ -57,6 +59,20 @@ export async function GET(request: NextRequest) {
       traffic,
     });
 
+    // 7. Extract Keyword Density & N-Gram Insights
+    const keywords = extractKeywordAnalysis(
+      pageData.rawHtml,
+      pageData.title,
+      pageData.headings.h1Items
+    );
+
+    // 8. Extract Internal and External Crawl Link Footprint
+    const linkAnalysis = extractLinkAnalysis(
+      pageData.rawHtml,
+      pageData.domain,
+      pageData.finalUrl
+    );
+
     // Don't send megabytes of rawHtml to the client browser
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { rawHtml, ...clientPageData } = pageData;
@@ -78,6 +94,8 @@ export async function GET(request: NextRequest) {
         performance,
         traffic,
         ai: aiReport,
+        keywords,
+        links: linkAnalysis,
       },
     });
 
@@ -91,6 +109,8 @@ export async function GET(request: NextRequest) {
       performance,
       traffic,
       ai: aiReport,
+      keywords,
+      links: linkAnalysis,
     });
   } catch (err: unknown) {
     const errorMsg = (err as Error)?.message || "Failed to analyze target website.";

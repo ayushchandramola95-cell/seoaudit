@@ -31,6 +31,15 @@ import {
   Check,
   Share2,
   Printer,
+  Globe,
+  Monitor,
+  Smartphone,
+  FileText,
+  Hash,
+  BookOpen,
+  AlertCircle,
+  Link2,
+  Compass,
 } from "lucide-react";
 import { ScrapedPageData } from "@/lib/modules/seo/fetcher";
 import { SeoAuditReport } from "@/lib/modules/seo/scorer";
@@ -38,6 +47,8 @@ import { DetectedTechnology } from "@/lib/modules/tech/detector";
 import { PageSpeedReport } from "@/lib/modules/performance/pagespeed";
 import { TrafficEstimationReport } from "@/lib/modules/traffic/estimator";
 import { AiDiagnosticReport } from "@/lib/modules/ai/service";
+import { KeywordAnalysisReport } from "@/lib/modules/keywords/extractor";
+import { LinkDiscoveryReport } from "@/lib/modules/crawler/linkScanner";
 
 interface ApiResponse {
   success: boolean;
@@ -49,6 +60,8 @@ interface ApiResponse {
   performance: PageSpeedReport;
   traffic: TrafficEstimationReport;
   ai: AiDiagnosticReport;
+  keywords?: KeywordAnalysisReport;
+  links?: LinkDiscoveryReport;
   error?: string;
   errorType?: string;
   details?: string;
@@ -62,8 +75,9 @@ export default function AnalyzeContent() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "diagnostics" | "ai" | "traffic" | "tech" | "performance" | "structure" | "media" | "social" | "headers"
+    "diagnostics" | "ai" | "traffic" | "tech" | "keywords" | "links" | "performance" | "structure" | "media" | "social" | "headers"
   >("diagnostics");
+  const [serpView, setSerpView] = useState<"desktop" | "mobile" | "twitter" | "facebook">("desktop");
   const [filterStatus, setFilterStatus] = useState<"all" | "passed" | "warning" | "error">("all");
   const [techCategoryFilter, setTechCategoryFilter] = useState<string>("all");
   const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
@@ -392,10 +406,12 @@ export default function AnalyzeContent() {
               { id: "ai", label: "AI Recommendations", count: data.ai.prioritizedFixes.length, highlight: true },
               { id: "traffic", label: "Traffic Estimator", count: null, highlight: true },
               { id: "tech", label: "Tech Stack", count: data.technologies.length },
+              { id: "keywords", label: "Keyword Density", count: data.keywords?.topSingleKeywords?.length || null, highlight: true },
+              { id: "links", label: "Link Footprint", count: data.links?.totalLinks || null, highlight: true },
+              { id: "social", label: "SERP & Social Preview", count: null },
               { id: "performance", label: "Core Web Vitals", count: data.performance.scores.performance },
               { id: "structure", label: "Headings & Content", count: data.page.headings.totalHeadings },
               { id: "media", label: "Images & Alt Text", count: data.page.images.totalImages },
-              { id: "social", label: "Social & Schema", count: data.page.structuredData.count },
               { id: "headers", label: "Security & Headers", count: null },
             ].map((tab) => (
               <button
@@ -1042,55 +1058,757 @@ export default function AnalyzeContent() {
             </div>
           )}
 
-          {/* TAB 8: SOCIAL & SCHEMA */}
+          {/* TAB: KEYWORD DENSITY & N-GRAM ANALYSIS */}
+          {activeTab === "keywords" && (
+            <div className="space-y-6">
+              {/* 4 Metric Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div className="flat-card p-4 sm:p-5 bg-white">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Indexable Words
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 font-mono">
+                    {data.keywords?.totalWords?.toLocaleString() || data.page.wordCount.toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Filtered body copy</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Unique Vocabulary
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 font-mono">
+                    {data.keywords?.uniqueWords?.toLocaleString() || "—"}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Distinct terms (1-gram)</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Lexical Diversity
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 font-mono">
+                    {data.keywords?.lexicalDiversity 
+                      ? `${(data.keywords.lexicalDiversity * 100).toFixed(1)}%` 
+                      : "—"}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Type-token variety ratio</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Est. Reading Time
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 font-mono">
+                    {data.keywords?.readingTimeMinutes 
+                      ? `${data.keywords.readingTimeMinutes} min` 
+                      : `${Math.ceil(data.page.wordCount / 200)} min`}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Based on 200 wpm standard</div>
+                </div>
+              </div>
+
+              {/* Keyword Warnings / Stuffing Check */}
+              {data.keywords?.warnings && data.keywords.warnings.length > 0 && (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-900 mb-1.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    Keyword Density & Content Quality Alerts:
+                  </div>
+                  <ul className="list-disc list-inside text-xs text-amber-800 space-y-1">
+                    {data.keywords.warnings.map((warn, wIdx) => (
+                      <li key={wIdx}>{warn}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Single Keyword Frequency & Density Table */}
+              <div className="flat-card p-5 sm:p-6 bg-white">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Top 1-Gram Keywords (Single Terms)
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Stop-words removed. Evaluates prominence in Title and H1 tags.
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md border border-slate-200">
+                    Density Target: 1.0% – 3.0%
+                  </span>
+                </div>
+
+                {data.keywords?.topSingleKeywords && data.keywords.topSingleKeywords.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] bg-slate-50/50">
+                          <th className="py-2.5 px-3 font-semibold">#</th>
+                          <th className="py-2.5 px-3 font-semibold">Keyword Phrase</th>
+                          <th className="py-2.5 px-3 font-semibold text-right">Frequency</th>
+                          <th className="py-2.5 px-3 font-semibold">Density Meter</th>
+                          <th className="py-2.5 px-3 font-semibold text-center">In Title</th>
+                          <th className="py-2.5 px-3 font-semibold text-center">In H1</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {data.keywords.topSingleKeywords.map((kw, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="py-2.5 px-3 font-mono text-slate-400 text-[11px]">
+                              #{idx + 1}
+                            </td>
+                            <td className="py-2.5 px-3 font-bold text-slate-900 font-mono">
+                              {kw.phrase}
+                            </td>
+                            <td className="py-2.5 px-3 font-mono font-semibold text-slate-700 text-right">
+                              {kw.count}×
+                            </td>
+                            <td className="py-2.5 px-3 min-w-[140px]">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                                  <div
+                                    className={`h-2 rounded-full ${
+                                      kw.density > 3.5
+                                        ? "bg-rose-500"
+                                        : kw.density >= 1.0
+                                        ? "bg-emerald-500"
+                                        : "bg-blue-500"
+                                    }`}
+                                    style={{ width: `${Math.min(100, kw.density * 25)}%` }}
+                                  />
+                                </div>
+                                <span className="font-mono text-[11px] text-slate-600 font-semibold w-12 text-right">
+                                  {kw.density.toFixed(2)}%
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3 text-center">
+                              {kw.inTitle ? (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  ✓ Title
+                                </span>
+                              ) : (
+                                <span className="text-slate-300 text-[11px]">✕</span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3 text-center">
+                              {kw.inH1 ? (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                  ✓ H1
+                                </span>
+                              ) : (
+                                <span className="text-slate-300 text-[11px]">✕</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 py-4 text-center">
+                    No prominent single-word keywords extracted.
+                  </p>
+                )}
+              </div>
+
+              {/* 2-Gram and 3-Gram Phrase Breakdowns */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 2-Gram Phrases */}
+                <div className="flat-card p-5 bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                      <Hash className="w-4 h-4 text-blue-600" />
+                      Top 2-Word Key Phrases (2-Grams)
+                    </h3>
+                    <span className="text-[10px] font-mono text-slate-400">Pair frequency</span>
+                  </div>
+                  {data.keywords?.topTwoWordPhrases && data.keywords.topTwoWordPhrases.length > 0 ? (
+                    <div className="space-y-2">
+                      {data.keywords.topTwoWordPhrases.map((phrase, pIdx) => (
+                        <div
+                          key={pIdx}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs"
+                        >
+                          <span className="font-semibold text-slate-800 capitalize">{phrase.phrase}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-500 font-mono">{phrase.count}×</span>
+                            <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-mono font-bold text-[10px]">
+                              {phrase.density.toFixed(2)}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">No multi-word phrases detected.</p>
+                  )}
+                </div>
+
+                {/* 3-Gram Phrases */}
+                <div className="flat-card p-5 bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-indigo-600" />
+                      Top 3-Word Key Phrases (3-Grams)
+                    </h3>
+                    <span className="text-[10px] font-mono text-slate-400">Triplet frequency</span>
+                  </div>
+                  {data.keywords?.topThreeWordPhrases && data.keywords.topThreeWordPhrases.length > 0 ? (
+                    <div className="space-y-2">
+                      {data.keywords.topThreeWordPhrases.map((phrase, pIdx) => (
+                        <div
+                          key={pIdx}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs"
+                        >
+                          <span className="font-semibold text-slate-800 capitalize">{phrase.phrase}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-500 font-mono">{phrase.count}×</span>
+                            <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-mono font-bold text-[10px]">
+                              {phrase.density.toFixed(2)}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">No 3-word n-gram sequences discovered.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Keyword Optimization Best Practices Card */}
+              <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 text-xs text-slate-700 space-y-2">
+                <div className="font-bold text-blue-900 flex items-center gap-1.5">
+                  <BookOpen className="w-4 h-4 text-blue-600" />
+                  Search Engine Keyword Optimization Best Practices
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1 text-[11px] text-slate-600">
+                  <div className="bg-white p-3 rounded-lg border border-blue-100">
+                    <strong className="text-slate-800 block mb-1">Optimal Density: 1% – 2.5%</strong>
+                    Avoid keyword stuffing. Target terms should appear organically without artificial repetition.
+                  </div>
+                  <div className="bg-white p-3 rounded-lg border border-blue-100">
+                    <strong className="text-slate-800 block mb-1">Strategic Placement</strong>
+                    Ensure your primary keyword is represented in the &lt;title&gt;, the first &lt;h1&gt;, and the first 100 words.
+                  </div>
+                  <div className="bg-white p-3 rounded-lg border border-blue-100">
+                    <strong className="text-slate-800 block mb-1">Semantic LSI & Diversity</strong>
+                    Higher lexical diversity (&gt;45%) signals comprehensive, high-quality editorial writing to Google rankers.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: LINK FOOTPRINT & CRAWL ARCHITECTURE */}
+          {activeTab === "links" && (
+            <div className="space-y-6">
+              {/* 4 Stat Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div className="flat-card p-4 sm:p-5 bg-white">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Total Discovered Links
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 font-mono">
+                    {(data.links?.totalLinks ?? (data.page.links.internalLinks + data.page.links.externalLinks)).toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Anchor href attributes</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Internal Links
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-blue-600 mt-1 font-mono">
+                    {(data.links?.internalLinksCount ?? data.page.links.internalLinks).toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Same root domain paths</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    External Outbound
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-indigo-600 mt-1 font-mono">
+                    {(data.links?.externalLinksCount ?? data.page.links.externalLinks).toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Points to external hosts</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Outbound Domains
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 font-mono">
+                    {data.links?.uniqueExternalDomains.length ?? 0}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Unique target origins</div>
+                </div>
+              </div>
+
+              {/* Link Equity & Crawl Distribution Meter */}
+              <div className="flat-card p-5 bg-white">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Link Equity & PageRank Distribution Ratio
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Balance between internal page authority circulation and outbound link dissipation.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs font-mono">
+                    <span className="text-blue-700 font-bold">
+                      Internal: {data.links?.linkEquityRatio.internalPercent ?? 80}%
+                    </span>
+                    <span className="text-slate-300">|</span>
+                    <span className="text-indigo-700 font-bold">
+                      External: {data.links?.linkEquityRatio.externalPercent ?? 20}%
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                  <div
+                    className="bg-blue-600 h-full transition-all"
+                    style={{ width: `${data.links?.linkEquityRatio.internalPercent ?? 80}%` }}
+                    title="Internal Links"
+                  />
+                  <div
+                    className="bg-indigo-500 h-full transition-all"
+                    style={{ width: `${data.links?.linkEquityRatio.externalPercent ?? 20}%` }}
+                    title="External Outbound Links"
+                  />
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                  <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                    Nofollow Tags: <strong>{data.links?.nofollowCount ?? 0}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                    Sponsored / UGC: <strong>{data.links?.sponsoredCount ?? 0}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                    Empty Anchors: <strong>{data.links?.emptyAnchorCount ?? 0}</strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* Warnings if any */}
+              {data.links?.warnings && data.links.warnings.length > 0 && (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                  <div className="font-bold flex items-center gap-1.5 mb-1">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    Crawl & Link Structure Recommendations:
+                  </div>
+                  <ul className="list-disc list-inside space-y-1 text-amber-800">
+                    {data.links.warnings.map((w, wIdx) => (
+                      <li key={wIdx}>{w}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* External Target Domains Cloud */}
+              {data.links?.uniqueExternalDomains && data.links.uniqueExternalDomains.length > 0 && (
+                <div className="flat-card p-5 bg-white">
+                  <h3 className="text-sm font-bold text-slate-900 mb-2">
+                    Discovered External Root Domains ({data.links.uniqueExternalDomains.length})
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {data.links.uniqueExternalDomains.map((dom, dIdx) => (
+                      <span
+                        key={dIdx}
+                        className="text-xs font-mono font-medium px-2.5 py-1 rounded bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1"
+                      >
+                        <Globe className="w-3 h-3 text-slate-400" />
+                        {dom}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Internal & External Tables Side-by-Side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Internal Links Sample */}
+                <div className="flat-card p-5 bg-white">
+                  <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-1.5">
+                    <Link2 className="w-4 h-4 text-blue-600" />
+                    Internal Links Discovered
+                  </h3>
+                  {data.links?.internalLinksSample && data.links.internalLinksSample.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] bg-slate-50/60">
+                            <th className="py-2 px-2.5">Anchor Text</th>
+                            <th className="py-2 px-2.5">Target Path</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-mono">
+                          {data.links.internalLinksSample.map((lnk, lIdx) => (
+                            <tr key={lIdx} className="hover:bg-slate-50">
+                              <td className="py-2 px-2.5 font-sans font-medium text-slate-900 truncate max-w-[140px]">
+                                {lnk.anchorText}
+                              </td>
+                              <td className="py-2 px-2.5 text-blue-600 truncate max-w-[180px]">
+                                {lnk.href}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">No internal links logged.</p>
+                  )}
+                </div>
+
+                {/* External Outbound Sample */}
+                <div className="flat-card p-5 bg-white">
+                  <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-1.5">
+                    <Compass className="w-4 h-4 text-indigo-600" />
+                    External Outbound Links
+                  </h3>
+                  {data.links?.externalLinksSample && data.links.externalLinksSample.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] bg-slate-50/60">
+                            <th className="py-2 px-2.5">Anchor Text</th>
+                            <th className="py-2 px-2.5">Target Domain</th>
+                            <th className="py-2 px-2.5 text-center">Nofollow</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-mono">
+                          {data.links.externalLinksSample.map((lnk, lIdx) => (
+                            <tr key={lIdx} className="hover:bg-slate-50">
+                              <td className="py-2 px-2.5 font-sans font-medium text-slate-900 truncate max-w-[120px]">
+                                {lnk.anchorText}
+                              </td>
+                              <td className="py-2 px-2.5 text-indigo-700 truncate max-w-[140px]">
+                                {lnk.targetDomain}
+                              </td>
+                              <td className="py-2 px-2.5 text-center">
+                                {lnk.nofollow ? (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    Nofollow
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400">Dofollow</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">No outbound external links discovered.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 8: SERP & SOCIAL PREVIEW SIMULATOR */}
           {activeTab === "social" && (
             <div className="space-y-6">
-              <div className="flat-card p-5 bg-white">
-                <h3 className="text-sm font-bold text-slate-900 mb-4">
-                  Open Graph Social Card Preview
-                </h3>
-                <div className="border border-slate-200 rounded-xl overflow-hidden max-w-lg bg-slate-50">
-                  {data.page.openGraph.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={data.page.openGraph.image}
-                      alt="OG Preview"
-                      className="w-full h-48 object-cover border-b border-slate-200"
-                    />
-                  ) : (
-                    <div className="w-full h-32 bg-slate-200 flex items-center justify-center text-xs text-slate-500">
-                      No og:image specified
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                      {data.page.domain}
+              {/* Simulator Mode Switcher Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-700">Preview Simulator:</span>
+                  <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+                    {[
+                      { id: "desktop", label: "Google Desktop", icon: Monitor },
+                      { id: "mobile", label: "Google Mobile", icon: Smartphone },
+                      { id: "twitter", label: "Twitter / X Card", icon: Hash },
+                      { id: "facebook", label: "Open Graph / Meta", icon: Globe },
+                    ].map((mode) => {
+                      const Icon = mode.icon;
+                      return (
+                        <button
+                          key={mode.id}
+                          onClick={() => setSerpView(mode.id as typeof serpView)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+                            serpView === mode.id
+                              ? "bg-blue-600 text-white shadow-xs"
+                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          <span>{mode.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Length Metrics Quick Pill */}
+                <div className="flex items-center gap-3 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500">Title:</span>
+                    <span
+                      className={`font-mono font-bold ${
+                        (data.page.title?.length || 0) <= 60 && (data.page.title?.length || 0) >= 30
+                          ? "text-emerald-700"
+                          : "text-amber-700"
+                      }`}
+                    >
+                      {data.page.title?.length || 0} / 60 chars
                     </span>
-                    <h4 className="text-sm font-bold text-slate-900 leading-snug mb-1">
-                      {data.page.openGraph.title || data.page.title || "No Title Specified"}
-                    </h4>
-                    <p className="text-xs text-slate-600 line-clamp-2">
-                      {data.page.openGraph.description || data.page.metaDescription || "No description provided."}
-                    </p>
+                  </div>
+                  <span className="text-slate-300">|</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500">Meta Desc:</span>
+                    <span
+                      className={`font-mono font-bold ${
+                        (data.page.metaDescription?.length || 0) <= 160 &&
+                        (data.page.metaDescription?.length || 0) >= 120
+                          ? "text-emerald-700"
+                          : "text-amber-700"
+                      }`}
+                    >
+                      {data.page.metaDescription?.length || 0} / 160 chars
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flat-card p-5 bg-white">
-                <h3 className="text-sm font-bold text-slate-900 mb-2">
-                  JSON-LD Structured Data ({data.page.structuredData.count} found)
-                </h3>
-                {data.page.structuredData.detected ? (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {data.page.structuredData.types.map((type, idx) => (
-                      <span key={idx} className="flat-badge bg-blue-50 text-blue-700 border-blue-200 font-mono">
-                        Schema: {type}
+              {/* View 1: GOOGLE DESKTOP SERP */}
+              {serpView === "desktop" && (
+                <div className="flat-card p-6 bg-white border-slate-200">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-xs">
+                        G
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Google Desktop Search Result Snippet
+                      </h3>
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      Max pixel width ~600px
+                    </span>
+                  </div>
+
+                  <div className="p-5 bg-white border border-slate-200 rounded-xl shadow-xs max-w-2xl font-sans">
+                    {/* SERP Breadcrumb */}
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600">
+                        {data.page.domain.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="leading-tight">
+                        <div className="text-[12px] text-slate-900 font-medium">{data.page.domain}</div>
+                        <div className="text-[11px] text-slate-500 truncate max-w-md font-mono">
+                          {data.page.canonicalUrl || data.page.finalUrl}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Blue Title Link */}
+                    <h4 className="text-[18px] text-[#1a0dab] hover:underline font-normal cursor-pointer leading-snug line-clamp-1 mb-1">
+                      {data.page.title || `${data.page.domain} - Official Homepage`}
+                    </h4>
+
+                    {/* Snippet Description */}
+                    <p className="text-[13px] text-[#4d5156] leading-relaxed line-clamp-2">
+                      {data.page.metaDescription || (
+                        <span className="italic text-slate-400">
+                          No meta description tag provided. Google will generate an automatic snippet from on-page content.
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Character Diagnostics */}
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div className="font-semibold text-slate-800 mb-1">Title Tag Assessment</div>
+                      <p className="text-slate-600 text-[11px]">
+                        {(data.page.title?.length || 0) > 60
+                          ? `⚠️ Title is ${data.page.title?.length} characters (over 60 char limit). Google may truncate it with an ellipsis (...) on desktop.`
+                          : (data.page.title?.length || 0) < 30
+                          ? "⚠️ Title is relatively short (< 30 chars). Consider adding relevant primary keywords."
+                          : "✅ Title length is optimal for Google desktop results (30-60 characters)."}
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div className="font-semibold text-slate-800 mb-1">Meta Description Assessment</div>
+                      <p className="text-slate-600 text-[11px]">
+                        {!data.page.metaDescription
+                          ? "❌ Missing meta description tag. Adding a 140-160 character description improves organic CTR."
+                          : data.page.metaDescription.length > 160
+                          ? `⚠️ Description is ${data.page.metaDescription.length} characters (exceeds 160 limit). The trailing text will be clipped.`
+                          : "✅ Description length is well balanced (120-160 chars) without truncation risks."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* View 2: GOOGLE MOBILE SERP */}
+              {serpView === "mobile" && (
+                <div className="flat-card p-6 bg-white border-slate-200">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-5 h-5 text-blue-600" />
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Google Mobile SERP Card Simulation
+                      </h3>
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-mono">Mobile Viewport</span>
+                  </div>
+
+                  <div className="max-w-sm mx-auto p-4 bg-slate-50 border-2 border-slate-300 rounded-2xl shadow-sm">
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                          {data.page.domain.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-[12px] font-semibold text-slate-900">{data.page.domain}</div>
+                          <div className="text-[10px] text-slate-500 font-mono truncate max-w-[220px]">
+                            {data.page.canonicalUrl || data.page.finalUrl}
+                          </div>
+                        </div>
+                      </div>
+
+                      <h4 className="text-[16px] text-[#1a0dab] font-normal leading-snug line-clamp-2 mb-1.5">
+                        {data.page.title || `${data.page.domain} - Official Homepage`}
+                      </h4>
+
+                      <p className="text-[12px] text-[#4d5156] leading-normal line-clamp-3">
+                        {data.page.metaDescription || "No meta description provided."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* View 3: TWITTER / X CARD */}
+              {serpView === "twitter" && (
+                <div className="flat-card p-6 bg-white border-slate-200">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <Hash className="w-5 h-5 text-slate-900" />
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Twitter / X Summary Large Image Card Preview
+                      </h3>
+                    </div>
+                    <span className="text-[11px] text-slate-500">summary_large_image</span>
+                  </div>
+
+                  <div className="max-w-lg border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">
+                    {data.page.openGraph.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={data.page.openGraph.image}
+                        alt="Twitter Card Preview"
+                        className="w-full h-52 object-cover border-b border-slate-200"
+                      />
+                    ) : (
+                      <div className="w-full h-36 bg-slate-100 flex flex-col items-center justify-center text-xs text-slate-500 gap-1">
+                        <AlertCircle className="w-5 h-5 text-slate-400" />
+                        <span>No twitter:image or og:image defined</span>
+                      </div>
+                    )}
+                    <div className="p-4 bg-slate-50">
+                      <span className="text-[11px] text-slate-500 uppercase tracking-wider block mb-1">
+                        {data.page.domain}
                       </span>
-                    ))}
+                      <h4 className="text-sm font-bold text-slate-900 line-clamp-1 mb-1">
+                        {data.page.openGraph.title || data.page.title || "No Title"}
+                      </h4>
+                      <p className="text-xs text-slate-600 line-clamp-2">
+                        {data.page.openGraph.description || data.page.metaDescription || "No summary provided."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* View 4: FACEBOOK / OPEN GRAPH */}
+              {serpView === "facebook" && (
+                <div className="flat-card p-6 bg-white border-slate-200">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-5 h-5 text-blue-600" />
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Facebook & Open Graph Feed Preview
+                      </h3>
+                    </div>
+                    <span className="text-[11px] text-slate-500">og:title & og:image</span>
+                  </div>
+
+                  <div className="border border-slate-200 rounded-xl overflow-hidden max-w-lg bg-slate-50 shadow-xs">
+                    {data.page.openGraph.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={data.page.openGraph.image}
+                        alt="OG Preview"
+                        className="w-full h-48 object-cover border-b border-slate-200"
+                      />
+                    ) : (
+                      <div className="w-full h-32 bg-slate-200 flex items-center justify-center text-xs text-slate-500">
+                        No og:image specified
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                        {data.page.domain}
+                      </span>
+                      <h4 className="text-sm font-bold text-slate-900 leading-snug mb-1">
+                        {data.page.openGraph.title || data.page.title || "No Title Specified"}
+                      </h4>
+                      <p className="text-xs text-slate-600 line-clamp-2">
+                        {data.page.openGraph.description || data.page.metaDescription || "No description provided."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* JSON-LD Structured Data */}
+              <div className="flat-card p-5 bg-white">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-slate-900">
+                    JSON-LD Schema.org Structured Data ({data.page.structuredData.count} detected)
+                  </h3>
+                  <span
+                    className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                      data.page.structuredData.detected
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {data.page.structuredData.detected ? "Schemas Active" : "No Schema Detected"}
+                  </span>
+                </div>
+
+                {data.page.structuredData.detected ? (
+                  <div>
+                    <p className="text-xs text-slate-600 mb-3">
+                      Structured data helps Google generate rich snippets (e.g. sitelinks, ratings, breadcrumbs, articles) in organic search results.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {data.page.structuredData.types.map((type, idx) => (
+                        <span
+                          key={idx}
+                          className="flat-badge bg-blue-50 text-blue-700 border-blue-200 font-mono text-xs px-2.5 py-1"
+                        >
+                          Schema: {type}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <p className="text-xs text-slate-500">
-                    No Schema.org JSON-LD structured data detected.
+                    No Schema.org JSON-LD microdata found. Adding Organization, WebSite, or BreadcrumbList schemas will enhance SERP prominence.
                   </p>
                 )}
               </div>

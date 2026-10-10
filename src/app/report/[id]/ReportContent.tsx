@@ -20,6 +20,10 @@ import {
   Cpu,
   Layers,
   Sparkles,
+  Monitor,
+  Hash,
+  FileText,
+  BookOpen,
 } from "lucide-react";
 
 interface ReportContentProps {
@@ -41,6 +45,7 @@ interface ScanData {
     page?: {
       title?: string;
       metaDescription?: string;
+      canonicalUrl?: string;
       wordCount?: number;
       headings?: { h1Count: number; h2Count: number; h3Count: number };
       ssl?: { valid: boolean; protocol?: string };
@@ -64,6 +69,25 @@ interface ScanData {
       }>;
     };
     technologies?: Array<{ name: string; category: string }>;
+    keywords?: {
+      totalWords: number;
+      uniqueWords: number;
+      lexicalDiversity: number;
+      readingTimeMinutes: number;
+      topSingleKeywords: Array<{
+        phrase: string;
+        count: number;
+        density: number;
+        inTitle: boolean;
+        inH1: boolean;
+      }>;
+      topTwoWordPhrases: Array<{
+        phrase: string;
+        count: number;
+        density: number;
+      }>;
+      warnings: string[];
+    };
     performance?: {
       scores: { performance: number };
       metrics: {
@@ -411,7 +435,7 @@ export default function ReportContent({ id }: ReportContentProps) {
               </div>
             )}
 
-            {/* Detected Technology Pills */}
+              {/* Detected Technology Pills */}
             {scanData.fullReportJson.technologies && scanData.fullReportJson.technologies.length > 0 && (
               <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                 <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
@@ -428,6 +452,131 @@ export default function ReportContent({ id }: ReportContentProps) {
                     </span>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* SERP Search Result Snippet Simulation */}
+            {scanData.fullReportJson.page && (
+              <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                  <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Monitor className="w-4 h-4 text-blue-600" />
+                    Google SERP Search Result Snippet
+                  </h2>
+                  <span className="text-xs text-slate-500 font-mono">Simulated Organic Impression</span>
+                </div>
+
+                <div className="p-5 bg-white border border-slate-200 rounded-xl max-w-2xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600">
+                      {scanData.domain.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="text-[12px] text-slate-900 font-medium">{scanData.domain}</div>
+                      <div className="text-[11px] text-slate-500 font-mono truncate max-w-md">
+                        {scanData.fullReportJson.page.canonicalUrl || scanData.targetUrl}
+                      </div>
+                    </div>
+                  </div>
+
+                  <h3 className="text-[18px] text-[#1a0dab] font-normal leading-snug line-clamp-1 mb-1">
+                    {scanData.fullReportJson.page.title || `${scanData.domain} - Official Homepage`}
+                  </h3>
+
+                  <p className="text-[13px] text-[#4d5156] leading-relaxed line-clamp-2">
+                    {scanData.fullReportJson.page.metaDescription || (
+                      <span className="italic text-slate-400">
+                        No meta description tag provided on target page.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Keyword Density & Vocabulary Breakdown */}
+            {scanData.fullReportJson.keywords && (
+              <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Hash className="w-4 h-4 text-indigo-600" />
+                    On-Page Keyword Density & Vocabulary Profile
+                  </h2>
+                  <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md">
+                    {scanData.fullReportJson.keywords.totalWords.toLocaleString()} Indexable Words
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="text-slate-500 font-semibold uppercase text-[10px]">Total Words</div>
+                    <div className="text-xl font-bold text-slate-900 font-mono mt-0.5">
+                      {scanData.fullReportJson.keywords.totalWords.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="text-slate-500 font-semibold uppercase text-[10px]">Unique Terms</div>
+                    <div className="text-xl font-bold text-slate-900 font-mono mt-0.5">
+                      {scanData.fullReportJson.keywords.uniqueWords.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="text-slate-500 font-semibold uppercase text-[10px]">Lexical Variety</div>
+                    <div className="text-xl font-bold text-slate-900 font-mono mt-0.5">
+                      {(scanData.fullReportJson.keywords.lexicalDiversity * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="text-slate-500 font-semibold uppercase text-[10px]">Reading Time</div>
+                    <div className="text-xl font-bold text-slate-900 font-mono mt-0.5">
+                      {scanData.fullReportJson.keywords.readingTimeMinutes} min
+                    </div>
+                  </div>
+                </div>
+
+                {scanData.fullReportJson.keywords.topSingleKeywords &&
+                  scanData.fullReportJson.keywords.topSingleKeywords.length > 0 && (
+                    <div className="overflow-x-auto border border-slate-200 rounded-lg">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px]">
+                            <th className="py-2 px-3">Keyword</th>
+                            <th className="py-2 px-3 text-right">Count</th>
+                            <th className="py-2 px-3">Density</th>
+                            <th className="py-2 px-3 text-center">In Title</th>
+                            <th className="py-2 px-3 text-center">In H1</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {scanData.fullReportJson.keywords.topSingleKeywords.slice(0, 8).map((kw, kIdx) => (
+                            <tr key={kIdx} className="hover:bg-slate-50">
+                              <td className="py-2 px-3 font-semibold text-slate-900 font-mono">{kw.phrase}</td>
+                              <td className="py-2 px-3 text-right font-mono text-slate-600">{kw.count}×</td>
+                              <td className="py-2 px-3 font-mono text-blue-700 font-semibold">{kw.density.toFixed(2)}%</td>
+                              <td className="py-2 px-3 text-center">
+                                {kw.inTitle ? (
+                                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                    Yes
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-300">✕</span>
+                                )}
+                              </td>
+                              <td className="py-2 px-3 text-center">
+                                {kw.inH1 ? (
+                                  <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                                    Yes
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-300">✕</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
               </div>
             )}
           </div>
