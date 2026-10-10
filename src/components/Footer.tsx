@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Globe, ShieldCheck, Cpu, Database, Sparkles, BookOpen } from "lucide-react";
+import { Globe, ShieldCheck, Cpu, Database, Sparkles, BookOpen, GraduationCap } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -59,6 +59,12 @@ export default function Footer() {
           <div>
             <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-4">Project & Transparency</h4>
             <ul className="space-y-2.5 text-sm text-slate-600">
+              <li>
+                <Link href="/capstone" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors font-medium text-slate-900">
+                  <GraduationCap className="w-3.5 h-3.5 text-purple-600" />
+                  Capstone Report & Viva Prep
+                </Link>
+              </li>
               <li>
                 <Link href="/project-info" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors font-medium text-slate-900">
                   <BookOpen className="w-3.5 h-3.5 text-blue-600" />

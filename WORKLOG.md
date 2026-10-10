@@ -105,6 +105,53 @@ This document chronicles our daily engineering activities, architectural decisio
 - [x] PostgreSQL Client: `pg` pool with SSL detection and in-memory graceful fallback.
 - [x] Default Domain Support: Fully compatible with Cloud Run default `*.a.run.app` URLs.
 
+---
+
+## Day 3 — October 10, 2026: Shareable Report Snapshots & Executive Print/PDF (Phases 7 & 8)
+
+### 1. Goals & Accomplishments
+- Implemented persistent shareable report snapshots (`/report/[id]`) allowing users, clients, and team members to inspect historical audits via a permanent URL without needing to re-crawl.
+- Built executive Print / PDF styling leveraging pure CSS `@media print` rules, enabling instant print-to-PDF reports without heavy server-side Chromium dependencies.
+
+### 2. What Was Built
+1. **Permanent Snapshot Storage & Retrieval (`src/lib/db/client.ts`):**
+   - Implemented `getScanById(id)` and `getComparisonById(id)` queries.
+   - Built dynamic API route `GET /api/report/[id]` returning structured JSON from PostgreSQL.
+2. **Interactive Snapshot Viewer (`src/app/report/[id]/page.tsx` & `ReportContent.tsx`):**
+   - Built a full-fidelity report viewer showing score rings, category breakdowns, tech badges, Core Web Vitals, and prioritized developer fixes from the saved snapshot.
+   - Included copyable share link buttons and status pills.
+3. **Print & PDF Layout Engine (`src/app/globals.css`):**
+   - Added clean `@media print` rules hiding navigation headers, footers, search inputs, and action buttons.
+   - Formatted borders and typography for crisp high-contrast black-and-white printing.
+   - Added interactive "Print / PDF" buttons across `/analyze`, `/compare`, and `/report/[id]`.
+
+---
+
+## Day 4 — October 10, 2026: API Keys Guide, Academic Capstone & College Viva Voce Pack (Phases 9 & 10)
+
+### 1. Goals & Accomplishments
+- Authored the definitive external API configuration guide (`API_KEYS_GUIDE.md`) for Google Gemini AI and Google PageSpeed Insights.
+- Validated zero-failure deterministic fallbacks ensuring 100% platform uptime whether API keys are supplied or omitted.
+- Authored a comprehensive university dissertation project report (`CAPSTONE_PROJECT_REPORT.md`) for the BCA final-year curriculum.
+- Built an in-app interactive Capstone Documentation & Viva Voce preparation page (`/capstone`).
+
+### 2. What Was Built
+1. **API Keys & Environment Guide (`API_KEYS_GUIDE.md`):**
+   - Step-by-step instructions for obtaining free Google AI Studio keys (Gemini 1.5 Flash) and Google PageSpeed Insights keys.
+   - Cloud Run environment variable configuration via Cloud Console and `gcloud` CLI.
+2. **Academic Capstone Report (`CAPSTONE_PROJECT_REPORT.md`):**
+   - Complete university dissertation format: Abstract, Problem Statement, Objectives, Literature Survey vs commercial tools (Ahrefs, Semrush, BuiltWith).
+   - System Architecture, Data Flow Diagrams (DFD Level 0 & Level 1), Entity-Relationship (ER) Schema.
+   - Mathematical formulations for 0–100 SEO scoring and logarithmic traffic estimation.
+   - 25-Question College Viva Voce Defense Guide with model technical answers.
+3. **In-App Capstone View (`src/app/capstone/page.tsx`):**
+   - Interactive academic overview accessible from global navigation header and footer.
+   - Print-to-PDF button for physical thesis submission.
+4. **Production Build & Cloud Deployment:**
+   - Verified clean Next.js 16 build (`npm run build` exit code 0).
+   - Pushed commits to GitHub remote with automated Cloud Build CI/CD deployment to Google Cloud Run.
+
+
 
 
 

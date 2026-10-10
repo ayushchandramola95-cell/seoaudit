@@ -58,16 +58,22 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       {/* Top Notification Bar for Project Info & Dev Worklog */}
       <div className="bg-slate-50 border-b border-slate-200 py-2.5 px-4 text-center text-xs text-slate-600">
-        <span className="font-semibold text-slate-900">Project Status:</span> Phase 1 Foundation Active. 
-        Read the comprehensive{" "}
+        <span className="font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 mr-1.5">
+          Production Live on Google Cloud Run & SQL
+        </span>
+        Read our{" "}
+        <Link href="/capstone" className="font-semibold text-purple-700 hover:underline mx-1">
+          BCA Capstone Dissertation & Viva Guide
+        </Link>
+        , the{" "}
         <Link href="/project-info" className="font-semibold text-blue-600 hover:underline mx-1">
           Project Quick Info
         </Link>
-        and our day-by-day{" "}
+        , or the daily{" "}
         <Link href="/worklog" className="font-semibold text-indigo-600 hover:underline mx-1">
-          Development Worklog
+          Dev Worklog
         </Link>
-        timeline.
+        .
       </div>
 
       {/* Hero Section */}

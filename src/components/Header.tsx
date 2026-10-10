@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Globe, BarChart3, GitCompare, Info, FileText, ArrowRight, LayoutDashboard } from "lucide-react";
+import { Globe, BarChart3, GitCompare, Info, FileText, ArrowRight, LayoutDashboard, GraduationCap } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
@@ -12,6 +12,7 @@ export default function Header() {
     { href: "/analyze", label: "Website Analyzer" },
     { href: "/compare", label: "Compare" },
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/capstone", label: "Capstone Docs", highlight: true, icon: GraduationCap },
     { href: "/project-info", label: "Project Info", highlight: true, icon: Info },
     { href: "/worklog", label: "Dev Worklog", highlight: true, icon: FileText },
   ];

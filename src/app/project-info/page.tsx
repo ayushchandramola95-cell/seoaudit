@@ -14,7 +14,8 @@ import {
   ArrowRight,
   Database,
   Terminal,
-  Server
+  Server,
+  GraduationCap
 } from "lucide-react";
 
 export const metadata = {
@@ -112,6 +113,13 @@ export default function ProjectInfoPage() {
         </p>
 
         <div className="flex flex-wrap gap-3 mt-6">
+          <Link
+            href="/capstone"
+            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            <GraduationCap className="w-4 h-4" />
+            Academic Capstone & Viva Prep
+          </Link>
           <Link
             href="/worklog"
             className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
