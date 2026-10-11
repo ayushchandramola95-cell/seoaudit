@@ -161,9 +161,16 @@ Respond strictly in valid JSON with this exact schema:
   "developerAdvice": "1-2 practical tips for the engineering team"
 }`;
 
-  // Call Google Gemini API (gemini-3.5-flash / gemini-3.8-flash)
+  // Call Google Gemini API (Configurable via GEMINI_MODEL / AI_MODEL with stable fallbacks)
   try {
-    const candidateModels = ["gemini-3.5-flash", "gemini-3.8-flash", "gemini-flash-latest"];
+    const configuredModel = process.env.GEMINI_MODEL || process.env.AI_MODEL;
+    const candidateModels = [
+      ...(configuredModel ? [configuredModel.trim()] : []),
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+      "gemini-flash-latest",
+    ];
     for (const modelName of candidateModels) {
       try {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(

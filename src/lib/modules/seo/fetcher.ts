@@ -104,46 +104,72 @@ export interface ScrapedPageData {
  * Safely fetches and parses public website HTML & metadata.
  */
 export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData> {
-  // Step 1: SSRF Validation
-  const { sanitizedUrl } = await validateUrlForSsrf(targetUrl);
-
   const startTime = Date.now();
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+  let currentUrl = targetUrl;
+  let response: Response | null = null;
+  let redirectCount = 0;
+  const maxRedirects = 5;
 
-  let response: Response;
-  try {
-    response = await fetch(sanitizedUrl, {
-      signal: controller.signal,
-      redirect: "follow",
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 SeoSeiteBot/1.0",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Cache-Control": "no-cache",
-      },
-    });
-  } catch (err: unknown) {
-    clearTimeout(timeoutId);
-    if ((err as Error)?.name === "AbortError") {
-      throw new Error(`The website at ${sanitizedUrl} timed out after 8 seconds.`);
+  // Execute safe HTTP fetch with manual redirect loop to prevent SSRF bypass via 301/302/307 redirects
+  while (redirectCount <= maxRedirects) {
+    // Step 1: SSRF Validation on each hop BEFORE initiating HTTP socket
+    const { sanitizedUrl } = await validateUrlForSsrf(currentUrl);
+    currentUrl = sanitizedUrl;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
+    try {
+      response = await fetch(currentUrl, {
+        signal: controller.signal,
+        redirect: "manual", // Never blindly auto-follow redirects into private/internal IPs
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 SeoSeiteBot/1.0",
+          Accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+          "Cache-Control": "no-cache",
+        },
+      });
+    } catch (err: unknown) {
+      clearTimeout(timeoutId);
+      if ((err as Error)?.name === "AbortError") {
+        throw new Error(`The website at ${currentUrl} timed out after 8 seconds.`);
+      }
+      throw new Error(
+        `Could not establish connection to ${currentUrl}: ${(err as Error)?.message || "Network error"}`
+      );
+    } finally {
+      clearTimeout(timeoutId);
     }
-    throw new Error(
-      `Could not establish connection to ${sanitizedUrl}: ${(err as Error)?.message || "Network error"}`
-    );
-  } finally {
-    clearTimeout(timeoutId);
+
+    // Inspect HTTP redirect status codes (301, 302, 303, 307, 308)
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get("location");
+      if (!location) {
+        // Redirect without Location header; use response as-is
+        break;
+      }
+      redirectCount++;
+      if (redirectCount > maxRedirects) {
+        throw new Error(`Exceeded maximum redirect limit (${maxRedirects}) for ${targetUrl}`);
+      }
+      // Resolve relative or protocol-relative redirect URLs against current URL
+      currentUrl = new URL(location, currentUrl).toString();
+      continue;
+    }
+
+    // Terminal non-redirect status received (200, 404, etc.)
+    break;
+  }
+
+  if (!response) {
+    throw new Error(`Failed to retrieve response for ${targetUrl}`);
   }
 
   const responseTimeMs = Date.now() - startTime;
-  const finalUrl = response.url || sanitizedUrl;
-
-  // Verify redirected URL as well for SSRF safety
-  if (finalUrl !== sanitizedUrl) {
-    await validateUrlForSsrf(finalUrl);
-  }
+  const finalUrl = currentUrl;
 
   const finalParsedUrl = new URL(finalUrl);
   const isHttps = finalParsedUrl.protocol === "https:";
@@ -351,8 +377,8 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
   try {
     const origin = finalParsedUrl.origin;
     const [robotsRes, sitemapRes] = await Promise.allSettled([
-      fetch(`${origin}/robots.txt`, { method: "HEAD", signal: AbortSignal.timeout(2500) }),
-      fetch(`${origin}/sitemap.xml`, { method: "HEAD", signal: AbortSignal.timeout(2500) }),
+      fetch(`${origin}/robots.txt`, { method: "HEAD", signal: AbortSignal.timeout(2500), redirect: "manual" }),
+      fetch(`${origin}/sitemap.xml`, { method: "HEAD", signal: AbortSignal.timeout(2500), redirect: "manual" }),
     ]);
 
     if (robotsRes.status === "fulfilled" && robotsRes.value.status === 200) {

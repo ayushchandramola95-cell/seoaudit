@@ -47,8 +47,8 @@ SeoSeite is built as a cloud-native, high-performance SEO auditing and Generativ
 └───────┬──────────────┬──────────────┬───────────────┬──────────────────┘
         │              │              │               │
 ┌───────▼──────┐┌──────▼──────┐┌──────▼──────┐ ┌──────▼──────┐ ┌─────────▼────────┐
-│ Scraper & DOM││Robots/Sitemp││PageSpeed API│ │Gemini 2.0 AI│ │Prisma DB Engine │
-│ Cheerio Core ││GEO AI Engine││Core Web Vita│ │SDK + Fallbck│ │SQLite / CloudSQL │
+│ Scraper & DOM││Robots/Sitemp││PageSpeed API│ │Gemini AI API │ │PostgreSQL Engine│
+│ Cheerio Core ││GEO AI Engine││Core Web Vita│ │SDK + Fallbck│ │In-Mem / CloudSQL│
 └──────────────┘└─────────────┘└─────────────┘ └─────────────┘ └──────────────────┘
 ```
 
@@ -222,8 +222,8 @@ SeoSeite is built as a cloud-native, high-performance SEO auditing and Generativ
 ---
 
 ### 2.12 Permanent Snapshot & Cloud SQL Persistence Engine
-- **File References:** [`prisma/schema.prisma`](file:///c:/new%20website%20creation/seoseite/prisma/schema.prisma), [`src/lib/db.ts`](file:///c:/new%20website%20creation/seoseite/src/lib/db.ts), [`src/app/api/report/[id]/route.ts`](file:///c:/new%20website%20creation/seoseite/src/app/api/report/[id]/route.ts)
-- **Primary Engines & Libraries:** Prisma ORM, SQLite (local development) / Google Cloud SQL PostgreSQL (production).
+- **File References:** [`src/lib/db/client.ts`](file:///c:/new%20website%20creation/seoseite/src/lib/db/client.ts), [`src/app/api/report/[id]/route.ts`](file:///c:/new%20website%20creation/seoseite/src/app/api/report/[id]/route.ts)
+- **Primary Engines & Libraries:** Native PostgreSQL connection pool (`pg`), Google Cloud SQL Unix socket / TCP SSL connection, zero-dependency in-memory dev repository.
 - **How It Works Under the Hood:**
   - Audits generate a unique permanent nano-ID (e.g. `audit_179165...`).
   - Serializes the entire JSON audit object into the database.

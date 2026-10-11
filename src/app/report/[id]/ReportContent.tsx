@@ -255,10 +255,14 @@ export default function ReportContent({ id }: ReportContentProps) {
         {/* Top Control Bar */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Permanent Cloud SQL Snapshot
+                Permanent Snapshot
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Public Technical Diagnostic (Mode A)
               </span>
               <span className="text-xs text-slate-500 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
@@ -284,6 +288,9 @@ export default function ReportContent({ id }: ReportContentProps) {
                 </>
               )}
             </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Public technical audit snapshot. First-party analytics and connected telemetry (GSC / GA4) are strictly isolated to verified owner dashboards and excluded from public shareable links.
+            </p>
           </div>
 
           {/* Action Buttons */}
