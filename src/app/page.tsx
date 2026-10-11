@@ -21,7 +21,8 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingUp,
-  Code2
+  Code2,
+  Link2,
 } from "lucide-react";
 
 export default function Home() {
@@ -67,39 +68,63 @@ export default function Home() {
   const pillars = [
     {
       icon: Search,
-      title: "Deterministic 0–100 Auditing",
+      title: "Deterministic 0–100 Technical Auditing",
+      suite: "Site Health & Audits",
+      tier: "Free",
+      tierColor: "bg-slate-100 text-slate-700 border-slate-200",
       desc: "Evaluates 20+ technical rules across Metadata (25 pts), Content & Structure (25 pts), Indexability (25 pts), and Security (25 pts).",
       color: "text-blue-600 bg-blue-50 border-blue-200",
-    },
-    {
-      icon: Layers,
-      title: "50+ Technology Fingerprints",
-      desc: "Instantly uncovers frameworks (Next.js, Vue), CMSs (Shopify, WordPress), CDNs (Cloudflare), analytics, and payment gateways.",
-      color: "text-purple-600 bg-purple-50 border-purple-200",
+      link: "/analyze",
     },
     {
       icon: Zap,
-      title: "Core Web Vitals & PageSpeed",
-      desc: "Measures real Google Lighthouse metrics (FCP, LCP, CLS, TBT) offloading heavy computation to Google Cloud infrastructure.",
+      title: "Core Web Vitals & PageSpeed Lab",
+      suite: "Speed & Authority",
+      tier: "Starter",
+      tierColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      desc: "Measures real Google Lighthouse metrics (FCP, LCP, CLS, TTFB) offloading heavy computation to Google Cloud infrastructure.",
       color: "text-amber-600 bg-amber-50 border-amber-200",
+      link: "/analyze?tab=performance",
+    },
+    {
+      icon: TrendingUp,
+      title: "DomCop Open PageRank & Traffic",
+      suite: "Speed & Authority",
+      tier: "Starter",
+      tierColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      desc: "Syncs verified Common Crawl PageRank data, global ranking tiers, and empirical click volume ranges with zero hallucinations.",
+      color: "text-emerald-600 bg-emerald-50 border-emerald-200",
+      link: "/analyze?tab=traffic",
     },
     {
       icon: GitCompare,
-      title: "Side-by-Side Competitor Benchmarking",
-      desc: "Crawls two domains concurrently, computing score deltas and diffing shared vs unique technology components.",
+      title: "Competitor Benchmark & Topic Gap",
+      suite: "Competitive Suite",
+      tier: "Pro",
+      tierColor: "bg-blue-50 text-blue-700 border-blue-200",
+      desc: "Crawls two domains concurrently, computing score deltas and uncovering DOM TF-IDF semantic topic gaps.",
       color: "text-indigo-600 bg-indigo-50 border-indigo-200",
+      link: "/compare",
     },
     {
-      icon: Cpu,
-      title: "Google Gemini Diagnostic Synthesizer",
-      desc: "Translates verified diagnostic findings into prioritized developer action items complete with copyable HTML & Nginx code fixes.",
+      icon: Link2,
+      title: "404 Broken Link & Redirect Crawler",
+      suite: "Site Health & Audits",
+      tier: "Pro",
+      tierColor: "bg-purple-50 text-purple-700 border-purple-200",
+      desc: "Recursively inspects internal and outbound links, detecting dead hrefs, slow responses, and multi-hop 301 redirect chains.",
+      color: "text-purple-600 bg-purple-50 border-purple-200",
+      link: "/analyze?tab=deadlinks",
+    },
+    {
+      icon: Sparkles,
+      title: "Connected Telemetry & Agency Mode B",
+      suite: "Agency Automation",
+      tier: "Agency",
+      tierColor: "bg-slate-900 text-white border-slate-800",
+      desc: "Connects read-only Google Search Console (GSC) and GA4 OAuth telemetry, automated webhook health alerts, and white-label client PDF reports.",
       color: "text-emerald-600 bg-emerald-50 border-emerald-200",
-    },
-    {
-      icon: Share2,
-      title: "Permanent Snapshots & PDF Export",
-      desc: "Generates immutable UUID report permalinks stored in PostgreSQL and crisp executive print-to-PDF reports without browser bloat.",
-      color: "text-cyan-600 bg-cyan-50 border-cyan-200",
+      link: "/dashboard?tab=connected",
     },
   ];
 
@@ -276,15 +301,35 @@ export default function Home() {
           {pillars.map((pillar, idx) => {
             const Icon = pillar.icon;
             return (
-              <div key={idx} className="flat-card p-6 bg-white hover:border-slate-300 transition-colors flex flex-col justify-between">
+              <Link
+                key={idx}
+                href={pillar.link}
+                className="flat-card p-6 bg-white hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
+              >
                 <div>
-                  <div className={`w-10 h-10 rounded-lg border flex items-center justify-center mb-4 ${pillar.color}`}>
-                    <Icon className="w-5 h-5" />
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${pillar.color}`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${pillar.tierColor}`}>
+                      {pillar.tier}
+                    </span>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 mb-2">{pillar.title}</h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{pillar.desc}</p>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    {pillar.suite}
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-2">
+                    {pillar.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    {pillar.desc}
+                  </p>
                 </div>
-              </div>
+                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
+                  Explore Feature Suite
+                  <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                </div>
+              </Link>
             );
           })}
         </div>

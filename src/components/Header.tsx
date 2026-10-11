@@ -21,127 +21,42 @@ import {
   Menu,
   X,
   Sparkles,
+  Search,
+  FileText,
+  Server,
+  Lock,
+  ExternalLink,
 } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
-  const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [productOpen, setProductOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on click outside
+  const productRef = useRef<HTMLDivElement>(null);
+  const resourcesRef = useRef<HTMLDivElement>(null);
+
+  // Close menus on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setFeaturesOpen(false);
+      if (productRef.current && !productRef.current.contains(event.target as Node)) {
+        setProductOpen(false);
+      }
+      if (resourcesRef.current && !resourcesRef.current.contains(event.target as Node)) {
+        setResourcesOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close menus on route change
+  // Close on route change
   useEffect(() => {
-    setFeaturesOpen(false);
+    setProductOpen(false);
+    setResourcesOpen(false);
     setMobileMenuOpen(false);
   }, [pathname]);
-
-  const featureSuites = [
-    {
-      title: "Audits & Health",
-      tier: "Free",
-      items: [
-        {
-          name: "Technical SEO Audit",
-          desc: "0-100 deterministic scoring, metadata, headings & headers",
-          href: "/analyze",
-          icon: ShieldCheck,
-          badge: "Free",
-        },
-        {
-          name: "404 Broken Link Crawler",
-          desc: "Recursive link health, redirect hops & broken hrefs",
-          href: "/analyze?tab=deadlinks",
-          icon: Link2,
-          badge: "Pro",
-        },
-      ],
-    },
-    {
-      title: "Speed & Authority",
-      tier: "Starter",
-      items: [
-        {
-          name: "Core Web Vitals Lab",
-          desc: "Lighthouse LCP, FCP, CLS, TTFB & transfer weights",
-          href: "/analyze?tab=performance",
-          icon: Zap,
-          badge: "Starter",
-        },
-        {
-          name: "Open PageRank & Traffic",
-          desc: "DomCop PageRank, global rank & Common Crawl tier",
-          href: "/analyze?tab=traffic",
-          icon: TrendingUp,
-          badge: "Starter",
-        },
-        {
-          name: "Technology Stack Detector",
-          desc: "Fingerprints CMS, frameworks, CDNs & analytics",
-          href: "/analyze?tab=tech",
-          icon: Cpu,
-          badge: "Starter",
-        },
-      ],
-    },
-    {
-      title: "Competitor Intelligence",
-      tier: "Pro",
-      items: [
-        {
-          name: "Head-to-Head Benchmark",
-          desc: "Side-by-side technical score & vitals comparison",
-          href: "/compare",
-          icon: GitCompare,
-          badge: "Pro",
-        },
-        {
-          name: "Semantic Topic Gap Matrix",
-          desc: "DOM TF-IDF cross-domain content opportunities",
-          href: "/compare",
-          icon: Layers,
-          badge: "Pro",
-        },
-      ],
-    },
-    {
-      title: "Agency & Telemetry",
-      tier: "Agency",
-      items: [
-        {
-          name: "Connected Telemetry (Mode B)",
-          desc: "Google Search Console & GA4 read-only OAuth",
-          href: "/dashboard?tab=connected",
-          icon: Sparkles,
-          badge: "Agency",
-        },
-        {
-          name: "Health Alerts & Webhooks",
-          desc: "Automated Slack, Discord & Zapier notifications",
-          href: "/dashboard?tab=alerts",
-          icon: Bell,
-          badge: "Agency",
-        },
-        {
-          name: "JSON-LD Schema Studio",
-          desc: "Structured data generator with live validator",
-          href: "/analyze?tab=schema",
-          icon: Code,
-          badge: "Free",
-        },
-      ],
-    },
-  ];
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200">
@@ -163,74 +78,430 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1">
-              {/* Features Mega Dropdown */}
-              <div className="relative" ref={dropdownRef}>
+              {/* Product Mega Menu (Ahrefs Style) */}
+              <div className="relative" ref={productRef}>
                 <button
                   type="button"
-                  onClick={() => setFeaturesOpen(!featuresOpen)}
-                  onMouseEnter={() => setFeaturesOpen(true)}
+                  onClick={() => {
+                    setProductOpen(!productOpen);
+                    setResourcesOpen(false);
+                  }}
+                  onMouseEnter={() => {
+                    setProductOpen(true);
+                    setResourcesOpen(false);
+                  }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    featuresOpen || pathname.startsWith("/analyze")
+                    productOpen || pathname.startsWith("/analyze")
                       ? "bg-slate-100 text-slate-900 font-semibold"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
-                  Features &amp; Tools
-                  <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${featuresOpen ? "rotate-180" : ""}`} />
+                  Product
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${productOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Mega Menu Flyout */}
-                {featuresOpen && (
+                {/* Product Mega Dropdown */}
+                {productOpen && (
                   <div
-                    onMouseLeave={() => setFeaturesOpen(false)}
-                    className="absolute left-0 mt-2 w-[840px] -translate-x-12 bg-white rounded-xl shadow-xl border border-slate-200 p-6 grid grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-top-1 duration-150 z-50"
+                    onMouseLeave={() => setProductOpen(false)}
+                    className="absolute left-0 mt-2 w-[920px] -translate-x-8 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50"
                   >
-                    {featureSuites.map((suite, idx) => (
-                      <div key={idx} className="space-y-3">
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                            {suite.title}
-                          </span>
-                          <span
-                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                              suite.tier === "Free"
-                                ? "bg-slate-100 text-slate-700"
-                                : suite.tier === "Starter"
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                : suite.tier === "Pro"
-                                ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                : "bg-purple-50 text-purple-700 border border-purple-200"
-                            }`}
-                          >
-                            {suite.tier}
-                          </span>
+                    <div className="p-6 grid grid-cols-12 gap-6">
+                      {/* Column 1: SEARCH & AUDIT */}
+                      <div className="col-span-3 space-y-4">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          Search &amp; Audit
                         </div>
-                        <ul className="space-y-2">
-                          {suite.items.map((item, itemIdx) => {
-                            const ItemIcon = item.icon;
-                            return (
-                              <li key={itemIdx}>
-                                <Link
-                                  href={item.href}
-                                  onClick={() => setFeaturesOpen(false)}
-                                  className="group block p-2 rounded-lg hover:bg-slate-50 transition-colors"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <ItemIcon className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
-                                    <span className="text-xs font-semibold text-slate-800 group-hover:text-blue-600">
-                                      {item.name}
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 pl-6">
-                                    {item.desc}
-                                  </p>
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
+                        <div className="space-y-3">
+                          <Link href="/analyze" className="group block">
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                Site Health Auditor
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              0–100 deterministic scoring &amp; diagnostics.
+                            </p>
+                          </Link>
+
+                          <Link href="/analyze?tab=deadlinks" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Link2 className="w-4 h-4 text-purple-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-purple-600">
+                                Broken Link Crawler
+                              </span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">
+                                New
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              Recursive 404 &amp; redirect chain inspection.
+                            </p>
+                          </Link>
+
+                          <Link href="/analyze?tab=structure" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Layers className="w-4 h-4 text-slate-500 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                Document Architecture
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              H1-H6 heading hierarchy &amp; word counts.
+                            </p>
+                          </Link>
+
+                          <Link href="/analyze?tab=headers" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Lock className="w-4 h-4 text-slate-500 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                Security Headers Guard
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              HSTS, CSP, X-Frame-Options verification.
+                            </p>
+                          </Link>
+                        </div>
                       </div>
-                    ))}
+
+                      {/* Column 2: PERFORMANCE & STACK */}
+                      <div className="col-span-3 space-y-4">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          Performance &amp; Stack
+                        </div>
+                        <div className="space-y-3">
+                          <Link href="/analyze?tab=performance" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Zap className="w-4 h-4 text-amber-500 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-amber-600">
+                                Core Web Vitals Lab
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              Lighthouse LCP, FCP, CLS &amp; TTFB metrics.
+                            </p>
+                          </Link>
+
+                          <Link href="/analyze?tab=traffic" className="group block">
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-600">
+                                Open PageRank &amp; Reach
+                              </span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">
+                                Live
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              DomCop Common Crawl authority tier.
+                            </p>
+                          </Link>
+
+                          <Link href="/analyze?tab=tech" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Cpu className="w-4 h-4 text-indigo-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600">
+                                Tech Stack Detector
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              Fingerprints 50+ CMS, frameworks &amp; CDNs.
+                            </p>
+                          </Link>
+
+                          <Link href="/analyze?tab=geo" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="w-4 h-4 text-blue-500 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                AI Search &amp; GEO Bots
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              GPTBot, ClaudeBot &amp; Perplexity readiness.
+                            </p>
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Column 3: COMPETITIVE & AGENCY */}
+                      <div className="col-span-3 space-y-4">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          Competitive &amp; Agency
+                        </div>
+                        <div className="space-y-3">
+                          <Link href="/compare" className="group block">
+                            <div className="flex items-center gap-2">
+                              <GitCompare className="w-4 h-4 text-purple-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-purple-600">
+                                Competitor Benchmark
+                              </span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-800">
+                                Pro
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              Side-by-side Site A vs B winner metrics.
+                            </p>
+                          </Link>
+
+                          <Link href="/compare" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Search className="w-4 h-4 text-blue-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                Semantic Topic Gap
+                              </span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-800">
+                                Pro
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              DOM TF-IDF cross-domain content gaps.
+                            </p>
+                          </Link>
+
+                          <Link href="/dashboard?tab=connected" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-600">
+                                Connected Telemetry
+                              </span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-900 text-white">
+                                Mode B
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              Google Search Console &amp; GA4 read-only.
+                            </p>
+                          </Link>
+
+                          <Link href="/dashboard?tab=alerts" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Bell className="w-4 h-4 text-rose-500 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-rose-600">
+                                Automated Alerts
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              Slack, Discord &amp; Zapier webhooks.
+                            </p>
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Column 4: USE CASES & FREE TOOLS (Right Rail) */}
+                      <div className="col-span-3 bg-slate-50/90 rounded-lg p-4 border border-slate-200/80 space-y-4">
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                            Use Cases
+                          </div>
+                          <ul className="space-y-1.5 text-xs text-slate-600">
+                            <li>
+                              <Link href="/compare" className="hover:text-blue-600 transition-colors">
+                                • Competitive Intelligence
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/analyze" className="hover:text-blue-600 transition-colors">
+                                • Technical SEO Auditing
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/analyze?tab=performance" className="hover:text-blue-600 transition-colors">
+                                • Core Web Vitals Optimization
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/analyze?tab=geo" className="hover:text-blue-600 transition-colors">
+                                • GEO AI Search Readiness
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/pricing" className="hover:text-blue-600 transition-colors">
+                                • Agency Client Reporting
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-200">
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                            Free Utilities
+                          </div>
+                          <ul className="space-y-1.5 text-xs text-slate-600">
+                            <li>
+                              <Link href="/analyze?tab=schema" className="hover:text-blue-600 font-medium">
+                                • JSON-LD Schema Studio
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/analyze?tab=social" className="hover:text-blue-600 font-medium">
+                                • SERP &amp; Social Simulator
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Bar */}
+                    <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex items-center justify-between text-xs">
+                      <span className="text-slate-500">
+                        140+ automated audits across metadata, security, performance, and authority.
+                      </span>
+                      <Link
+                        href="/analyze"
+                        onClick={() => setProductOpen(false)}
+                        className="font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      >
+                        Discover all tools &amp; audit engine
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Resources Mega Menu (Ahrefs Style) */}
+              <div className="relative" ref={resourcesRef}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResourcesOpen(!resourcesOpen);
+                    setProductOpen(false);
+                  }}
+                  onMouseEnter={() => {
+                    setResourcesOpen(true);
+                    setProductOpen(false);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    resourcesOpen || pathname === "/capstone" || pathname === "/project-info"
+                      ? "bg-slate-100 text-slate-900 font-semibold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
+                >
+                  Resources
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {/* Resources Dropdown */}
+                {resourcesOpen && (
+                  <div
+                    onMouseLeave={() => setResourcesOpen(false)}
+                    className="absolute left-0 mt-2 w-[720px] -translate-x-16 bg-white rounded-xl shadow-2xl border border-slate-200 p-6 grid grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-1 duration-150 z-50"
+                  >
+                    {/* Learn SeoSeite */}
+                    <div className="space-y-3">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                        Learn SeoSeite
+                      </div>
+                      <ul className="space-y-2">
+                        <li>
+                          <Link href="/capstone" className="group block">
+                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                              Methodology &amp; Architecture
+                            </span>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Mathematical formulas &amp; deterministic scoring rules.
+                            </p>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/project-info" className="group block">
+                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                              Platform Specifications
+                            </span>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Phase 1–10 engineering roadmap.
+                            </p>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/worklog" className="group block">
+                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                              Engineering Changelog
+                            </span>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Day-by-day technical development log.
+                            </p>
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Infrastructure & Security */}
+                    <div className="space-y-3">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                        Enterprise Specs
+                      </div>
+                      <ul className="space-y-2">
+                        <li>
+                          <Link href="/dashboard?tab=infra" className="group block">
+                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                              Google Cloud Run &amp; SQL
+                            </span>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Containerized microservices &amp; PostgreSQL.
+                            </p>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/capstone" className="group block">
+                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                              Zero-Trust SSRF Defense
+                            </span>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Subnet blacklisting &amp; redirect pinning.
+                            </p>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/dashboard?tab=connected" className="group block">
+                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                              Mode A vs Mode B
+                            </span>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Public diagnostics vs verified owner telemetry.
+                            </p>
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Free SEO Tools */}
+                    <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-200/80">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-200">
+                        Free SEO Tools
+                      </div>
+                      <ul className="space-y-2 text-xs">
+                        <li>
+                          <Link href="/analyze" className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Free Website Auditor
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/analyze?tab=traffic" className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Open PageRank Lookup
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/analyze?tab=deadlinks" className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Broken Link Checker (404)
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/analyze?tab=schema" className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Schema JSON-LD Generator
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/analyze?tab=social" className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Google SERP Simulator
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 )}
               </div>
@@ -268,18 +539,6 @@ export default function Header() {
                 }`}
               >
                 Pricing
-              </Link>
-
-              <Link
-                href="/capstone"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  pathname === "/capstone"
-                    ? "bg-slate-100 text-slate-900 font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                <BookOpen className="w-3.5 h-3.5 text-slate-500" />
-                Methodology
               </Link>
             </nav>
           </div>
@@ -342,7 +601,7 @@ export default function Header() {
             href="/capstone"
             className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 rounded-lg"
           >
-            Platform Methodology
+            Methodology &amp; Architecture
           </Link>
           <div className="pt-2">
             <Link
