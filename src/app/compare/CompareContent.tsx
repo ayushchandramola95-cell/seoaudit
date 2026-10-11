@@ -28,6 +28,7 @@ import {
   Check,
   Hash,
   BookOpen,
+  Globe,
 } from "lucide-react";
 import { ComparisonReport } from "@/lib/modules/compare/comparator";
 import { exportKeywordGapCsv } from "@/lib/utils/csvExport";
@@ -345,7 +346,7 @@ export default function CompareContent() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5 text-emerald-600" />
-                  Export Gap CSV
+                  Export Topic Gap CSV
                 </button>
               )}
             </div>
@@ -406,12 +407,12 @@ export default function CompareContent() {
             </p>
           </div>
 
-          {/* Head-to-Head Top Scoreboard */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* SEO Score Head-to-Head */}
-            <div className="flat-card p-5 bg-white">
-              <div className="flex items-center justify-between mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
-                <span>Technical SEO Score</span>
+          {/* Head-to-Head Top Scoreboard (4 Key Dimensions) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 1. SEO Compliance */}
+            <div className="flat-card p-4 bg-white">
+              <div className="flex items-center justify-between mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <span>Technical SEO</span>
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
                   data.deltas.seoScoreDiff > 0
                     ? "bg-blue-50 text-blue-700 border-blue-200"
@@ -420,29 +421,29 @@ export default function CompareContent() {
                     : "bg-slate-100 text-slate-700 border-slate-200"
                 }`}>
                   {data.deltas.seoScoreDiff > 0
-                    ? `+${data.deltas.seoScoreDiff} to Site A`
+                    ? `+${data.deltas.seoScoreDiff} Site A`
                     : data.deltas.seoScoreDiff < 0
-                    ? `+${Math.abs(data.deltas.seoScoreDiff)} to Site B`
-                    : "Equal Score"}
+                    ? `+${Math.abs(data.deltas.seoScoreDiff)} Site B`
+                    : "Equal"}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="p-2.5 bg-blue-50/50 rounded-lg border border-blue-100">
                   <span className="text-[11px] font-mono text-slate-500 truncate block mb-1">
                     {data.siteA.page.domain}
                   </span>
-                  <span className="text-2xl font-black text-slate-900 block leading-tight">
+                  <span className="text-xl font-black text-slate-900 block leading-tight">
                     {data.siteA.audit.overallScore}
                   </span>
                   <span className="text-[10px] text-slate-400">Grade {data.siteA.audit.grade}</span>
                 </div>
 
-                <div className="p-3 bg-purple-50/50 rounded-lg border border-purple-100">
+                <div className="p-2.5 bg-purple-50/50 rounded-lg border border-purple-100">
                   <span className="text-[11px] font-mono text-slate-500 truncate block mb-1">
                     {data.siteB.page.domain}
                   </span>
-                  <span className="text-2xl font-black text-slate-900 block leading-tight">
+                  <span className="text-xl font-black text-slate-900 block leading-tight">
                     {data.siteB.audit.overallScore}
                   </span>
                   <span className="text-[10px] text-slate-400">Grade {data.siteB.audit.grade}</span>
@@ -450,66 +451,115 @@ export default function CompareContent() {
               </div>
             </div>
 
-            {/* Performance Score Head-to-Head */}
-            <div className="flat-card p-5 bg-white">
-              <div className="flex items-center justify-between mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
-                <span>PageSpeed Rating</span>
-                <span className="text-[10px] text-slate-400">Lighthouse Mobile</span>
+            {/* 2. DomCop Open PageRank & Global Index */}
+            <div className="flat-card p-4 bg-white">
+              <div className="flex items-center justify-between mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <span className="flex items-center gap-1">
+                  <Globe className="w-3.5 h-3.5 text-indigo-600" />
+                  Open PageRank
+                </span>
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono font-bold">
+                  {data.trafficComparison?.isLiveA || data.trafficComparison?.isLiveB ? "Live Index" : "Authority"}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="p-2.5 bg-indigo-50/40 rounded-lg border border-indigo-100">
                   <span className="text-[11px] font-mono text-slate-500 truncate block mb-1">
                     {data.siteA.page.domain}
                   </span>
-                  <span className="text-2xl font-black text-slate-900 block leading-tight">
+                  <span className="text-xl font-black text-indigo-900 block leading-tight">
+                    {data.trafficComparison?.pageRankA !== null && data.trafficComparison?.pageRankA !== undefined
+                      ? `${data.trafficComparison.pageRankA.toFixed(1)}`
+                      : "N/A"}
+                    <span className="text-[10px] text-slate-400 font-normal">/10</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-500 block truncate">
+                    {data.trafficComparison?.rankFormattedA || "Unranked"}
+                  </span>
+                </div>
+
+                <div className="p-2.5 bg-indigo-50/40 rounded-lg border border-indigo-100">
+                  <span className="text-[11px] font-mono text-slate-500 truncate block mb-1">
+                    {data.siteB.page.domain}
+                  </span>
+                  <span className="text-xl font-black text-indigo-900 block leading-tight">
+                    {data.trafficComparison?.pageRankB !== null && data.trafficComparison?.pageRankB !== undefined
+                      ? `${data.trafficComparison.pageRankB.toFixed(1)}`
+                      : "N/A"}
+                    <span className="text-[10px] text-slate-400 font-normal">/10</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-500 block truncate">
+                    {data.trafficComparison?.rankFormattedB || "Unranked"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. PageSpeed & Mobile Vitals */}
+            <div className="flat-card p-4 bg-white">
+              <div className="flex items-center justify-between mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <span>PageSpeed</span>
+                <span className="text-[10px] text-slate-400">Mobile Lab</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                  <span className="text-[11px] font-mono text-slate-500 truncate block mb-1">
+                    {data.siteA.page.domain}
+                  </span>
+                  <span className="text-xl font-black text-slate-900 block leading-tight">
                     {data.siteA.performance.scores.performance}
                   </span>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-[10px] text-slate-500 truncate block">
                     LCP {data.siteA.performance.vitals.lcp.value}
                   </span>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
                   <span className="text-[11px] font-mono text-slate-500 truncate block mb-1">
                     {data.siteB.page.domain}
                   </span>
-                  <span className="text-2xl font-black text-slate-900 block leading-tight">
+                  <span className="text-xl font-black text-slate-900 block leading-tight">
                     {data.siteB.performance.scores.performance}
                   </span>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-[10px] text-slate-500 truncate block">
                     LCP {data.siteB.performance.vitals.lcp.value}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Estimated Traffic Head-to-Head */}
-            <div className="flat-card p-5 bg-white">
-              <div className="flex items-center justify-between mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
-                <span>Est. Monthly Reach</span>
-                <span className="text-[10px] text-slate-400">Statistical Model</span>
+            {/* 4. Estimated Traffic Reach */}
+            <div className="flat-card p-4 bg-white">
+              <div className="flex items-center justify-between mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <span>Monthly Reach</span>
+                <span className="text-[10px] text-slate-400">Est. Range</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
                   <span className="text-[11px] font-mono text-slate-500 truncate block mb-1">
                     {data.siteA.page.domain}
                   </span>
-                  <span className="text-base font-black text-slate-900 block leading-tight font-mono">
+                  <span className="text-sm font-black text-slate-900 block leading-tight font-mono truncate">
                     {data.siteA.traffic.formattedRange.split(" /")[0]}
                   </span>
-                  <span className="text-[10px] text-slate-500">{data.siteA.traffic.confidence} Conf.</span>
+                  <span className="text-[10px] text-slate-500 block">
+                    {data.siteA.traffic.confidence} Conf.
+                  </span>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
                   <span className="text-[11px] font-mono text-slate-500 truncate block mb-1">
                     {data.siteB.page.domain}
                   </span>
-                  <span className="text-base font-black text-slate-900 block leading-tight font-mono">
+                  <span className="text-sm font-black text-slate-900 block leading-tight font-mono truncate">
                     {data.siteB.traffic.formattedRange.split(" /")[0]}
                   </span>
-                  <span className="text-[10px] text-slate-500">{data.siteB.traffic.confidence} Conf.</span>
+                  <span className="text-[10px] text-slate-500 block">
+                    {data.siteB.traffic.confidence} Conf.
+                  </span>
                 </div>
               </div>
             </div>
@@ -703,22 +753,265 @@ export default function CompareContent() {
             </div>
           </div>
 
-          {/* Keyword Content Gap Matrix */}
+          {/* Core Web Vitals & Performance Diagnostics Matrix */}
+          <div className="flat-card overflow-hidden bg-white">
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Gauge className="w-4 h-4 text-purple-600" />
+                Core Web Vitals & Payload Metrics
+              </h3>
+              <span className="text-xs text-slate-500">Google Lighthouse Lab Telemetry</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-5 py-3.5">Performance Signal</th>
+                    <th className="px-5 py-3.5 font-mono">{data.siteA.page.domain}</th>
+                    <th className="px-5 py-3.5 font-mono">{data.siteB.page.domain}</th>
+                    <th className="px-5 py-3.5">Comparative Advantage</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-xs">
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">Largest Contentful Paint (LCP)</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.lcpA}
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.lcpB}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className={`px-2 py-0.5 rounded font-semibold ${
+                        data.siteA.performance.vitals.lcp.numericValue < data.siteB.performance.vitals.lcp.numericValue
+                          ? "bg-blue-50 text-blue-700"
+                          : data.siteB.performance.vitals.lcp.numericValue < data.siteA.performance.vitals.lcp.numericValue
+                          ? "bg-purple-50 text-purple-700"
+                          : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {data.siteA.performance.vitals.lcp.numericValue < data.siteB.performance.vitals.lcp.numericValue
+                          ? `${data.siteA.page.domain} Faster`
+                          : data.siteB.performance.vitals.lcp.numericValue < data.siteA.performance.vitals.lcp.numericValue
+                          ? `${data.siteB.page.domain} Faster`
+                          : "Equal"}
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">First Contentful Paint (FCP)</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.fcpA}
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.fcpB}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className={`px-2 py-0.5 rounded font-semibold ${
+                        data.siteA.performance.vitals.fcp.numericValue < data.siteB.performance.vitals.fcp.numericValue
+                          ? "bg-blue-50 text-blue-700"
+                          : data.siteB.performance.vitals.fcp.numericValue < data.siteA.performance.vitals.fcp.numericValue
+                          ? "bg-purple-50 text-purple-700"
+                          : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {data.siteA.performance.vitals.fcp.numericValue < data.siteB.performance.vitals.fcp.numericValue
+                          ? `${data.siteA.page.domain} Faster`
+                          : data.siteB.performance.vitals.fcp.numericValue < data.siteA.performance.vitals.fcp.numericValue
+                          ? `${data.siteB.page.domain} Faster`
+                          : "Equal"}
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">Cumulative Layout Shift (CLS)</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.clsA}
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.clsB}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-700">
+                        Visual Stability Verified
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">Server Response TTFB</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.ttfbA}
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.ttfbB}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className={`px-2 py-0.5 rounded font-semibold ${
+                        data.siteA.page.responseTimeMs < data.siteB.page.responseTimeMs
+                          ? "bg-blue-50 text-blue-700"
+                          : data.siteB.page.responseTimeMs < data.siteA.page.responseTimeMs
+                          ? "bg-purple-50 text-purple-700"
+                          : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {data.siteA.page.responseTimeMs < data.siteB.page.responseTimeMs
+                          ? `${data.siteA.page.domain} (${data.siteA.page.responseTimeMs}ms)`
+                          : data.siteB.page.responseTimeMs < data.siteA.page.responseTimeMs
+                          ? `${data.siteB.page.domain} (${data.siteB.page.responseTimeMs}ms)`
+                          : "Equal"}
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">Total Page Transfer Size</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.pageSizeA}
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.vitalsComparison.pageSizeB}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-700">
+                        {data.siteA.page.contentLengthBytes < data.siteB.page.contentLengthBytes
+                          ? `${data.siteA.page.domain} Lighter Payload`
+                          : `${data.siteB.page.domain} Lighter Payload`}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Document Architecture & Schema Matrix */}
+          <div className="flat-card overflow-hidden bg-white">
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-purple-600" />
+                Document Architecture & Semantic Structure
+              </h3>
+              <span className="text-xs text-slate-500">DOM Compliance Inspection</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-5 py-3.5">Structural Element</th>
+                    <th className="px-5 py-3.5 font-mono">{data.siteA.page.domain}</th>
+                    <th className="px-5 py-3.5 font-mono">{data.siteB.page.domain}</th>
+                    <th className="px-5 py-3.5">Comparative Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-xs">
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">Visible Document Words</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.siteA.page.wordCount.toLocaleString()} words
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.siteB.page.wordCount.toLocaleString()} words
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className={`px-2 py-0.5 rounded font-semibold ${
+                        data.siteA.page.wordCount > data.siteB.page.wordCount
+                          ? "bg-blue-50 text-blue-700"
+                          : "bg-purple-50 text-purple-700"
+                      }`}>
+                        {data.siteA.page.wordCount > data.siteB.page.wordCount
+                          ? `${data.siteA.page.domain} Deeper Copy`
+                          : `${data.siteB.page.domain} Deeper Copy`}
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">Structured Data (JSON-LD)</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.siteA.page.structuredData.count} schema blocks
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.siteB.page.structuredData.count} schema blocks
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-700">
+                        {data.siteA.page.structuredData.count > data.siteB.page.structuredData.count
+                          ? `${data.siteA.page.domain} Richer Schema`
+                          : data.siteB.page.structuredData.count > data.siteA.page.structuredData.count
+                          ? `${data.siteB.page.domain} Richer Schema`
+                          : "Equal Schema Blocks"}
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">H1 Hierarchy Alignment</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.siteA.page.headings.h1Count} H1 found
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.siteB.page.headings.h1Count} H1 found
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-700">
+                        {data.siteA.page.headings.h1Count === 1 && data.siteB.page.headings.h1Count === 1
+                          ? "Both Single H1 Optimal"
+                          : data.siteA.page.headings.h1Count === 1
+                          ? `${data.siteA.page.domain} Clean H1`
+                          : `${data.siteB.page.domain} Clean H1`}
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">Internal Link Footprint</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.siteA.page.links.internalLinks} internal links
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-800">
+                      {data.siteB.page.links.internalLinks} internal links
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-700">
+                        {data.siteA.page.links.internalLinks > data.siteB.page.links.internalLinks
+                          ? `${data.siteA.page.domain} Larger Catalog`
+                          : `${data.siteB.page.domain} Larger Catalog`}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* On-Page Semantic Topic & Content Gap Matrix */}
           {data.keywordGap && (
             <div className="flat-card p-6 bg-white space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                     <Hash className="w-4 h-4 text-purple-600" />
-                    Competitor Keyword Content Gap Matrix
+                    On-Page Semantic Topic & Content Gap Matrix
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Reveals shared keyword territory and exclusive topical keywords each competitor owns.
+                    Extracts overlapping topic clusters and exclusive on-page content themes from visible document text.
                   </p>
                 </div>
                 <span className="text-xs font-semibold px-2.5 py-1 rounded bg-purple-50 text-purple-700 border border-purple-200">
                   {data.keywordGap.sharedKeywords.length} Overlapping Terms
                 </span>
+              </div>
+
+              {/* Intellectual Honesty & Diagnostic Methodology Disclosure */}
+              <div className="p-3 bg-purple-50/60 rounded-xl border border-purple-200 text-xs text-purple-900 flex items-start gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <strong className="font-semibold text-purple-950">Diagnostic Methodology Note:</strong>{" "}
+                  {data.keywordGap.methodologyNote ||
+                    "This matrix calculates semantic topic coverage and TF-IDF keyword density from inspected DOM body copy. For whole-domain Google SERP ranking datasets, connect Google Search Console (Mode B)."}
+                </div>
               </div>
 
               {/* 3 Columns: Unique to A, Overlap, Unique to B */}
