@@ -1,3 +1,5 @@
+import { OpenPageRankResult } from "./openPageRank";
+
 export interface TrafficChannel {
   name: string;
   percentage: number;
@@ -28,6 +30,7 @@ export interface TrafficEstimationReport {
   limitations: string[];
   modelEngine?: string;
   tldTier?: string;
+  openPageRank?: OpenPageRankResult;
 }
 
 export interface TrafficEstimatorParams {
@@ -42,6 +45,7 @@ export interface TrafficEstimatorParams {
   hasSocialMeta?: boolean;
   hasCanonical?: boolean;
   isSpa?: boolean;
+  openPageRank?: OpenPageRankResult | null;
 }
 
 // Curated seed dictionary of top known global authority platforms to anchor statistical benchmarks
@@ -210,6 +214,7 @@ export function estimateWebsiteTraffic(params: TrafficEstimatorParams): TrafficE
         "Traffic fluctuates based on seasonal cycles, product launches, or major Google Core Algorithm Updates.",
         "To view 100% verified first-party user sessions, website owners can connect Google Analytics 4 or Google Search Console.",
       ],
+      openPageRank: params.openPageRank || undefined,
     };
   }
 
@@ -289,6 +294,17 @@ export function estimateWebsiteTraffic(params: TrafficEstimatorParams): TrafficE
     baseVisits += 3500;
   }
 
+  // Open PageRank Authority Factor (DomCop 300k Free Tier / Common Crawl)
+  let oprBonus = 0;
+  if (params.openPageRank && params.openPageRank.pageRankDecimal !== null) {
+    const pr = params.openPageRank.pageRankDecimal;
+    if (pr >= 8.0) oprBonus = 120000;
+    else if (pr >= 6.0) oprBonus = 45000;
+    else if (pr >= 4.0) oprBonus = 16000;
+    else if (pr >= 2.5) oprBonus = 5000;
+  }
+  baseVisits += oprBonus;
+
   // Apply TLD Multiplier
   baseVisits = Math.round(baseVisits * tldMultiplier);
 
@@ -351,8 +367,10 @@ export function estimateWebsiteTraffic(params: TrafficEstimatorParams): TrafficE
   if (params.hasSocialMeta) confidenceScore += 5;
   if (params.hasCanonical) confidenceScore += 5;
   if (tldMultiplier > 1.0) confidenceScore += 5;
+  if (params.openPageRank?.isLive) confidenceScore += 12;
+  else if (params.openPageRank?.pageRankDecimal !== null) confidenceScore += 5;
 
-  confidenceScore = Math.min(92, Math.max(25, confidenceScore));
+  confidenceScore = Math.min(96, Math.max(25, confidenceScore));
 
   let confidenceTier: "High" | "Medium" | "Low" = "Low";
   if (confidenceScore >= 75) confidenceTier = "Medium";
@@ -364,6 +382,55 @@ export function estimateWebsiteTraffic(params: TrafficEstimatorParams): TrafficE
       : confidenceTier === "Medium"
       ? "Moderate signal coverage: estimates derived from page DOM structure, technical SEO compliance, and TLD authority tier."
       : "Preliminary signal footprint: limited observable public architectural signals (e.g. missing XML sitemap or early-stage domain).";
+
+  const signalsUsedList: Array<{
+    name: string;
+    value: string;
+    impact: "Positive" | "Neutral" | "Limited";
+  }> = [];
+
+  if (params.openPageRank && params.openPageRank.pageRankDecimal !== null) {
+    signalsUsedList.push({
+      name: "DomCop Open PageRank",
+      value: `${params.openPageRank.pageRankDecimal.toFixed(1)}/10 (${params.openPageRank.rankFormatted})`,
+      impact: params.openPageRank.pageRankDecimal >= 3.5 ? "Positive" : "Neutral",
+    });
+  }
+
+  signalsUsedList.push(
+    {
+      name: "TLD Extension Authority",
+      value: `${tldTierLabel} (${tldMultiplier.toFixed(2)}x factor)`,
+      impact: tldImpact,
+    },
+    {
+      name: "Document Content Footprint",
+      value: `${params.wordCount} visible words`,
+      impact: params.wordCount > 500 ? "Positive" : "Limited",
+    },
+    {
+      name: "Internal Navigation Architecture",
+      value: isUtilityApp
+        ? `${params.internalLinks} links (Classified: Focused Web Utility)`
+        : `${params.internalLinks} discoverable internal links`,
+      impact: params.internalLinks > 20 || isUtilityApp ? "Positive" : "Limited",
+    },
+    {
+      name: "Sitemap Indexability Feed",
+      value: params.hasSitemap ? "Verified Active" : "Not Detected",
+      impact: params.hasSitemap ? "Positive" : "Neutral",
+    },
+    {
+      name: "Technical SEO Multiplier",
+      value: `${params.seoScore}/100 (${seoMultiplier.toFixed(2)}x factor)`,
+      impact: params.seoScore >= 75 ? "Positive" : "Limited",
+    },
+    {
+      name: "Core Web Vitals Speed Factor",
+      value: `${params.performanceScore}/100 (${perfMultiplier.toFixed(2)}x factor)`,
+      impact: params.performanceScore >= 75 ? "Positive" : "Neutral",
+    }
+  );
 
   return {
     modelEngine: "Statistical Footprint Engine v2.0 (Enhanced Heuristic)",
@@ -407,44 +474,12 @@ export function estimateWebsiteTraffic(params: TrafficEstimatorParams): TrafficE
       top10Share: "86% captured on Google Page 1 search results",
       modelNotes: "CTR curves modeled on standard search query click distributions.",
     },
-    signalsUsed: [
-      {
-        name: "TLD Extension Authority",
-        value: `${tldTierLabel} (${tldMultiplier.toFixed(2)}x factor)`,
-        impact: tldImpact,
-      },
-      {
-        name: "Document Content Footprint",
-        value: `${params.wordCount} visible words`,
-        impact: params.wordCount > 500 ? "Positive" : "Limited",
-      },
-      {
-        name: "Internal Navigation Architecture",
-        value: isUtilityApp
-          ? `${params.internalLinks} links (Classified: Focused Web Utility)`
-          : `${params.internalLinks} discoverable internal links`,
-        impact: params.internalLinks > 20 || isUtilityApp ? "Positive" : "Limited",
-      },
-      {
-        name: "Sitemap Indexability Feed",
-        value: params.hasSitemap ? "Verified Active" : "Not Detected",
-        impact: params.hasSitemap ? "Positive" : "Neutral",
-      },
-      {
-        name: "Technical SEO Multiplier",
-        value: `${params.seoScore}/100 (${seoMultiplier.toFixed(2)}x factor)`,
-        impact: params.seoScore >= 75 ? "Positive" : "Limited",
-      },
-      {
-        name: "Core Web Vitals Speed Factor",
-        value: `${params.performanceScore}/100 (${perfMultiplier.toFixed(2)}x factor)`,
-        impact: params.performanceScore >= 75 ? "Positive" : "Neutral",
-      },
-    ],
+    signalsUsed: signalsUsedList,
     limitations: [
       "Exact visitor metrics cannot be measured through external HTTP inspection without server analytics access.",
       "Estimates exclude paid search campaigns (Google Ads) and private email marketing flows.",
       "For 100% verified first-party user sessions, website owners can connect Google Search Console or Google Analytics 4.",
     ],
+    openPageRank: params.openPageRank || undefined,
   };
 }

@@ -4,6 +4,7 @@ import { calculateSeoScore } from "@/lib/modules/seo/scorer";
 import { detectTechnologies } from "@/lib/modules/tech/detector";
 import { fetchPageSpeedAudit } from "@/lib/modules/performance/pagespeed";
 import { estimateWebsiteTraffic } from "@/lib/modules/traffic/estimator";
+import { fetchOpenPageRank } from "@/lib/modules/traffic/openPageRank";
 import { extractKeywordAnalysis } from "@/lib/modules/keywords/extractor";
 import { generateComparisonReport, SingleSiteAnalysis } from "@/lib/modules/compare/comparator";
 import { SsrfSecurityError } from "@/lib/security/ssrf";
@@ -18,6 +19,7 @@ async function analyzeSingleSite(targetUrl: string): Promise<SingleSiteAnalysis>
     pageData.responseTimeMs,
     pageData.contentLengthBytes
   );
+  const openPageRank = await fetchOpenPageRank(pageData.domain);
   const traffic = estimateWebsiteTraffic({
     domain: pageData.domain,
     seoScore: audit.overallScore,
@@ -30,6 +32,7 @@ async function analyzeSingleSite(targetUrl: string): Promise<SingleSiteAnalysis>
     hasSocialMeta: Boolean(pageData.openGraph?.title || pageData.twitterCard?.title),
     hasCanonical: Boolean(pageData.canonicalUrl),
     isSpa: Boolean(pageData.clientSideSpa?.isSpa),
+    openPageRank,
   });
 
   const keywords = extractKeywordAnalysis(

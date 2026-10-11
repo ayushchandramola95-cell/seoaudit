@@ -972,6 +972,88 @@ export default function AnalyzeContent() {
                   <strong className="text-slate-800 font-medium">Confidence Basis:</strong> {data.traffic.confidenceReason}
                 </div>
 
+                {/* Open PageRank Authority & Global Web Ranking */}
+                {data.traffic.openPageRank && (
+                  <div className="p-5 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 rounded-2xl border border-indigo-100 mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+                          <Globe className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900 tracking-tight">
+                            DomCop Open PageRank & Global Index
+                          </h4>
+                          <span className="text-[11px] text-slate-500">
+                            Deterministic authority benchmark derived from Common Crawl graph
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${
+                          data.traffic.openPageRank.isLive
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-slate-100 text-slate-700 border-slate-200"
+                        }`}>
+                          {data.traffic.openPageRank.isLive ? "Live API Verified" : "Statistical Baseline"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Metric 1: PageRank Score */}
+                      <div className="p-4 bg-white/90 rounded-xl border border-indigo-100/80 shadow-sm">
+                        <div className="text-xs text-slate-500 font-medium mb-1">
+                          Domain PageRank (0 - 10)
+                        </div>
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <span className="text-2xl font-black text-slate-900 font-mono">
+                            {data.traffic.openPageRank.pageRankDecimal !== null
+                              ? data.traffic.openPageRank.pageRankDecimal.toFixed(1)
+                              : "N/A"}
+                          </span>
+                          <span className="text-xs text-slate-400 font-semibold">/ 10.0</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-indigo-600 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, ((data.traffic.openPageRank.pageRankDecimal || 0) / 10) * 100))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Metric 2: Global Rank */}
+                      <div className="p-4 bg-white/90 rounded-xl border border-indigo-100/80 shadow-sm">
+                        <div className="text-xs text-slate-500 font-medium mb-1">
+                          Estimated Global Web Rank
+                        </div>
+                        <div className="text-2xl font-black text-slate-900 font-mono mb-1">
+                          {data.traffic.openPageRank.rankFormatted}
+                        </div>
+                        <span className="text-[11px] text-slate-500">
+                          Worldwide web visibility tier
+                        </span>
+                      </div>
+
+                      {/* Metric 3: Authority Classification */}
+                      <div className="p-4 bg-white/90 rounded-xl border border-indigo-100/80 shadow-sm">
+                        <div className="text-xs text-slate-500 font-medium mb-1">
+                          Authority Classification
+                        </div>
+                        <div className="text-sm font-bold text-indigo-900 mb-1 line-clamp-1">
+                          {data.traffic.openPageRank.tier}
+                        </div>
+                        <span className="text-[11px] text-slate-500">
+                          {data.traffic.openPageRank.message || "DomCop 300k query index"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Channels Breakdown */}
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3">
                   Estimated Traffic Channel Distribution

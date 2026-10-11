@@ -4,6 +4,7 @@ import { calculateSeoScore } from "@/lib/modules/seo/scorer";
 import { detectTechnologies } from "@/lib/modules/tech/detector";
 import { fetchPageSpeedAudit } from "@/lib/modules/performance/pagespeed";
 import { estimateWebsiteTraffic } from "@/lib/modules/traffic/estimator";
+import { fetchOpenPageRank } from "@/lib/modules/traffic/openPageRank";
 import { generateAiDiagnostics } from "@/lib/modules/ai/service";
 import { extractKeywordAnalysis } from "@/lib/modules/keywords/extractor";
 import { extractLinkAnalysis } from "@/lib/modules/crawler/linkScanner";
@@ -39,7 +40,10 @@ export async function GET(request: NextRequest) {
       pageData.contentLengthBytes
     );
 
-    // 5. Compute transparent heuristic traffic estimation v2.0
+    // 5. Fetch Open PageRank (DomCop 300k Free API / Common Crawl Index)
+    const openPageRank = await fetchOpenPageRank(pageData.domain);
+
+    // 6. Compute transparent heuristic traffic estimation v2.0
     const traffic = estimateWebsiteTraffic({
       domain: pageData.domain,
       seoScore: auditReport.overallScore,
@@ -52,6 +56,7 @@ export async function GET(request: NextRequest) {
       hasSocialMeta: Boolean(pageData.openGraph?.title || pageData.twitterCard?.title),
       hasCanonical: Boolean(pageData.canonicalUrl),
       isSpa: Boolean(pageData.clientSideSpa?.isSpa),
+      openPageRank,
     });
 
     // 6. Generate AI Diagnostic & Prioritized Recommendations Layer

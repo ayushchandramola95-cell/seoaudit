@@ -15,6 +15,7 @@ SeoSeite is built on an **offline-first, zero-failure resilient architecture**:
 | `DATABASE_URL` | Google Cloud SQL (PostgreSQL) | Covered by GCP credits | **Recommended for production** | Resilient in-memory storage pool |
 | `GEMINI_API_KEY` | Google AI Studio (Gemini 1.5 Flash) | **100% Free** (up to 15 RPM) | *Optional* | Deterministic Heuristic Synthesizer |
 | `PAGESPEED_API_KEY` | Google PageSpeed Insights API | **100% Free** (25,000 queries/day) | *Optional* | Network-measured TTFB & payload telemetry |
+| `OPENPAGERANK_API_KEY` | DomCop Open PageRank API | **100% Free** (300,000 queries/month) | *Optional* | Calibrated statistical domain rank baseline |
 
 ---
 
@@ -43,7 +44,19 @@ Google provides 25,000 free requests per day for the PageSpeed Insights API.
 
 ---
 
-## 4. Adding Environment Variables to Google Cloud Run
+## 4. How to Get a Free DomCop Open PageRank API Key
+
+DomCop provides **300,000 free API queries every month** based on the Common Crawl web graph.
+
+1. Visit **[openpagerank.com](https://openpagerank.com/)**.
+2. Click **"Get API Key"** and register for a free account.
+3. Go to your account dashboard and copy your **API Key** (e.g. `c08k4so...`).
+4. Paste it into `OPENPAGERANK_API_KEY` in `.env.local` or Cloud Run environment variables.
+5. Every domain audit on `/analyze` and `/compare` will automatically display verified 0–10 PageRank scores and global web rankings!
+
+---
+
+## 5. Adding Environment Variables to Google Cloud Run
 
 To configure these keys on your live production Cloud Run service without re-building the container:
 
@@ -58,6 +71,8 @@ To configure these keys on your live production Cloud Run service without re-bui
      Value: *(Paste your Gemini key)*
    - Name: `PAGESPEED_API_KEY`  
      Value: *(Paste your PageSpeed key)*
+   - Name: `OPENPAGERANK_API_KEY`  
+     Value: *(Paste your Open PageRank key)*
    - Name: `DATABASE_URL` (Ensure it is set to: `postgresql://postgres:Ayush1234%407890@34.29.240.199:5432/postgres`)
 6. Click **"DEPLOY"** at the bottom.
 7. Cloud Run will seamlessly deploy a new revision in ~30 seconds with zero downtime!
@@ -69,12 +84,12 @@ Run this command in your Cloud Shell or terminal:
 ```bash
 gcloud run services update seoaudit \
   --region=us-central1 \
-  --set-env-vars="GEMINI_API_KEY=YOUR_GEMINI_KEY,PAGESPEED_API_KEY=YOUR_PAGESPEED_KEY"
+  --set-env-vars="GEMINI_API_KEY=YOUR_GEMINI_KEY,PAGESPEED_API_KEY=YOUR_PAGESPEED_KEY,OPENPAGERANK_API_KEY=YOUR_OPR_KEY"
 ```
 
 ---
 
-## 5. Local Development Setup (`.env.local`)
+## 6. Local Development Setup (`.env.local`)
 
 For testing on your local machine (`http://localhost:3000`), create a file named `.env.local` in the project root:
 
@@ -87,6 +102,9 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 # Google PageSpeed Insights
 PAGESPEED_API_KEY=your_pagespeed_api_key_here
+
+# DomCop Open PageRank (Free 300k/mo)
+OPENPAGERANK_API_KEY=your_openpagerank_key_here
 ```
 
 Restart your dev server:
@@ -96,7 +114,7 @@ npm run dev
 
 ---
 
-## 6. Verification Checklist
+## 7. Verification Checklist
 
 1. Navigate to `/analyze` and audit `github.com`.
 2. Inspect the **"AI Recommendations"** tab:
@@ -105,3 +123,6 @@ npm run dev
 3. Inspect the **"Core Web Vitals"** tab:
    - When `PAGESPEED_API_KEY` is active, real lab audits from Google's servers populate FCP, LCP, CLS, TBT, and Speed Index.
    - When omitted or rate-limited, server-measured TTFB and transfer byte telemetry are shown with a clear provider badge.
+4. Inspect the **"Traffic Estimator"** tab:
+   - When `OPENPAGERANK_API_KEY` is configured, it displays: **`Live API Verified`** with true PageRank score (0–10) and global rank.
+   - When omitted, it displays: **`Statistical Baseline`** with calibrated baseline values.
