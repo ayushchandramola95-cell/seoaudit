@@ -937,9 +937,16 @@ export default function AnalyzeContent() {
               <div className="flat-card p-6 bg-white">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5 mb-5">
                   <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-                      Estimated Monthly Web Visits
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
+                        Estimated Monthly Web Visits
+                      </span>
+                      {data.traffic.modelEngine && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-medium">
+                          {data.traffic.modelEngine}
+                        </span>
+                      )}
+                    </div>
                     <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-mono">
                       {data.traffic.formattedRange}
                     </h3>
@@ -956,7 +963,7 @@ export default function AnalyzeContent() {
                       {data.traffic.confidence} Confidence ({data.traffic.confidenceScore}/100)
                     </span>
                     <span className="text-[11px] text-slate-500">
-                      Based on verified public signals
+                      {data.traffic.tldTier ? `Tier: ${data.traffic.tldTier}` : "Based on verified public signals"}
                     </span>
                   </div>
                 </div>

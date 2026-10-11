@@ -27,6 +27,9 @@ async function analyzeSingleSite(targetUrl: string): Promise<SingleSiteAnalysis>
     hasSitemap: pageData.hasSitemapXml,
     structuredDataCount: pageData.structuredData.count,
     performanceScore: performance.scores.performance,
+    hasSocialMeta: Boolean(pageData.openGraph?.title || pageData.twitterCard?.title),
+    hasCanonical: Boolean(pageData.canonicalUrl),
+    isSpa: Boolean(pageData.clientSideSpa?.isSpa),
   });
 
   const keywords = extractKeywordAnalysis(

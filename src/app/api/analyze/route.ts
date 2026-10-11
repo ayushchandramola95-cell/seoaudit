@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       pageData.contentLengthBytes
     );
 
-    // 5. Compute transparent heuristic traffic estimation
+    // 5. Compute transparent heuristic traffic estimation v2.0
     const traffic = estimateWebsiteTraffic({
       domain: pageData.domain,
       seoScore: auditReport.overallScore,
@@ -49,6 +49,9 @@ export async function GET(request: NextRequest) {
       hasSitemap: pageData.hasSitemapXml,
       structuredDataCount: pageData.structuredData.count,
       performanceScore: performance.scores.performance,
+      hasSocialMeta: Boolean(pageData.openGraph?.title || pageData.twitterCard?.title),
+      hasCanonical: Boolean(pageData.canonicalUrl),
+      isSpa: Boolean(pageData.clientSideSpa?.isSpa),
     });
 
     // 6. Generate AI Diagnostic & Prioritized Recommendations Layer
