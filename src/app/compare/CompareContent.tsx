@@ -178,8 +178,11 @@ export default function CompareContent() {
 
       {/* Comparison Input Form Header */}
       <div className="border-b border-slate-200 pb-8 mb-8 text-center max-w-3xl mx-auto">
-        <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center mx-auto mb-3">
-          <GitCompare className="w-5 h-5" />
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+            <GitCompare className="w-3.5 h-3.5" />
+            Competitive Intelligence Suite • Pro Feature
+          </span>
         </div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
           Competitor Website Comparison

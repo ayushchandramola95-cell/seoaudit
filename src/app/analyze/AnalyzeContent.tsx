@@ -142,6 +142,31 @@ export default function AnalyzeContent() {
     }
   }, [targetUrl]);
 
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (
+      tabParam &&
+      [
+        "diagnostics",
+        "ai",
+        "geo",
+        "traffic",
+        "tech",
+        "keywords",
+        "links",
+        "performance",
+        "structure",
+        "media",
+        "social",
+        "headers",
+        "schema",
+        "deadlinks",
+      ].includes(tabParam)
+    ) {
+      setActiveTab(tabParam as typeof activeTab);
+    }
+  }, [searchParams]);
+
   const handleExportJson = () => {
     if (!data) return;
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -431,44 +456,189 @@ export default function AnalyzeContent() {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
-            {[
-              { id: "diagnostics", label: "SEO Diagnostics", count: data.audit.diagnostics.length },
-              { id: "ai", label: "AI Recommendations", count: data.ai.prioritizedFixes.length, highlight: true },
-              { id: "geo", label: "AI Search & Bots (GEO)", count: data.crawlers ? `${data.crawlers.geo.score}/100` : "GEO", highlight: true },
-              { id: "social", label: "SERP & Social Preview", count: null, highlight: true },
-              { id: "schema", label: "Fix-It & Schema Studio", count: null, highlight: true },
-              { id: "deadlinks", label: "Broken Links (404) Engine", count: null, highlight: true },
-              { id: "traffic", label: "Traffic Estimator", count: null, highlight: true },
-              { id: "tech", label: "Tech Stack", count: data.technologies.length },
-              { id: "keywords", label: "Keyword Density", count: data.keywords?.topSingleKeywords?.length || null, highlight: true },
-              { id: "links", label: "Link Footprint", count: data.links?.totalLinks || null, highlight: true },
-              { id: "performance", label: "Core Web Vitals", count: data.performance.scores.performance },
-              { id: "structure", label: "Headings & Content", count: data.page.headings.totalHeadings },
-              { id: "media", label: "Images & Alt Text", count: data.page.images.totalImages },
-              { id: "headers", label: "Security & Headers", count: null },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === tab.id
-                    ? "bg-blue-600 text-white"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                }`}
-              >
-                <span>{tab.label}</span>
-                {tab.count !== null && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    activeTab === tab.id ? "bg-blue-700 text-white" : "bg-slate-200 text-slate-700"
-                  }`}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
+          {/* Suite & Feature Navigation System */}
+          {(() => {
+            type SuiteKey = "technical" | "speed" | "search" | "links";
+
+            const tabToSuite: Record<string, SuiteKey> = {
+              diagnostics: "technical",
+              structure: "technical",
+              headers: "technical",
+              media: "technical",
+              performance: "speed",
+              traffic: "speed",
+              tech: "speed",
+              ai: "search",
+              geo: "search",
+              keywords: "search",
+              social: "search",
+              schema: "search",
+              deadlinks: "links",
+              links: "links",
+            };
+
+            const currentSuite: SuiteKey = tabToSuite[activeTab] || "technical";
+
+            const suites: Array<{
+              id: SuiteKey;
+              label: string;
+              badge: string;
+              badgeStyle: string;
+              icon: typeof ShieldCheck;
+              defaultTab: typeof activeTab;
+              description: string;
+            }> = [
+              {
+                id: "technical",
+                label: "Technical SEO & Structure",
+                badge: "Free Tier",
+                badgeStyle: "bg-slate-100 text-slate-700 border-slate-200",
+                icon: ShieldCheck,
+                defaultTab: "diagnostics",
+                description: "0-100 health audit, document architecture, security headers & media",
+              },
+              {
+                id: "speed",
+                label: "Speed & Stack Lab",
+                badge: "Starter Plan",
+                badgeStyle: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                icon: Zap,
+                defaultTab: "performance",
+                description: "Core Web Vitals, DomCop Open PageRank & detected technologies",
+              },
+              {
+                id: "search",
+                label: "Search & Content Studio",
+                badge: "Pro Plan",
+                badgeStyle: "bg-blue-50 text-blue-700 border-blue-200",
+                icon: Sparkles,
+                defaultTab: "ai",
+                description: "AI recommendations, GEO AI readiness, keywords, SERP preview & schema",
+              },
+              {
+                id: "links",
+                label: "Deep Link Crawler",
+                badge: "Pro Plan",
+                badgeStyle: "bg-purple-50 text-purple-700 border-purple-200",
+                icon: Link2,
+                defaultTab: "deadlinks",
+                description: "Broken link 404 detector, redirect chain inspection & anchor footprints",
+              },
+            ];
+
+            const subTabsBySuite: Record<
+              SuiteKey,
+              Array<{ id: typeof activeTab; label: string; count?: string | number | null }>
+            > = {
+              technical: [
+                { id: "diagnostics", label: "SEO Diagnostics Checklist", count: data.audit.diagnostics.length },
+                { id: "structure", label: "Headings & Document Hierarchy", count: data.page.headings.totalHeadings },
+                { id: "headers", label: "Security & HTTP Headers", count: null },
+                { id: "media", label: "Images & Alt Text Audit", count: data.page.images.totalImages },
+              ],
+              speed: [
+                { id: "performance", label: "Core Web Vitals (Lighthouse)", count: data.performance.scores.performance },
+                { id: "traffic", label: "Open PageRank & Traffic Estimator", count: null },
+                { id: "tech", label: "Detected Technology Stack", count: data.technologies.length },
+              ],
+              search: [
+                { id: "ai", label: "AI Diagnostic Recommendations", count: data.ai.prioritizedFixes.length },
+                { id: "geo", label: "AI Search Readiness (GEO)", count: data.crawlers ? `${data.crawlers.geo.score}/100` : "GEO" },
+                { id: "keywords", label: "On-Page Keyword Density", count: data.keywords?.topSingleKeywords?.length || null },
+                { id: "social", label: "SERP & Social Preview", count: null },
+                { id: "schema", label: "JSON-LD Schema Studio", count: null },
+              ],
+              links: [
+                { id: "deadlinks", label: "Broken Links (404) & Redirect Engine", count: null },
+                { id: "links", label: "Discovered Link Footprint Graph", count: data.links?.totalLinks || null },
+              ],
+            };
+
+            return (
+              <div className="space-y-3.5">
+                {/* Level 1: 4 Categorized Product Suites */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {suites.map((s) => {
+                    const isActiveSuite = currentSuite === s.id;
+                    const SuiteIcon = s.icon;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => {
+                          if (currentSuite !== s.id) {
+                            setActiveTab(s.defaultTab);
+                          }
+                        }}
+                        className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer relative group ${
+                          isActiveSuite
+                            ? "bg-white border-blue-600 shadow-sm ring-1 ring-blue-600/20"
+                            : "bg-slate-50/75 border-slate-200 hover:bg-white hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1.5 mb-1.5">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <SuiteIcon
+                              className={`w-4 h-4 shrink-0 ${
+                                isActiveSuite ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"
+                              }`}
+                            />
+                            <span
+                              className={`text-xs font-bold truncate ${
+                                isActiveSuite ? "text-blue-900 font-extrabold" : "text-slate-800"
+                              }`}
+                            >
+                              {s.label}
+                            </span>
+                          </div>
+                          <span
+                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${s.badgeStyle}`}
+                          >
+                            {s.badge}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 line-clamp-1 leading-snug">
+                          {s.description}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Level 2: Sub-Feature Action Bar for Active Suite */}
+                <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-slate-100/90 rounded-lg border border-slate-200/80">
+                  {subTabsBySuite[currentSuite].map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+                          isActive
+                            ? "bg-white text-slate-900 shadow-sm font-bold border border-slate-200/60"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/70"
+                        }`}
+                      >
+                        <span>{tab.label}</span>
+                        {tab.count !== null && tab.count !== undefined && (
+                          <span
+                            className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                              isActive
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-slate-200 text-slate-600"
+                            }`}
+                          >
+                            {tab.count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* TAB 1: SEO DIAGNOSTICS */}
           {activeTab === "diagnostics" && (
