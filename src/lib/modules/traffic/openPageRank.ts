@@ -55,11 +55,12 @@ export async function fetchOpenPageRank(domain: string): Promise<OpenPageRankRes
   // 1. If API Key is present, attempt live fetch from Open PageRank API
   if (apiKey) {
     try {
-      const url = `https://openpagerank.com/api/v1.0/getPageRank?domains[]=${encodeURIComponent(cleanDomain)}`;
+      const url = `https://openpagerank.keywordseverywhere.com/api/v1.0/getPageRank?domains[]=${encodeURIComponent(cleanDomain)}`;
       const response = await fetch(url, {
         headers: {
           "API-OPR": apiKey,
         },
+        redirect: "follow",
         signal: AbortSignal.timeout(3500), // 3.5s timeout for fast audits
       });
 
