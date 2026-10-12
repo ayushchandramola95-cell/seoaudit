@@ -278,6 +278,14 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/mcp" className="hover:text-blue-400 text-blue-300 font-semibold transition-colors flex items-center gap-1">
+                  Model Context Protocol (MCP)
+                  <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-blue-500/20 text-blue-300">
+                    New
+                  </span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/dashboard?tab=connected" className="hover:text-white transition-colors">
                   Mode A vs Mode B Guide
                 </Link>

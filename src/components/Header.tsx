@@ -457,6 +457,21 @@ export default function Header() {
                       </div>
                       <ul className="space-y-2">
                         <li>
+                          <Link href="/mcp" onClick={() => setResourcesOpen(false)} className="group block">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                AI Model Context Protocol (MCP)
+                              </span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">
+                                New
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Claude Desktop &amp; Cursor IDE integration.
+                            </p>
+                          </Link>
+                        </li>
+                        <li>
                           <Link href="/dashboard?tab=infra" className="group block">
                             <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
                               Google Cloud Run &amp; SQL
