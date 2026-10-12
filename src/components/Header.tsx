@@ -73,7 +73,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <div className="flex items-center gap-6 lg:gap-8">
@@ -92,7 +92,7 @@ export default function Header() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1">
               {/* Product Mega Menu (Clickable Only) */}
-              <div className="relative" ref={productRef}>
+              <div ref={productRef} className="static">
                 <button
                   type="button"
                   onClick={() => {
@@ -110,75 +110,91 @@ export default function Header() {
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${productOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Expanded, Spacious Product Mega Dropdown */}
+                {/* Expansive, Full-Width Product Mega Dropdown (Modeled on Ahrefs & Semrush) */}
                 {productOpen && (
-                  <div className="absolute left-0 mt-3 w-[1040px] -translate-x-12 bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
-                    <div className="p-7 grid grid-cols-12 gap-8">
-                      {/* Column 1: Core Audits & Health */}
-                      <div className="col-span-3 space-y-4">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                  <div className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
+                    <div className="grid grid-cols-12 divide-x divide-slate-100">
+                      {/* Column 1: Core Technical Health (Ahrefs Style) */}
+                      <div className="col-span-3 p-6 lg:p-7 space-y-4">
+                        <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">
                           Technical Health
                         </div>
                         <div className="space-y-1">
-                          <Link href="/analyze" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                          <Link href="/analyze" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <ShieldCheck className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                   Full Website Auditor
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   0–100 deterministic scoring across 14 engines.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/speed-lab" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                          <Link href="/tools/speed-lab" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Zap className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-amber-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
                                   Core Web Vitals Lab
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Lighthouse LCP, CLS, FCP &amp; TTFB metrics.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/broken-links" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                          <Link href="/tools/broken-links" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Link2 className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-purple-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
                                   Broken Link &amp; 404 Crawler
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Deep internal &amp; outbound link validation.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/analyze?tab=structure" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                          <Link href="/analyze?tab=structure" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Layers className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                   Document Architecture
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
-                                  H1–H6 heading hierarchy &amp; DOM tree.
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  H1–H6 heading hierarchy &amp; DOM tree inspection.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/analyze?tab=headers" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Lock className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                                  Security Headers Guard
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  HSTS, CSP, X-Frame-Options validation.
                                 </div>
                               </div>
                             </div>
@@ -186,71 +202,87 @@ export default function Header() {
                         </div>
                       </div>
 
-                      {/* Column 2: Competitive & Intelligence */}
-                      <div className="col-span-3 space-y-4">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                      {/* Column 2: Competitive & Bulk Intelligence */}
+                      <div className="col-span-3 p-6 lg:p-7 space-y-4">
+                        <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">
                           Competitive Suite
                         </div>
                         <div className="space-y-1">
-                          <Link href="/compare" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                          <Link href="/compare" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <GitCompare className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-indigo-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
                                   Competitor Benchmark
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Side-by-side URL scoring &amp; framework diffs.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/content-gap" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center shrink-0">
+                          <Link href="/tools/content-gap" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Search className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-pink-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-pink-600 transition-colors">
                                   Semantic Content Gap
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Missing keywords &amp; competitor heading topics.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/batch-audit" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
+                          <Link href="/tools/batch-audit" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0 mt-0.5">
                                 <ListChecks className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-slate-700">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-slate-700 transition-colors">
                                   Multi-URL Batch Audit
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Concurrent audit for up to 15 URLs in bulk.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/brand-radar" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                          <Link href="/tools/brand-radar" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Radar className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                   Brand Radar AI (AEO)
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Track brand citations in ChatGPT &amp; Gemini.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/dashboard?tab=connected" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Server className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-cyan-600 transition-colors">
+                                  Connected Telemetry
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Mode B webhooks &amp; automated domain alerts.
                                 </div>
                               </div>
                             </div>
@@ -258,143 +290,179 @@ export default function Header() {
                         </div>
                       </div>
 
-                      {/* Column 3: Standalone Micro-Tools */}
-                      <div className="col-span-3 space-y-4">
-                        <div className="flex items-center justify-between pb-1 border-b border-slate-100">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                            Micro-Tools
+                      {/* Column 3: Free Standalone Micro-Tools */}
+                      <div className="col-span-3 p-6 lg:p-7 space-y-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                            Free Standalone Tools
                           </span>
                           <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[11px] font-bold text-blue-600 hover:underline">
-                            Directory Hub →
+                            All 9 Tools →
                           </Link>
                         </div>
                         <div className="space-y-1">
-                          <Link href="/tools/tech-detector" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                          <Link href="/tools/tech-detector" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Cpu className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-indigo-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
                                   50+ Tech Stack Profiler
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Identifies frameworks, CMS &amp; CDNs.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/authority-checker" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                          <Link href="/tools/authority-checker" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <TrendingUp className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
                                   Open PageRank Lookup
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Common Crawl PageRank data.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/schema-validator" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                          <Link href="/tools/schema-validator" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Code2 className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                   JSON-LD Schema Validator
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Validates structured data &amp; OpenGraph.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/serp-preview" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                          <Link href="/tools/serp-preview" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Search className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-slate-900 group-hover:text-teal-600">
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
                                   SERP Snippet Simulator
                                 </div>
-                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Desktop &amp; mobile Google preview.
                                 </div>
                               </div>
                             </div>
                           </Link>
+
+                          <Link href="/tools" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <LayoutDashboard className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-violet-600 transition-colors">
+                                  Tools Directory Hub
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Full suite of 9 micro-tools with live runners.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
                         </div>
                       </div>
 
-                      {/* Column 4: Platform Spotlights (Right Rail) */}
-                      <div className="col-span-3 space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
-                        <div>
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                            Featured Spotlight
+                      {/* Column 4: Semrush-Style Spotlight Rail */}
+                      <div className="col-span-3 p-6 lg:p-7 bg-slate-50/70 flex flex-col justify-between">
+                        <div className="space-y-4">
+                          <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-200/80">
+                            Inside Your AI Assistants
                           </div>
 
-                          <Link
-                            href="/mcp"
-                            onClick={() => setProductOpen(false)}
-                            className="block p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 transition-all mb-2.5 group"
-                          >
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 group-hover:text-blue-600 mb-1">
-                              <Terminal className="w-3.5 h-3.5 text-blue-600" />
-                              <span>SEO MCP Server</span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">New</span>
+                          {/* Semrush-Style Spotlight Card */}
+                          <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-sm space-y-2.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">Claude</span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">Cursor</span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">OpenAI</span>
                             </div>
-                            <p className="text-[11px] text-slate-500 leading-snug">
-                              Connect Claude Desktop &amp; Cursor IDE to run audits conversationally.
+                            <div className="text-sm font-bold text-slate-900 flex items-center justify-between">
+                              <span>SEO FastMCP Server</span>
+                              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Live</span>
+                            </div>
+                            <p className="text-xs text-slate-500 leading-relaxed">
+                              Run deep deterministic audits &amp; tech stack profiling conversationally directly inside Claude Desktop and Cursor IDE.
                             </p>
-                          </Link>
+                            <Link
+                              href="/mcp"
+                              onClick={() => setProductOpen(false)}
+                              className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 pt-1"
+                            >
+                              <span>Connect SeoSeite MCP to AI</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+                          </div>
 
+                          {/* Secondary REST API Card */}
                           <Link
                             href="/api-docs"
                             onClick={() => setProductOpen(false)}
-                            className="block p-3 rounded-lg bg-white border border-slate-200 hover:border-indigo-300 transition-all group"
+                            className="block p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-indigo-300 transition-all group"
                           >
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 group-hover:text-indigo-600 mb-1">
-                              <Code2 className="w-3.5 h-3.5 text-indigo-600" />
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-900 group-hover:text-indigo-600 mb-1">
+                              <Code2 className="w-4 h-4 text-indigo-600" />
                               <span>REST API Reference</span>
                             </div>
                             <p className="text-[11px] text-slate-500 leading-snug">
-                              Interactive endpoints, testing runner &amp; cURL snippets.
+                              Interactive Swagger-style testing runner and cURL endpoints.
                             </p>
                           </Link>
                         </div>
 
-                        <Link
-                          href="/tools"
-                          onClick={() => setProductOpen(false)}
-                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center justify-between pt-2 border-t border-slate-200"
-                        >
-                          <span>Explore all 9 tools</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
+                        <div className="pt-4 border-t border-slate-200 text-[11px] text-slate-500">
+                          <div className="font-bold text-slate-700 mb-1">Popular Use Cases:</div>
+                          <div className="flex flex-wrap gap-x-3 gap-y-1 text-slate-500">
+                            <Link href="/compare" onClick={() => setProductOpen(false)} className="hover:text-blue-600">Benchmarking</Link>
+                            <span>•</span>
+                            <Link href="/analyze" onClick={() => setProductOpen(false)} className="hover:text-blue-600">Technical Audits</Link>
+                            <span>•</span>
+                            <Link href="/tools/brand-radar" onClick={() => setProductOpen(false)} className="hover:text-blue-600">GEO AI Search</Link>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Bottom Bar */}
-                    <div className="bg-slate-50/80 px-7 py-3.5 border-t border-slate-200 flex items-center justify-between text-xs">
-                      <span className="text-slate-500 font-medium">
+                    {/* Bottom Bar Across Entire Mega Menu (Modeled on Ahrefs "Discover all tools →") */}
+                    <div className="bg-slate-50 px-7 py-3.5 border-t border-slate-200 flex items-center justify-between text-xs">
+                      <Link
+                        href="/tools"
+                        onClick={() => setProductOpen(false)}
+                        className="font-bold text-sm text-slate-900 hover:text-blue-600 flex items-center gap-2 transition-colors"
+                      >
+                        <span>Discover all tools</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                      <span className="text-slate-500 font-medium hidden md:inline">
                         Deterministic 0–100 scoring with sub-100ms latency. Zero fabricated metrics.
                       </span>
                       <Link
                         href="/pricing"
                         onClick={() => setProductOpen(false)}
-                        className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        className="font-bold text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
                       >
-                        Compare all plan features &amp; quotas
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <span>Compare all plans &amp; quotas</span>
+                        <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
                   </div>
@@ -402,7 +470,7 @@ export default function Header() {
               </div>
 
               {/* Resources Mega Menu (Clickable Only) */}
-              <div className="relative" ref={resourcesRef}>
+              <div ref={resourcesRef} className="static">
                 <button
                   type="button"
                   onClick={() => {
@@ -420,43 +488,43 @@ export default function Header() {
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Expanded, Spacious Resources Dropdown */}
+                {/* Expansive Resources Mega Dropdown */}
                 {resourcesOpen && (
-                  <div className="absolute left-0 mt-3 w-[840px] -translate-x-24 bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
-                    <div className="p-7 grid grid-cols-3 gap-8">
-                      {/* Column 1: Specifications */}
-                      <div className="space-y-4">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                  <div className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
+                    <div className="grid grid-cols-12 divide-x divide-slate-100">
+                      {/* Column 1: Specifications & Architecture */}
+                      <div className="col-span-3 p-6 lg:p-7 space-y-4">
+                        <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">
                           Architecture &amp; Specs
                         </div>
                         <ul className="space-y-1">
                           <li>
-                            <Link href="/capstone" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                Scoring Methodology
+                            <Link href="/capstone" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                Scoring Methodology Spec
                               </div>
-                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
                                 Mathematical formulas &amp; deterministic rules.
                               </p>
                             </Link>
                           </li>
                           <li>
-                            <Link href="/project-info" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                            <Link href="/project-info" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                 Platform Specifications
                               </div>
-                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
                                 Complete multi-phase engineering specs.
                               </p>
                             </Link>
                           </li>
                           <li>
-                            <Link href="/worklog" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                            <Link href="/worklog" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                 Engineering Changelog
                               </div>
-                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                                Day-by-day development timeline.
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                                Day-by-day development timeline &amp; viva log.
                               </p>
                             </Link>
                           </li>
@@ -464,39 +532,39 @@ export default function Header() {
                       </div>
 
                       {/* Column 2: Developer & Automation */}
-                      <div className="space-y-4">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                      <div className="col-span-3 p-6 lg:p-7 space-y-4">
+                        <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">
                           Developer &amp; CI/CD
                         </div>
                         <ul className="space-y-1">
                           <li>
-                            <Link href="/api-docs" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                              <div className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 flex items-center gap-1">
+                            <Link href="/api-docs" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors flex items-center gap-1.5">
                                 REST API &amp; Webhooks
-                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700">v1.0</span>
+                                <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700">v1.0</span>
                               </div>
-                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
                                 Interactive endpoints &amp; testing runner.
                               </p>
                             </Link>
                           </li>
                           <li>
-                            <Link href="/mcp" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 flex items-center gap-1">
+                            <Link href="/mcp" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
                                 SEO MCP Server
-                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">New</span>
+                                <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">New</span>
                               </div>
-                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
                                 Claude Desktop &amp; Cursor IDE integration.
                               </p>
                             </Link>
                           </li>
                           <li>
-                            <Link href="/dashboard?tab=connected" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
-                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                            <Link href="/dashboard?tab=connected" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                 Mode A vs Mode B
                               </div>
-                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
                                 Public crawl vs owner GSC telemetry.
                               </p>
                             </Link>
@@ -504,35 +572,75 @@ export default function Header() {
                         </ul>
                       </div>
 
-                      {/* Column 3: Quick Spotlight Cards */}
-                      <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
-                        <div>
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                            Quick Access
+                      {/* Column 3: Use Cases & Comparisons */}
+                      <div className="col-span-3 p-6 lg:p-7 space-y-4">
+                        <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">
+                          Use Cases &amp; Insights
+                        </div>
+                        <ul className="space-y-1">
+                          <li>
+                            <Link href="/compare" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                Competitive Benchmarking
+                              </div>
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                                Compare 2 URLs with live score differentials.
+                              </p>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/tools/brand-radar" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                AI Search (GEO) Visibility
+                              </div>
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                                Monitor presence in ChatGPT &amp; Gemini answers.
+                              </p>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/pricing" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                SeoSeite vs Ahrefs &amp; Semrush
+                              </div>
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                                Transparent tier pricing with zero credit burn traps.
+                              </p>
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* Column 4: Viva Defense Spotlight */}
+                      <div className="col-span-3 p-6 lg:p-7 bg-slate-50/70 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-200/80">
+                            Viva Defense Spotlight
                           </div>
-                          <Link
-                            href="/pricing"
-                            onClick={() => setResourcesOpen(false)}
-                            className="block p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 transition-all mb-2.5 group"
-                          >
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 mb-1">
-                              Transparent Plans
-                            </div>
-                            <p className="text-[11px] text-slate-500 leading-snug">
-                              Free forever, $19 Starter, $49 Pro, $149 Agency.
-                            </p>
-                          </Link>
 
                           <Link
                             href="/capstone"
                             onClick={() => setResourcesOpen(false)}
-                            className="block p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 transition-all group"
+                            className="block p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-300 transition-all group"
                           >
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 mb-1">
+                            <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 mb-1">
                               Viva Voce Cheatsheet
                             </div>
-                            <p className="text-[11px] text-slate-500 leading-snug">
-                              25 college viva defense questions with answers.
+                            <p className="text-xs text-slate-500 leading-relaxed">
+                              25 college viva defense questions with complete architectural answers.
+                            </p>
+                          </Link>
+
+                          <Link
+                            href="/pricing"
+                            onClick={() => setResourcesOpen(false)}
+                            className="block p-3.5 rounded-xl bg-white border border-slate-200/90 hover:border-blue-300 transition-all group"
+                          >
+                            <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 mb-1">
+                              Transparent Plans
+                            </div>
+                            <p className="text-xs text-slate-500 leading-relaxed">
+                              Free forever, $19 Starter, $49 Pro, $149 Agency.
                             </p>
                           </Link>
                         </div>
@@ -540,12 +648,27 @@ export default function Header() {
                         <Link
                           href="/tools"
                           onClick={() => setResourcesOpen(false)}
-                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center justify-between pt-2 border-t border-slate-200"
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center justify-between pt-3 border-t border-slate-200"
                         >
-                          <span>Explore Tools Hub</span>
+                          <span>Explore All 9 Standalone Tools</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       </div>
+                    </div>
+
+                    {/* Bottom Bar Across Entire Mega Menu */}
+                    <div className="bg-slate-50 px-7 py-3.5 border-t border-slate-200 flex items-center justify-between text-xs">
+                      <span className="text-slate-500 font-medium">
+                        Complete technical specifications, methodology formulas, and academic defense documentation.
+                      </span>
+                      <Link
+                        href="/capstone"
+                        onClick={() => setResourcesOpen(false)}
+                        className="font-bold text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
+                      >
+                        <span>View Scoring Methodology Spec</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
                     </div>
                   </div>
                 )}

@@ -469,40 +469,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Call to Action Banner */}
-      <section className="py-16 bg-blue-600 text-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
-            Audit Any Website In Under 100 Milliseconds.
-          </h2>
-          <p className="text-blue-100 text-base sm:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-            No mandatory logins, no credit card required, and zero fabricated numbers. Get instant technical clarity right now.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/analyze"
-              className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-blue-700 font-bold text-sm px-6 py-3.5 rounded-lg shadow-sm transition-colors"
-            >
-              Start Free Audit Now
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/tools"
-              className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm px-6 py-3.5 rounded-lg border border-blue-500 transition-colors"
-            >
-              Browse 9 Standalone Tools
-            </Link>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm px-6 py-3.5 rounded-lg border border-blue-500 transition-colors"
-            >
-              View Transparent Plans
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
