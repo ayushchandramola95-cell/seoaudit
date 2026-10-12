@@ -24,18 +24,23 @@ import {
   Search,
   FileText,
   Server,
-  Lock,
   ExternalLink,
+  Lock,
 } from "lucide-react";
+import { usePlan } from "@/lib/auth/PlanContext";
+import { formatTierName, PlanTier } from "@/lib/auth/tierLimits";
 
 export default function Header() {
   const pathname = usePathname();
+  const { tier, setTier } = usePlan();
   const [productOpen, setProductOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [tierMenuOpen, setTierMenuOpen] = useState(false);
 
   const productRef = useRef<HTMLDivElement>(null);
   const resourcesRef = useRef<HTMLDivElement>(null);
+  const tierRef = useRef<HTMLDivElement>(null);
 
   // Close menus on click outside
   useEffect(() => {
@@ -585,6 +590,54 @@ export default function Header() {
             <div className="hidden lg:flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Live Cloud Engine
+            </div>
+
+            {/* Plan Tier Selector (Demo & State) */}
+            <div className="relative" ref={tierRef}>
+              <button
+                onClick={() => setTierMenuOpen(!tierMenuOpen)}
+                className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200/80 cursor-pointer"
+                title="Active Subscription Tier"
+              >
+                <Sparkles className="w-3 h-3 text-blue-600" />
+                <span>{formatTierName(tier)}</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+
+              {tierMenuOpen && (
+                <div
+                  onMouseLeave={() => setTierMenuOpen(false)}
+                  className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs animate-in fade-in slide-in-from-top-1 duration-150"
+                >
+                  <div className="px-3 py-1 font-bold text-slate-400 uppercase text-[10px] tracking-wider">
+                    Plan Tier (Sandbox)
+                  </div>
+                  {(["free", "starter", "pro", "enterprise"] as PlanTier[]).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => {
+                        setTier(t);
+                        setTierMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 hover:bg-slate-50 flex items-center justify-between cursor-pointer ${
+                        tier === t ? "font-bold text-blue-600 bg-blue-50/50" : "text-slate-700"
+                      }`}
+                    >
+                      <span>{formatTierName(t)}</span>
+                      {tier === t && <span className="text-[10px] text-blue-600 font-bold">✓ Active</span>}
+                    </button>
+                  ))}
+                  <div className="border-t border-slate-100 mt-1 pt-1 px-3 py-1">
+                    <Link
+                      href="/pricing"
+                      onClick={() => setTierMenuOpen(false)}
+                      className="text-[11px] font-semibold text-blue-600 hover:underline block"
+                    >
+                      Compare All Plans →
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
 
             <Link

@@ -56,6 +56,8 @@ import SerpSocialPreview from "@/components/SerpSocialPreview";
 import SchemaCodeGenerator from "@/components/SchemaCodeGenerator";
 import LinkCrawlerMatrix from "@/components/LinkCrawlerMatrix";
 import { exportFindingsCsv, exportKeywordsCsv, exportTechnologiesCsv } from "@/lib/utils/csvExport";
+import { usePlan } from "@/lib/auth/PlanContext";
+import { formatTierName } from "@/lib/auth/tierLimits";
 
 interface ApiResponse {
   success: boolean;
@@ -78,6 +80,7 @@ interface ApiResponse {
 export default function AnalyzeContent() {
   const searchParams = useSearchParams();
   const targetUrl = searchParams.get("url");
+  const { tier, remainingScans, limits, recordScan, triggerUpgradeModal, canAccess } = usePlan();
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<ApiResponse | null>(null);
@@ -116,6 +119,12 @@ export default function AnalyzeContent() {
   };
 
   const fetchAnalysis = async (urlToFetch: string) => {
+    if (!recordScan()) {
+      setError(`Daily scan limit reached (${limits.dailyScans}/${limits.dailyScans} scans). Please switch or upgrade your plan to run additional audits.`);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setData(null);
@@ -201,7 +210,7 @@ export default function AnalyzeContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Top action row */}
-      <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
@@ -209,6 +218,48 @@ export default function AnalyzeContent() {
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Homepage
         </Link>
+
+        {/* Current Plan Tier & Scans Status Indicator */}
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-700">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                tier === "enterprise"
+                  ? "bg-amber-500"
+                  : tier === "pro"
+                  ? "bg-purple-600"
+                  : tier === "starter"
+                  ? "bg-blue-600"
+                  : "bg-emerald-500"
+              }`}
+            />
+            <span className="font-bold">{formatTierName(tier)}</span>
+            {limits.dailyScans !== Infinity ? (
+              <span className="text-slate-500 font-mono text-[11px] border-l border-slate-300 pl-1.5">
+                {remainingScans} / {limits.dailyScans} daily scans left
+              </span>
+            ) : (
+              <span className="text-emerald-700 font-semibold text-[11px] border-l border-slate-300 pl-1.5">
+                Unlimited scans
+              </span>
+            )}
+          </div>
+          {tier === "free" && (
+            <button
+              onClick={() =>
+                triggerUpgradeModal({
+                  requiredTier: "pro",
+                  featureTitle: "Upgrade to Pro Analyst",
+                  description:
+                    "Get unlimited daily scans, competitor benchmarking, AI code fixes, and deeper crawl capacities.",
+                })
+              }
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-[11px] font-bold shadow-xs transition-all cursor-pointer"
+            >
+              <Sparkles className="w-3 h-3" /> Upgrade
+            </button>
+          )}
+        </div>
 
         {data && (
           <div className="flex items-center gap-2">

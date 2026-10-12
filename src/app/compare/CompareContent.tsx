@@ -32,6 +32,8 @@ import {
 } from "lucide-react";
 import { ComparisonReport } from "@/lib/modules/compare/comparator";
 import { exportKeywordGapCsv } from "@/lib/utils/csvExport";
+import { usePlan } from "@/lib/auth/PlanContext";
+import { formatTierName } from "@/lib/auth/tierLimits";
 
 interface ApiResponse {
   success: boolean;
@@ -46,6 +48,8 @@ interface ApiResponse {
 export default function CompareContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { tier, canAccess, triggerUpgradeModal } = usePlan();
+  const hasCompareAccess = canAccess("allowCompetitorCompare");
 
   const paramSiteA = searchParams.get("siteA") || "";
   const paramSiteB = searchParams.get("siteB") || "";
@@ -113,6 +117,23 @@ export default function CompareContent() {
       setError("Please specify both Website A and Website B.");
       return;
     }
+
+    const isSample = samplePairs.some(
+      (p) =>
+        (inputA.toLowerCase().includes(p.a) && inputB.toLowerCase().includes(p.b)) ||
+        (inputA.toLowerCase().includes(p.b) && inputB.toLowerCase().includes(p.a))
+    );
+
+    if (!hasCompareAccess && !isSample) {
+      triggerUpgradeModal({
+        requiredTier: "pro",
+        featureTitle: "Competitor Benchmark Suite",
+        description:
+          "Head-to-head domain comparison with differential scoring and topic gap analysis is a Pro Analyst feature. You can test any pre-set demo pair for free or upgrade to benchmark custom domains.",
+      });
+      return;
+    }
+
     router.push(`/compare?siteA=${encodeURIComponent(inputA.trim())}&siteB=${encodeURIComponent(inputB.trim())}`);
   };
 
@@ -138,6 +159,33 @@ export default function CompareContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Plan Tier Info Banner if on Free/Starter */}
+      {!hasCompareAccess && (
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border border-blue-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+            <div>
+              <span className="font-bold text-slate-900">Pro Analyst Suite:</span>{" "}
+              <span className="text-slate-600">
+                You are currently on the <strong>{formatTierName(tier)}</strong> plan. Explore pre-set demo pairs below for free, or upgrade to Pro Analyst ($39/mo) for unlimited custom domain benchmarks.
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() =>
+              triggerUpgradeModal({
+                requiredTier: "pro",
+                featureTitle: "Competitor Benchmark Suite",
+                description: "Run unlimited side-by-side URL benchmarks with differential delta scoring and topic gaps.",
+              })
+            }
+            className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold whitespace-nowrap self-start sm:self-auto cursor-pointer"
+          >
+            Upgrade to Pro
+          </button>
+        </div>
+      )}
+
       {/* Top back button & action header */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <Link

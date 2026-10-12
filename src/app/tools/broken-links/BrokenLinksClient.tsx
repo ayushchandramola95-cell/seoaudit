@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePlan } from "@/lib/auth/PlanContext";
 import {
   Link2,
   AlertTriangle,
@@ -43,6 +44,7 @@ interface CrawlReport {
 }
 
 export default function BrokenLinksClient() {
+  const { tier, triggerUpgradeModal } = usePlan();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<CrawlReport | null>(null);
@@ -319,12 +321,19 @@ export default function BrokenLinksClient() {
                 The free checker audits up to 25 links per URL. Upgrade to <strong>Pro Analyst</strong> to crawl 500+ pages with recursive redirect trees and scheduled alert monitoring.
               </p>
             </div>
-            <Link
-              href="/pricing"
-              className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold whitespace-nowrap transition-colors"
+            <button
+              onClick={() =>
+                triggerUpgradeModal({
+                  requiredTier: "pro",
+                  featureTitle: "Deep 500+ Link Crawler",
+                  description:
+                    "Crawl up to 500 internal and external links per page with complete redirect chain tracking on the Pro Analyst plan.",
+                })
+              }
+              className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer"
             >
-              View Pro Plans
-            </Link>
+              Unlock 500+ Link Crawl
+            </button>
           </div>
         </div>
       )}

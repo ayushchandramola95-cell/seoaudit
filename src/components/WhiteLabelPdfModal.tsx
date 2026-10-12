@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { X, Printer, Sparkles, Building, User, FileText, Check } from "lucide-react";
+import { X, Printer, Sparkles, Building, User, FileText, Check, Lock } from "lucide-react";
+import { usePlan } from "@/lib/auth/PlanContext";
+import { formatTierName } from "@/lib/auth/tierLimits";
 
 interface WhiteLabelPdfModalProps {
   isOpen: boolean;
@@ -18,6 +20,9 @@ export default function WhiteLabelPdfModal({
   score,
   grade,
 }: WhiteLabelPdfModalProps) {
+  const { tier, canAccess, triggerUpgradeModal } = usePlan();
+  const hasWhiteLabelAccess = canAccess("allowWhiteLabelPDF");
+
   const [agencyName, setAgencyName] = useState("SeoSeite Intelligence Partner");
   const [clientName, setClientName] = useState(domain);
   const [consultantName, setConsultantName] = useState("Lead Technical SEO Analyst");
@@ -28,6 +33,16 @@ export default function WhiteLabelPdfModal({
   if (!isOpen) return null;
 
   const handlePrint = () => {
+    if (!hasWhiteLabelAccess) {
+      triggerUpgradeModal({
+        requiredTier: "enterprise",
+        featureTitle: "White-Label Agency Client PDF Export",
+        description:
+          "Custom agency branding, consultant signatures, client notes, and white-label client PDF generation is an Agency & Enterprise feature.",
+      });
+      return;
+    }
+
     // Inject printable banner into window print session
     const printHeaderId = "whitelabel-print-header";
     let printEl = document.getElementById(printHeaderId);
