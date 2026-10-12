@@ -71,7 +71,7 @@ async function ensureSchema(db: Pool) {
   }
 }
 
-function getDbPool(): Pool | null {
+export function getDbPool(): Pool | null {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) return null;
 

@@ -13,7 +13,10 @@ import {
   Sparkles,
   Filter,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  Radar,
+  Bot,
+  Flame,
 } from "lucide-react";
 
 interface ToolCard {
@@ -21,7 +24,7 @@ interface ToolCard {
   name: string;
   description: string;
   href: string;
-  category: "crawl" | "speed" | "meta" | "stack";
+  category: "crawl" | "speed" | "meta" | "stack" | "ai";
   badge: string;
   icon: any;
   metric: string;
@@ -92,6 +95,16 @@ export default function ToolsHubClient() {
       icon: Award,
       metric: "Common Crawl",
     },
+    {
+      id: "brand-radar",
+      name: "Brand Radar AI & AEO Studio",
+      description: "Measure your brand's AI Share of Voice (SoV) across ChatGPT, Gemini, Perplexity, and Claude for high-intent buyer queries.",
+      href: "/tools/brand-radar",
+      category: "ai",
+      badge: "AEO Flagship",
+      icon: Radar,
+      metric: "AI Share of Voice",
+    },
   ];
 
   const filteredTools = tools.filter((tool) => {
@@ -138,6 +151,15 @@ export default function ToolsHubClient() {
             }`}
           >
             All Tools ({tools.length})
+          </button>
+          <button
+            onClick={() => setActiveCategory("ai")}
+            className={`px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+              activeCategory === "ai" ? "bg-blue-600 text-white font-bold" : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
+            }`}
+          >
+            <Radar className="w-3.5 h-3.5" />
+            Brand Radar (AEO)
           </button>
           <button
             onClick={() => setActiveCategory("crawl")}

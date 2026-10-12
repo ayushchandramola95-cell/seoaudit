@@ -165,6 +165,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/tools/brand-radar" className="hover:text-white transition-colors text-blue-300 font-medium">
+                  Brand Radar AI (AEO)
+                </Link>
+              </li>
+              <li>
                 <Link href="/tools/broken-links" className="hover:text-white transition-colors">
                   Broken Link Checker (404)
                 </Link>
