@@ -301,6 +301,14 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/api-docs" className="hover:text-indigo-400 text-indigo-300 font-semibold transition-colors flex items-center gap-1">
+                  REST API &amp; Webhooks Docs
+                  <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300">
+                    v1.0
+                  </span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/dashboard?tab=connected" className="hover:text-white transition-colors">
                   Mode A vs Mode B Guide
                 </Link>

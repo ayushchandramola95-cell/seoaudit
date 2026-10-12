@@ -493,6 +493,21 @@ export default function Header() {
                           </Link>
                         </li>
                         <li>
+                          <Link href="/api-docs" onClick={() => setResourcesOpen(false)} className="group block">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                REST API &amp; Webhooks Docs
+                              </span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700">
+                                v1.0
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Programmatic audit, batch &amp; alerts reference.
+                            </p>
+                          </Link>
+                        </li>
+                        <li>
                           <Link href="/dashboard?tab=infra" className="group block">
                             <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
                               Google Cloud Run &amp; SQL
