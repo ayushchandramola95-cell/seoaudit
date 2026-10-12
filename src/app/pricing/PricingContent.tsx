@@ -43,39 +43,25 @@ export default function PricingContent() {
     setTimeout(() => setSwitchedNotice(null), 4000);
   };
 
-  const handleCheckout = async (planId: string) => {
+  const handleSelectPlan = (planId: PlanTier) => {
+    const billing = isAnnual ? "annual" : "monthly";
     if (!isAuthenticated) {
-      window.location.href = `/signup?plan=${planId}`;
+      window.location.href = `/signup?plan=${planId}&billing=${billing}`;
       return;
     }
 
     if (planId === "free") {
       handleSwitchTier("free");
+      window.location.href = "/dashboard";
       return;
     }
-    setLoadingTier(planId);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planId,
-          billing: isAnnual ? "annual" : "monthly",
-        }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        handleSwitchTier(planId as PlanTier);
-        window.location.href = `/dashboard?upgraded=${planId}`;
-      }
-    } catch {
-      handleSwitchTier(planId as PlanTier);
-      window.location.href = `/dashboard?upgraded=${planId}`;
-    } finally {
-      setLoadingTier(null);
-    }
+
+    // User is already authenticated and chose a paid tier -> proceed directly to payment
+    window.location.href = `/checkout?plan=${planId}&billing=${billing}`;
+  };
+
+  const handleCheckout = (planId: PlanTier) => {
+    handleSelectPlan(planId);
   };
 
   const tiers: Array<{
@@ -432,37 +418,34 @@ export default function PricingContent() {
                 {isCurrentActive ? (
                   <button
                     disabled
-                    className="w-full inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold py-2.5 px-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 cursor-default"
+                    className="w-full inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold py-2.5 px-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 cursor-default"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Currently Active</span>
+                    <span>Active Subscription</span>
                   </button>
                 ) : (
-                  <>
-                    <button
-                      onClick={() => handleSwitchTier(tierItem.id)}
-                      className={`w-full inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold py-2.5 px-3 rounded-lg transition-colors cursor-pointer ${
-                        tierItem.isPopular
-                          ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                          : "bg-slate-900 hover:bg-slate-800 text-white"
-                      }`}
-                    >
-                      <span>Simulate {tierItem.name}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                    {tierItem.id !== "free" && (
-                      <button
-                        onClick={() => handleCheckout(tierItem.id)}
-                        disabled={loadingTier !== null}
-                        className="w-full text-[11px] font-semibold py-1.5 text-slate-600 hover:text-slate-900 transition-colors block text-center"
-                      >
-                        {loadingTier === tierItem.id ? "Connecting Stripe..." : "Or Subscribe via Stripe →"}
-                      </button>
-                    )}
-                  </>
+                  <button
+                    onClick={() => handleSelectPlan(tierItem.id)}
+                    className={`w-full inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold py-2.5 px-3 rounded-lg transition-all cursor-pointer shadow-sm ${
+                      tierItem.isPopular
+                        ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
+                        : "bg-slate-900 hover:bg-slate-800 text-white"
+                    }`}
+                  >
+                    <span>
+                      {!isAuthenticated
+                        ? tierItem.id === "free"
+                          ? "Select Free Plan"
+                          : `Select ${tierItem.name}`
+                        : tierItem.id === "free"
+                        ? "Switch to Free"
+                        : `Upgrade to ${tierItem.name}`}
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 )}
                 <p className="text-[10px] text-center text-slate-400">
-                  Instant activation • Zero per-user penalties
+                  {tierItem.id === "free" ? "No credit card required" : "Instant activation • Cancel anytime"}
                 </p>
               </div>
             </div>

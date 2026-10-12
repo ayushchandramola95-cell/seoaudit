@@ -242,8 +242,8 @@ export default function LoginClient() {
         <div className="text-center text-xs text-slate-500 space-y-2">
           <p>
             Don&apos;t have an account yet?{" "}
-            <Link href="/signup" className="font-bold text-blue-600 hover:underline">
-              Create an account with free 14-day trial →
+            <Link href="/pricing" className="font-bold text-blue-600 hover:underline">
+              Choose a plan &amp; sign up →
             </Link>
           </p>
           <div className="flex items-center justify-center gap-4 text-slate-400 text-[11px] pt-2">

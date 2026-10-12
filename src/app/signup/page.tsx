@@ -4,7 +4,7 @@ import SignupClient from "./SignupClient";
 
 export const metadata: Metadata = {
   title: "Sign Up & Select Plan — SeoSeite Intel Platform",
-  description: "Create your SeoSeite account and choose from Free Webmaster, Starter, Pro Analyst, or Agency tiers with 14-day free trial.",
+  description: "Create your SeoSeite account and choose from Free Webmaster, Starter, Pro Analyst, or Agency tiers.",
 };
 
 export default function SignupPage() {

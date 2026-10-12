@@ -788,13 +788,13 @@ export default function Header() {
                   href="/login"
                   className="hidden md:inline-flex items-center px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                 >
-                  Log in
+                  Sign In
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/pricing"
                   className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs sm:text-sm font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm"
                 >
-                  Start free
+                  Sign Up
                 </Link>
               </>
             ) : (
@@ -937,14 +937,14 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-2 rounded-xl border border-slate-200 text-center font-bold text-xs text-slate-800 hover:bg-slate-50"
               >
-                Log In
+                Sign In
               </Link>
               <Link
-                href="/signup"
+                href="/pricing"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-2 rounded-xl bg-blue-600 text-center font-bold text-xs text-white hover:bg-blue-500"
               >
-                Start Free
+                Sign Up
               </Link>
             </div>
           )}

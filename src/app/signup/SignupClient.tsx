@@ -100,13 +100,14 @@ export default function SignupClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planQuery = searchParams.get("plan") as PlanTier | null;
+  const billingQuery = searchParams.get("billing") as "monthly" | "annual" | null;
 
   const { signup, isAuthenticated } = useAuth();
 
   const [selectedPlan, setSelectedPlan] = useState<PlanTier>(
     planQuery && ["free", "starter", "pro", "enterprise"].includes(planQuery) ? planQuery : "pro"
   );
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(billingQuery !== "monthly");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -123,7 +124,10 @@ export default function SignupClient() {
     if (planQuery && ["free", "starter", "pro", "enterprise"].includes(planQuery)) {
       setSelectedPlan(planQuery);
     }
-  }, [planQuery]);
+    if (billingQuery) {
+      setIsAnnual(billingQuery === "annual");
+    }
+  }, [planQuery, billingQuery]);
 
   const activePlanDetails = PLAN_OPTIONS.find((p) => p.id === selectedPlan) || PLAN_OPTIONS[2];
   const priceDisplay = isAnnual ? activePlanDetails.annualPrice : activePlanDetails.monthlyPrice;
@@ -152,20 +156,29 @@ export default function SignupClient() {
     setLoading(true);
 
     try {
+      // Step 1: User is first fully signed up and registered!
       const result = await signup({
         name,
         email,
         password,
         company,
-        tier: selectedPlan,
+        tier: "free", // Registered account
         billingCycle: isAnnual ? "annual" : "monthly",
       });
 
       if (result.success) {
         setSuccess(true);
-        setTimeout(() => {
-          router.push(`/dashboard?welcome=1&plan=${selectedPlan}`);
-        }, 600);
+        if (selectedPlan === "free") {
+          // Free plan: proceed directly to dashboard
+          setTimeout(() => {
+            router.push(`/dashboard?welcome=1&plan=free`);
+          }, 600);
+        } else {
+          // Paid plan: proceed directly to payment checkout to complete purchase!
+          setTimeout(() => {
+            router.push(`/checkout?plan=${selectedPlan}&billing=${isAnnual ? "annual" : "monthly"}`);
+          }, 600);
+        }
       } else {
         setError(result.error || "Failed to create account. Please check your information.");
       }
@@ -198,8 +211,17 @@ export default function SignupClient() {
         {/* Plan Selector Bar */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Step 1: Choose Your Starting Plan
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Choose Starting Plan:
+              </span>
+              <Link
+                href="/pricing"
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1"
+              >
+                <span>Full Feature Matrix</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
 
             {/* Annual Billing Toggle */}
@@ -296,8 +318,13 @@ export default function SignupClient() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Registration Form (7 Cols) */}
           <div className="lg:col-span-7 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200 p-8 space-y-6">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">
-              Step 2: Enter Account Credentials
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Step 2: Account Registration
+              </span>
+              <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                {selectedPlan === "free" ? "Free Forever" : `Next: Payment for ${activePlanDetails.name}`}
+              </span>
             </div>
 
             {error && (
@@ -310,7 +337,11 @@ export default function SignupClient() {
             {success && (
               <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2.5">
                 <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                <span>Account created! Redirecting to your dashboard...</span>
+                <span>
+                  {selectedPlan === "free"
+                    ? "Account created! Redirecting to your dashboard..."
+                    : `Account registered! Proceeding to payment for ${activePlanDetails.name}...`}
+                </span>
               </div>
             )}
 
@@ -424,10 +455,14 @@ export default function SignupClient() {
                 className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold text-sm transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loading ? (
-                  <span>Setting up account...</span>
+                  <span>Creating your account...</span>
                 ) : (
                   <>
-                    <span>Start Free 14-Day Trial with {activePlanDetails.name}</span>
+                    <span>
+                      {selectedPlan === "free"
+                        ? "Create Free Account & Go to Dashboard"
+                        : "Create Account & Continue to Payment"}
+                    </span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -474,7 +509,7 @@ export default function SignupClient() {
               <div className="pt-4 border-t border-slate-800 space-y-2 text-xs text-slate-400">
                 <div className="flex items-center gap-2 text-slate-300">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>14-day free trial on paid tiers. Cancel anytime.</span>
+                  <span>Instant activation. 256-bit TLS encrypted. Cancel anytime.</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-300">
                   <Zap className="w-4 h-4 text-amber-400" />
