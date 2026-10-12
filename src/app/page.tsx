@@ -194,21 +194,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Top Announcement Bar */}
-      <div className="bg-slate-900 text-white py-2 px-4 text-center text-xs font-medium border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
-          <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded tracking-wider">
-            Live Platform v2.4
-          </span>
-          <span className="text-slate-200">
-            Now with Native Claude &amp; Cursor MCP Server, 9 Standalone Tools, and Content Gap Studio.
-          </span>
-          <Link href="/tools" className="text-blue-400 hover:text-blue-300 font-semibold underline ml-1">
-            Browse All Tools →
-          </Link>
-        </div>
-      </div>
-
       {/* Hero Section */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
         {/* Pill Badge */}

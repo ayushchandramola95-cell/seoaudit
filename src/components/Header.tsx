@@ -16,7 +16,7 @@ import {
   Cpu,
   Layers,
   Link2,
-  Code,
+  Code2,
   Bell,
   Menu,
   X,
@@ -24,9 +24,13 @@ import {
   Search,
   FileText,
   Server,
-  ExternalLink,
   Lock,
   Radar,
+  ListChecks,
+  Terminal,
+  ExternalLink,
+  Sliders,
+  CheckCircle2,
 } from "lucide-react";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { formatTierName, PlanTier } from "@/lib/auth/tierLimits";
@@ -68,7 +72,7 @@ export default function Header() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
@@ -77,9 +81,9 @@ export default function Header() {
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-none">
                 <Globe className="w-4 h-4" />
               </div>
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 font-extrabold">
                 SeoSeite
-                <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                   Intel
                 </span>
               </span>
@@ -87,7 +91,7 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1">
-              {/* Product Mega Menu (Ahrefs Style) */}
+              {/* Product Mega Menu (Clickable Only) */}
               <div className="relative" ref={productRef}>
                 <button
                   type="button"
@@ -95,9 +99,9 @@ export default function Header() {
                     setProductOpen((prev) => !prev);
                     setResourcesOpen(false);
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
                     productOpen || pathname.startsWith("/analyze")
-                      ? "bg-slate-100 text-slate-900 font-semibold"
+                      ? "bg-slate-100 text-slate-900"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                   aria-expanded={productOpen}
@@ -106,296 +110,290 @@ export default function Header() {
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${productOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Product Mega Dropdown */}
+                {/* Expanded, Spacious Product Mega Dropdown */}
                 {productOpen && (
-                  <div
-                    className="absolute left-0 mt-2 w-[920px] -translate-x-8 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50"
-                  >
-                    <div className="p-6 grid grid-cols-12 gap-6">
-                      {/* Column 1: SEARCH & AUDIT */}
+                  <div className="absolute left-0 mt-3 w-[1040px] -translate-x-12 bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
+                    <div className="p-7 grid grid-cols-12 gap-8">
+                      {/* Column 1: Core Audits & Health */}
                       <div className="col-span-3 space-y-4">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                          Search &amp; Audit
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                          Technical Health
                         </div>
-                        <div className="space-y-3">
-                          <Link href="/analyze" className="group block">
-                            <div className="flex items-center gap-2">
-                              <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                Site Health Auditor
-                              </span>
+                        <div className="space-y-1">
+                          <Link href="/analyze" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                <ShieldCheck className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                  Full Website Auditor
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  0–100 deterministic scoring across 14 engines.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              0–100 deterministic scoring &amp; diagnostics.
-                            </p>
                           </Link>
 
-                          <Link href="/analyze?tab=deadlinks" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Link2 className="w-4 h-4 text-purple-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-purple-600">
-                                Broken Link Crawler
-                              </span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">
-                                New
-                              </span>
+                          <Link href="/tools/speed-lab" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                                <Zap className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-amber-600">
+                                  Core Web Vitals Lab
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Lighthouse LCP, CLS, FCP &amp; TTFB metrics.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              Recursive 404 &amp; redirect chain inspection.
-                            </p>
                           </Link>
 
-                          <Link href="/analyze?tab=structure" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Layers className="w-4 h-4 text-slate-500 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                Document Architecture
-                              </span>
+                          <Link href="/tools/broken-links" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                                <Link2 className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-purple-600">
+                                  Broken Link &amp; 404 Crawler
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Deep internal &amp; outbound link validation.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              H1-H6 heading hierarchy &amp; word counts.
-                            </p>
                           </Link>
 
-                          <Link href="/analyze?tab=headers" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Lock className="w-4 h-4 text-slate-500 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                Security Headers Guard
-                              </span>
+                          <Link href="/analyze?tab=structure" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                                <Layers className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                  Document Architecture
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  H1–H6 heading hierarchy &amp; DOM tree.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              HSTS, CSP, X-Frame-Options verification.
-                            </p>
                           </Link>
                         </div>
                       </div>
 
-                      {/* Column 2: PERFORMANCE & STACK */}
+                      {/* Column 2: Competitive & Intelligence */}
                       <div className="col-span-3 space-y-4">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                          Performance &amp; Stack
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                          Competitive Suite
                         </div>
-                        <div className="space-y-3">
-                          <Link href="/analyze?tab=performance" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Zap className="w-4 h-4 text-amber-500 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-amber-600">
-                                Core Web Vitals Lab
-                              </span>
+                        <div className="space-y-1">
+                          <Link href="/compare" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                                <GitCompare className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-indigo-600">
+                                  Competitor Benchmark
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Side-by-side URL scoring &amp; framework diffs.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              Lighthouse LCP, FCP, CLS &amp; TTFB metrics.
-                            </p>
                           </Link>
 
-                          <Link href="/analyze?tab=traffic" className="group block">
-                            <div className="flex items-center gap-2">
-                              <TrendingUp className="w-4 h-4 text-emerald-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-600">
-                                Open PageRank &amp; Reach
-                              </span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">
-                                Live
-                              </span>
+                          <Link href="/tools/content-gap" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center shrink-0">
+                                <Search className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-pink-600">
+                                  Semantic Content Gap
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Missing keywords &amp; competitor heading topics.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              DomCop Common Crawl authority tier.
-                            </p>
                           </Link>
 
-                          <Link href="/analyze?tab=tech" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Cpu className="w-4 h-4 text-indigo-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600">
-                                Tech Stack Detector
-                              </span>
+                          <Link href="/tools/batch-audit" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
+                                <ListChecks className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-slate-700">
+                                  Multi-URL Batch Audit
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Concurrent audit for up to 15 URLs in bulk.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              Fingerprints 50+ CMS, frameworks &amp; CDNs.
-                            </p>
                           </Link>
 
-                          <Link href="/analyze?tab=geo" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Sparkles className="w-4 h-4 text-blue-500 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                AI Search &amp; GEO Bots
-                              </span>
+                          <Link href="/tools/brand-radar" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                <Radar className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                  Brand Radar AI (AEO)
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Track brand citations in ChatGPT &amp; Gemini.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              GPTBot, ClaudeBot &amp; Perplexity readiness.
-                            </p>
                           </Link>
                         </div>
                       </div>
 
-                      {/* Column 3: COMPETITIVE & AGENCY */}
+                      {/* Column 3: Standalone Micro-Tools */}
                       <div className="col-span-3 space-y-4">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                          Competitive &amp; Agency
+                        <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                            Micro-Tools
+                          </span>
+                          <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[11px] font-bold text-blue-600 hover:underline">
+                            Directory Hub →
+                          </Link>
                         </div>
-                        <div className="space-y-3">
-                          <Link href="/compare" className="group block">
-                            <div className="flex items-center gap-2">
-                              <GitCompare className="w-4 h-4 text-purple-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-purple-600">
-                                Competitor Benchmark
-                              </span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-800">
-                                Pro
-                              </span>
+                        <div className="space-y-1">
+                          <Link href="/tools/tech-detector" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                                <Cpu className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-indigo-600">
+                                  50+ Tech Stack Profiler
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Identifies frameworks, CMS &amp; CDNs.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              Side-by-side Site A vs B winner metrics.
-                            </p>
                           </Link>
 
-                          <Link href="/tools/content-gap" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Search className="w-4 h-4 text-blue-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                Semantic Content Gap
-                              </span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-800">
-                                Pro
-                              </span>
+                          <Link href="/tools/authority-checker" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                <TrendingUp className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-600">
+                                  Open PageRank Lookup
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Common Crawl PageRank data.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              Missing keywords &amp; heading topics.
-                            </p>
                           </Link>
 
-                          <Link href="/tools/batch-audit" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Layers className="w-4 h-4 text-indigo-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600">
-                                Multi-URL Batch Audit
-                              </span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-900 text-white">
-                                Bulk
-                              </span>
+                          <Link href="/tools/schema-validator" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                <Code2 className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                  JSON-LD Schema Validator
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Validates structured data &amp; OpenGraph.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              Audit up to 15 URLs in parallel.
-                            </p>
                           </Link>
 
-                          <Link href="/dashboard?tab=connected" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-600">
-                                Connected Telemetry
-                              </span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-900 text-white">
-                                Mode B
-                              </span>
+                          <Link href="/tools/serp-preview" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                                <Search className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-slate-900 group-hover:text-teal-600">
+                                  SERP Snippet Simulator
+                                </div>
+                                <div className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                                  Desktop &amp; mobile Google preview.
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              Google Search Console &amp; GA4 read-only.
-                            </p>
-                          </Link>
-
-                          <Link href="/dashboard?tab=alerts" className="group block">
-                            <div className="flex items-center gap-2">
-                              <Bell className="w-4 h-4 text-rose-500 shrink-0" />
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-rose-600">
-                                Automated Alerts
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              Slack, Discord &amp; Zapier webhooks.
-                            </p>
                           </Link>
                         </div>
                       </div>
 
-                      {/* Column 4: USE CASES & FREE TOOLS (Right Rail) */}
-                      <div className="col-span-3 bg-slate-50/90 rounded-lg p-4 border border-slate-200/80 space-y-4">
+                      {/* Column 4: Platform Spotlights (Right Rail) */}
+                      <div className="col-span-3 space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
                         <div>
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                            Use Cases
+                            Featured Spotlight
                           </div>
-                          <ul className="space-y-1.5 text-xs text-slate-600">
-                            <li>
-                              <Link href="/compare" className="hover:text-blue-600 transition-colors">
-                                • Competitive Intelligence
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/analyze" className="hover:text-blue-600 transition-colors">
-                                • Technical SEO Auditing
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/analyze?tab=performance" className="hover:text-blue-600 transition-colors">
-                                • Core Web Vitals Optimization
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/analyze?tab=geo" className="hover:text-blue-600 transition-colors">
-                                • GEO AI Search Readiness
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/pricing" className="hover:text-blue-600 transition-colors">
-                                • Agency Client Reporting
-                              </Link>
-                            </li>
-                          </ul>
+
+                          <Link
+                            href="/mcp"
+                            onClick={() => setProductOpen(false)}
+                            className="block p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 transition-all mb-2.5 group"
+                          >
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 group-hover:text-blue-600 mb-1">
+                              <Terminal className="w-3.5 h-3.5 text-blue-600" />
+                              <span>SEO MCP Server</span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">New</span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-snug">
+                              Connect Claude Desktop &amp; Cursor IDE to run audits conversationally.
+                            </p>
+                          </Link>
+
+                          <Link
+                            href="/api-docs"
+                            onClick={() => setProductOpen(false)}
+                            className="block p-3 rounded-lg bg-white border border-slate-200 hover:border-indigo-300 transition-all group"
+                          >
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 group-hover:text-indigo-600 mb-1">
+                              <Code2 className="w-3.5 h-3.5 text-indigo-600" />
+                              <span>REST API Reference</span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-snug">
+                              Interactive endpoints, testing runner &amp; cURL snippets.
+                            </p>
+                          </Link>
                         </div>
 
-                        <div className="pt-3 border-t border-slate-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              Free Standalone Tools
-                            </span>
-                            <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[10px] font-bold text-blue-600 hover:underline">
-                              All 9 Tools →
-                            </Link>
-                          </div>
-                          <ul className="space-y-1.5 text-xs text-slate-600">
-                            <li>
-                              <Link href="/tools/brand-radar" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-semibold text-blue-700 flex items-center gap-1">
-                                <Radar className="w-3 h-3 text-blue-600" /> Brand Radar AI (AEO)
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/tools/broken-links" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-medium">
-                                • Broken Link &amp; 404 Checker
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/tools/speed-lab" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-medium">
-                                • PageSpeed &amp; Core Web Vitals
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/tools/schema-validator" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-medium">
-                                • Schema JSON-LD Studio
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/tools/serp-preview" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-medium">
-                                • Google SERP Simulator
-                              </Link>
-                            </li>
-                          </ul>
-                        </div>
+                        <Link
+                          href="/tools"
+                          onClick={() => setProductOpen(false)}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center justify-between pt-2 border-t border-slate-200"
+                        >
+                          <span>Explore all 9 tools</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
                       </div>
                     </div>
 
                     {/* Bottom Bar */}
-                    <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex items-center justify-between text-xs">
-                      <span className="text-slate-500">
-                        140+ automated audits across metadata, security, performance, and authority.
+                    <div className="bg-slate-50/80 px-7 py-3.5 border-t border-slate-200 flex items-center justify-between text-xs">
+                      <span className="text-slate-500 font-medium">
+                        Deterministic 0–100 scoring with sub-100ms latency. Zero fabricated metrics.
                       </span>
                       <Link
-                        href="/tools"
+                        href="/pricing"
                         onClick={() => setProductOpen(false)}
-                        className="font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
                       >
-                        Browse all free standalone tools
+                        Compare all plan features &amp; quotas
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
@@ -403,7 +401,7 @@ export default function Header() {
                 )}
               </div>
 
-              {/* Resources Mega Menu (Ahrefs Style) */}
+              {/* Resources Mega Menu (Clickable Only) */}
               <div className="relative" ref={resourcesRef}>
                 <button
                   type="button"
@@ -411,9 +409,9 @@ export default function Header() {
                     setResourcesOpen((prev) => !prev);
                     setProductOpen(false);
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
                     resourcesOpen || pathname === "/capstone" || pathname === "/project-info"
-                      ? "bg-slate-100 text-slate-900 font-semibold"
+                      ? "bg-slate-100 text-slate-900"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                   aria-expanded={resourcesOpen}
@@ -422,177 +420,143 @@ export default function Header() {
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Resources Dropdown */}
+                {/* Expanded, Spacious Resources Dropdown */}
                 {resourcesOpen && (
-                  <div
-                    className="absolute left-0 mt-2 w-[720px] -translate-x-16 bg-white rounded-xl shadow-2xl border border-slate-200 p-6 grid grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-1 duration-150 z-50"
-                  >
-                    {/* Learn SeoSeite */}
-                    <div className="space-y-3">
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
-                        Learn SeoSeite
+                  <div className="absolute left-0 mt-3 w-[840px] -translate-x-24 bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
+                    <div className="p-7 grid grid-cols-3 gap-8">
+                      {/* Column 1: Specifications */}
+                      <div className="space-y-4">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                          Architecture &amp; Specs
+                        </div>
+                        <ul className="space-y-1">
+                          <li>
+                            <Link href="/capstone" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                Scoring Methodology
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                                Mathematical formulas &amp; deterministic rules.
+                              </p>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/project-info" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                Platform Specifications
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                                Complete multi-phase engineering specs.
+                              </p>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/worklog" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                Engineering Changelog
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                                Day-by-day development timeline.
+                              </p>
+                            </Link>
+                          </li>
+                        </ul>
                       </div>
-                      <ul className="space-y-2">
-                        <li>
-                          <Link href="/capstone" className="group block">
-                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                              Methodology &amp; Architecture
-                            </span>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Mathematical formulas &amp; deterministic scoring rules.
-                            </p>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/project-info" className="group block">
-                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                              Platform Specifications
-                            </span>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Phase 1–10 engineering roadmap.
-                            </p>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/worklog" className="group block">
-                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                              Engineering Changelog
-                            </span>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Day-by-day technical development log.
-                            </p>
-                          </Link>
-                        </li>
-                      </ul>
-                    </div>
 
-                    {/* Infrastructure & Security */}
-                    <div className="space-y-3">
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
-                        Enterprise Specs
+                      {/* Column 2: Developer & Automation */}
+                      <div className="space-y-4">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+                          Developer &amp; CI/CD
+                        </div>
+                        <ul className="space-y-1">
+                          <li>
+                            <Link href="/api-docs" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 flex items-center gap-1">
+                                REST API &amp; Webhooks
+                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700">v1.0</span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                                Interactive endpoints &amp; testing runner.
+                              </p>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/mcp" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 flex items-center gap-1">
+                                SEO MCP Server
+                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">New</span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                                Claude Desktop &amp; Cursor IDE integration.
+                              </p>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/dashboard?tab=connected" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2.5 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
+                                Mode A vs Mode B
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                                Public crawl vs owner GSC telemetry.
+                              </p>
+                            </Link>
+                          </li>
+                        </ul>
                       </div>
-                      <ul className="space-y-2">
-                        <li>
-                          <Link href="/mcp" onClick={() => setResourcesOpen(false)} className="group block">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                AI Model Context Protocol (MCP)
-                              </span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">
-                                New
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Claude Desktop &amp; Cursor IDE integration.
-                            </p>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/api-docs" onClick={() => setResourcesOpen(false)} className="group block">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                REST API &amp; Webhooks Docs
-                              </span>
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700">
-                                v1.0
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Programmatic audit, batch &amp; alerts reference.
-                            </p>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/dashboard?tab=infra" className="group block">
-                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                              Google Cloud Run &amp; SQL
-                            </span>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Containerized microservices &amp; PostgreSQL.
-                            </p>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/capstone" className="group block">
-                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                              Zero-Trust SSRF Defense
-                            </span>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Subnet blacklisting &amp; redirect pinning.
-                            </p>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/dashboard?tab=connected" className="group block">
-                            <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                              Mode A vs Mode B
-                            </span>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              Public diagnostics vs verified owner telemetry.
-                            </p>
-                          </Link>
-                        </li>
-                      </ul>
-                    </div>
 
-                    {/* Free SEO Tools */}
-                    <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-200/80">
-                      <div className="flex items-center justify-between pb-1 border-b border-slate-200">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                          Free SEO Tools
-                        </span>
-                        <Link href="/tools" onClick={() => setResourcesOpen(false)} className="text-[10px] font-bold text-blue-600 hover:underline">
-                          All Tools →
+                      {/* Column 3: Quick Spotlight Cards */}
+                      <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                            Quick Access
+                          </div>
+                          <Link
+                            href="/pricing"
+                            onClick={() => setResourcesOpen(false)}
+                            className="block p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 transition-all mb-2.5 group"
+                          >
+                            <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 mb-1">
+                              Transparent Plans
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-snug">
+                              Free forever, $19 Starter, $49 Pro, $149 Agency.
+                            </p>
+                          </Link>
+
+                          <Link
+                            href="/capstone"
+                            onClick={() => setResourcesOpen(false)}
+                            className="block p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 transition-all group"
+                          >
+                            <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 mb-1">
+                              Viva Voce Cheatsheet
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-snug">
+                              25 college viva defense questions with answers.
+                            </p>
+                          </Link>
+                        </div>
+
+                        <Link
+                          href="/tools"
+                          onClick={() => setResourcesOpen(false)}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center justify-between pt-2 border-t border-slate-200"
+                        >
+                          <span>Explore Tools Hub</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       </div>
-                      <ul className="space-y-2 text-xs">
-                        <li>
-                          <Link href="/tools/brand-radar" onClick={() => setResourcesOpen(false)} className="text-blue-700 hover:text-blue-800 font-bold block flex items-center gap-1">
-                            <Radar className="w-3 h-3 text-blue-600" /> Brand Radar AI (AEO)
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/tools/broken-links" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Broken Link Checker (404)
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/tools/speed-lab" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Core Web Vitals Lab
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/tools/schema-validator" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Schema JSON-LD Validator
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/tools/serp-preview" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Google SERP Simulator
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/tools/tech-detector" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Technology Detector
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/tools/authority-checker" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Open PageRank Lookup
-                          </Link>
-                        </li>
-                      </ul>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Tools Hub */}
+              {/* Direct Navigation Links */}
               <Link
                 href="/tools"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
                   pathname?.startsWith("/tools")
-                    ? "bg-slate-100 text-slate-900 font-semibold"
+                    ? "bg-slate-100 text-slate-900"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
@@ -601,33 +565,31 @@ export default function Header() {
 
               <Link
                 href="/compare"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
                   pathname === "/compare"
-                    ? "bg-slate-100 text-slate-900 font-semibold"
+                    ? "bg-slate-100 text-slate-900"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
-                <GitCompare className="w-3.5 h-3.5 text-slate-500" />
                 Compare
               </Link>
 
               <Link
                 href="/dashboard"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
                   pathname === "/dashboard"
-                    ? "bg-slate-100 text-slate-900 font-semibold"
+                    ? "bg-slate-100 text-slate-900"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
-                <LayoutDashboard className="w-3.5 h-3.5 text-slate-500" />
                 Dashboard
               </Link>
 
               <Link
                 href="/pricing"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
                   pathname === "/pricing"
-                    ? "bg-slate-100 text-slate-900 font-semibold"
+                    ? "bg-slate-100 text-slate-900"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
@@ -638,30 +600,23 @@ export default function Header() {
 
           {/* Right Action buttons */}
           <div className="flex items-center gap-3">
-            <div className="hidden lg:flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Cloud Engine
-            </div>
-
-            {/* Plan Tier Selector (Demo & State) */}
+            {/* Plan Tier Simulator (Cleaner, more stylish) */}
             <div className="relative" ref={tierRef}>
               <button
                 onClick={() => setTierMenuOpen(!tierMenuOpen)}
-                className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200/80 cursor-pointer"
-                title="Active Subscription Tier"
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors border border-slate-200/90 cursor-pointer"
+                title="Switch active testing tier"
               >
-                <Sparkles className="w-3 h-3 text-blue-600" />
-                <span>{formatTierName(tier)}</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
+                <Sliders className="w-3.5 h-3.5 text-blue-600" />
+                <span>Tier:</span>
+                <span className="capitalize font-bold text-blue-700">{formatTierName(tier)}</span>
+                <ChevronDown className="w-3 h-3 text-slate-500" />
               </button>
 
               {tierMenuOpen && (
-                <div
-                  onMouseLeave={() => setTierMenuOpen(false)}
-                  className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs animate-in fade-in slide-in-from-top-1 duration-150"
-                >
-                  <div className="px-3 py-1 font-bold text-slate-400 uppercase text-[10px] tracking-wider">
-                    Plan Tier (Sandbox)
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 p-2 z-50 text-xs">
+                  <div className="text-[10px] uppercase font-bold text-slate-400 px-2 py-1 tracking-wider border-b border-slate-100 mb-1">
+                    Simulate Plan Tier
                   </div>
                   {(["free", "starter", "pro", "enterprise"] as PlanTier[]).map((t) => (
                     <button
@@ -670,40 +625,41 @@ export default function Header() {
                         setTier(t);
                         setTierMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-1.5 hover:bg-slate-50 flex items-center justify-between cursor-pointer ${
-                        tier === t ? "font-bold text-blue-600 bg-blue-50/50" : "text-slate-700"
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg capitalize font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                        tier === t
+                          ? "bg-blue-50 text-blue-700 font-bold"
+                          : "text-slate-700 hover:bg-slate-50"
                       }`}
                     >
                       <span>{formatTierName(t)}</span>
-                      {tier === t && <span className="text-[10px] text-blue-600 font-bold">✓ Active</span>}
+                      {tier === t && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
                     </button>
                   ))}
-                  <div className="border-t border-slate-100 mt-1 pt-1 px-3 py-1">
+                  <div className="mt-1 pt-1 border-t border-slate-100">
                     <Link
                       href="/pricing"
                       onClick={() => setTierMenuOpen(false)}
-                      className="text-[11px] font-semibold text-blue-600 hover:underline block"
+                      className="block text-[11px] text-blue-600 hover:underline px-2 py-1 font-semibold"
                     >
-                      Compare All Plans →
+                      View All Tier Quotas →
                     </Link>
                   </div>
                 </div>
               )}
             </div>
 
+            {/* Primary Action Button */}
             <Link
               href="/analyze"
-              className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium px-3.5 sm:px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm"
             >
-              Start Analysis
-              <ArrowRight className="w-3.5 h-3.5" />
+              Analyze Site
             </Link>
 
-            {/* Mobile menu button */}
+            {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
-              aria-label="Toggle Menu"
+              className="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -711,46 +667,72 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3">
-          <Link
-            href="/analyze"
-            className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 rounded-lg"
-          >
-            Technical SEO Analyzer
-          </Link>
-          <Link
-            href="/compare"
-            className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 rounded-lg"
-          >
-            Competitor Benchmark
-          </Link>
-          <Link
-            href="/dashboard"
-            className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 rounded-lg"
-          >
-            SaaS Dashboard &amp; Integrations
-          </Link>
-          <Link
-            href="/pricing"
-            className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 rounded-lg"
-          >
-            Pricing &amp; Plans
-          </Link>
-          <Link
-            href="/capstone"
-            className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 rounded-lg"
-          >
-            Methodology &amp; Architecture
-          </Link>
-          <div className="pt-2">
+        <div className="md:hidden border-t border-slate-200 bg-white p-4 space-y-3">
+          <div className="space-y-1">
             <Link
               href="/analyze"
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
             >
-              Start Analysis
-              <ArrowRight className="w-4 h-4" />
+              Site Health Auditor
+            </Link>
+            <Link
+              href="/tools"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
+            >
+              9 Standalone Free Tools
+            </Link>
+            <Link
+              href="/compare"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
+            >
+              Competitor Benchmark
+            </Link>
+            <Link
+              href="/tools/content-gap"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
+            >
+              Semantic Content Gap
+            </Link>
+            <Link
+              href="/tools/batch-audit"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
+            >
+              Multi-URL Batch Audit
+            </Link>
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
+            >
+              Pricing &amp; Plans
+            </Link>
+            <Link
+              href="/api-docs"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
+            >
+              REST API Reference
+            </Link>
+            <Link
+              href="/mcp"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
+            >
+              Model Context Protocol (MCP)
             </Link>
           </div>
         </div>
