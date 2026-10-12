@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Globe, ShieldCheck, Cpu, Database, Sparkles, BookOpen, ArrowRight, ExternalLink } from "lucide-react";
+import { Globe, ShieldCheck, Cpu, Database, Sparkles, BookOpen, ArrowRight, ArrowUpRight, ExternalLink } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -160,48 +160,48 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-slate-400">
               <li>
-                <Link href="/analyze" className="hover:text-white transition-colors">
-                  Free Website Auditor
+                <Link href="/tools" className="hover:text-blue-400 font-semibold transition-colors flex items-center gap-1">
+                  Free Tools Directory <ArrowUpRight className="w-3 h-3" />
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=traffic" className="hover:text-white transition-colors">
-                  DomCop PageRank Checker
-                </Link>
-              </li>
-              <li>
-                <Link href="/analyze?tab=deadlinks" className="hover:text-white transition-colors">
+                <Link href="/tools/broken-links" className="hover:text-white transition-colors">
                   Broken Link Checker (404)
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=schema" className="hover:text-white transition-colors">
+                <Link href="/tools/speed-lab" className="hover:text-white transition-colors">
+                  Core Web Vitals &amp; PageSpeed
+                </Link>
+              </li>
+              <li>
+                <Link href="/tools/schema-validator" className="hover:text-white transition-colors">
                   JSON-LD Schema Generator
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=social" className="hover:text-white transition-colors">
+                <Link href="/tools/serp-preview" className="hover:text-white transition-colors">
                   Google SERP Simulator
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=tech" className="hover:text-white transition-colors">
+                <Link href="/tools/tech-detector" className="hover:text-white transition-colors">
                   CMS &amp; Framework Lookup
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=performance" className="hover:text-white transition-colors">
-                  Core Web Vitals Checker
+                <Link href="/tools/authority-checker" className="hover:text-white transition-colors">
+                  DomCop PageRank Checker
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=geo" className="hover:text-white transition-colors">
-                  Robots.txt &amp; Sitemap Checker
+                <Link href="/analyze" className="hover:text-white transition-colors">
+                  Free Full Website Auditor
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=structure" className="hover:text-white transition-colors">
-                  Word Count &amp; Headings Tool
+                <Link href="/compare" className="hover:text-white transition-colors">
+                  Competitor Benchmark Tool
                 </Link>
               </li>
             </ul>

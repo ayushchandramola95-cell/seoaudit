@@ -326,18 +326,33 @@ export default function Header() {
                         </div>
 
                         <div className="pt-3 border-t border-slate-200">
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                            Free Utilities
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              Free Standalone Tools
+                            </span>
+                            <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[10px] font-bold text-blue-600 hover:underline">
+                              All 6 Tools →
+                            </Link>
                           </div>
                           <ul className="space-y-1.5 text-xs text-slate-600">
                             <li>
-                              <Link href="/analyze?tab=schema" className="hover:text-blue-600 font-medium">
-                                • JSON-LD Schema Studio
+                              <Link href="/tools/broken-links" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-medium">
+                                • Broken Link &amp; 404 Checker
                               </Link>
                             </li>
                             <li>
-                              <Link href="/analyze?tab=social" className="hover:text-blue-600 font-medium">
-                                • SERP &amp; Social Simulator
+                              <Link href="/tools/speed-lab" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-medium">
+                                • PageSpeed &amp; Core Web Vitals
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/tools/schema-validator" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-medium">
+                                • Schema JSON-LD Studio
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/tools/serp-preview" onClick={() => setProductOpen(false)} className="hover:text-blue-600 font-medium">
+                                • Google SERP Simulator
                               </Link>
                             </li>
                           </ul>
@@ -351,11 +366,11 @@ export default function Header() {
                         140+ automated audits across metadata, security, performance, and authority.
                       </span>
                       <Link
-                        href="/analyze"
+                        href="/tools"
                         onClick={() => setProductOpen(false)}
                         className="font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
                       >
-                        Discover all tools &amp; audit engine
+                        Browse all free standalone tools
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
@@ -471,33 +486,43 @@ export default function Header() {
 
                     {/* Free SEO Tools */}
                     <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-200/80">
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-200">
-                        Free SEO Tools
+                      <div className="flex items-center justify-between pb-1 border-b border-slate-200">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          Free SEO Tools
+                        </span>
+                        <Link href="/tools" onClick={() => setResourcesOpen(false)} className="text-[10px] font-bold text-blue-600 hover:underline">
+                          All Tools →
+                        </Link>
                       </div>
                       <ul className="space-y-2 text-xs">
                         <li>
-                          <Link href="/analyze" className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Free Website Auditor
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/analyze?tab=traffic" className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Open PageRank Lookup
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/analyze?tab=deadlinks" className="text-slate-700 hover:text-blue-600 font-medium block">
+                          <Link href="/tools/broken-links" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
                             • Broken Link Checker (404)
                           </Link>
                         </li>
                         <li>
-                          <Link href="/analyze?tab=schema" className="text-slate-700 hover:text-blue-600 font-medium block">
-                            • Schema JSON-LD Generator
+                          <Link href="/tools/speed-lab" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Core Web Vitals Lab
                           </Link>
                         </li>
                         <li>
-                          <Link href="/analyze?tab=social" className="text-slate-700 hover:text-blue-600 font-medium block">
+                          <Link href="/tools/schema-validator" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Schema JSON-LD Validator
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/tools/serp-preview" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
                             • Google SERP Simulator
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/tools/tech-detector" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Technology Detector
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/tools/authority-checker" onClick={() => setResourcesOpen(false)} className="text-slate-700 hover:text-blue-600 font-medium block">
+                            • Open PageRank Lookup
                           </Link>
                         </li>
                       </ul>
@@ -505,6 +530,18 @@ export default function Header() {
                   </div>
                 )}
               </div>
+
+              {/* Tools Hub */}
+              <Link
+                href="/tools"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  pathname?.startsWith("/tools")
+                    ? "bg-slate-100 text-slate-900 font-semibold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                }`}
+              >
+                Tools
+              </Link>
 
               <Link
                 href="/compare"
