@@ -52,6 +52,9 @@ export default function Header() {
       if (resourcesRef.current && !resourcesRef.current.contains(event.target as Node)) {
         setResourcesOpen(false);
       }
+      if (tierRef.current && !tierRef.current.contains(event.target as Node)) {
+        setTierMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -89,18 +92,15 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={() => {
-                    setProductOpen(!productOpen);
+                    setProductOpen((prev) => !prev);
                     setResourcesOpen(false);
                   }}
-                  onMouseEnter={() => {
-                    setProductOpen(true);
-                    setResourcesOpen(false);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                     productOpen || pathname.startsWith("/analyze")
                       ? "bg-slate-100 text-slate-900 font-semibold"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
+                  aria-expanded={productOpen}
                 >
                   Product
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${productOpen ? "rotate-180" : ""}`} />
@@ -109,7 +109,6 @@ export default function Header() {
                 {/* Product Mega Dropdown */}
                 {productOpen && (
                   <div
-                    onMouseLeave={() => setProductOpen(false)}
                     className="absolute left-0 mt-2 w-[920px] -translate-x-8 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50"
                   >
                     <div className="p-6 grid grid-cols-12 gap-6">
@@ -409,18 +408,15 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={() => {
-                    setResourcesOpen(!resourcesOpen);
+                    setResourcesOpen((prev) => !prev);
                     setProductOpen(false);
                   }}
-                  onMouseEnter={() => {
-                    setResourcesOpen(true);
-                    setProductOpen(false);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                     resourcesOpen || pathname === "/capstone" || pathname === "/project-info"
                       ? "bg-slate-100 text-slate-900 font-semibold"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
+                  aria-expanded={resourcesOpen}
                 >
                   Resources
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""}`} />
@@ -429,7 +425,6 @@ export default function Header() {
                 {/* Resources Dropdown */}
                 {resourcesOpen && (
                   <div
-                    onMouseLeave={() => setResourcesOpen(false)}
                     className="absolute left-0 mt-2 w-[720px] -translate-x-16 bg-white rounded-xl shadow-2xl border border-slate-200 p-6 grid grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-1 duration-150 z-50"
                   >
                     {/* Learn SeoSeite */}

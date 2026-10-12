@@ -392,15 +392,24 @@ export default function Footer() {
         {/* Bottom Copyright Row */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <p>© 2026 SeoSeite Intel Platform. Grounded metrics, zero hallucinations. Built on Next.js 16, TypeScript &amp; Google Cloud Platform.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <Link href="/project-info" className="hover:text-slate-300 transition-colors">
               Platform Spec
             </Link>
             <Link href="/worklog" className="hover:text-slate-300 transition-colors">
               Changelog
             </Link>
+            <Link href="/api-docs" className="hover:text-slate-300 transition-colors">
+              API Docs
+            </Link>
+            <Link href="/sitemap.xml" className="hover:text-slate-300 transition-colors">
+              Sitemap
+            </Link>
+            <Link href="/robots.txt" className="hover:text-slate-300 transition-colors">
+              Robots.txt
+            </Link>
             <Link href="/pricing" className="hover:text-slate-300 transition-colors">
-              Pricing Plans
+              Pricing
             </Link>
           </div>
         </div>

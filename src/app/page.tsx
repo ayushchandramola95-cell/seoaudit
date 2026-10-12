@@ -1,5 +1,6 @@
 import Link from "next/link";
 import UrlAnalyzerInput from "@/components/UrlAnalyzerInput";
+import HomeInteractiveShowcase from "@/components/HomeInteractiveShowcase";
 import { 
   Search, 
   Layers, 
@@ -23,189 +24,208 @@ import {
   TrendingUp,
   Code2,
   Link2,
+  Terminal,
+  Radar,
+  ListChecks,
+  FileSearch,
+  Sliders,
+  Users,
+  Bell,
 } from "lucide-react";
 
 export default function Home() {
-  const auditCards = [
+  const standaloneTools = [
     {
-      title: "Deterministic SEO Health",
-      score: "85/100",
-      grade: "Grade A",
-      category: "Technical Health",
-      desc: "Transparent, rule-based deductions across metadata, heading hierarchies, indexability tags, and HTTP security headers.",
-      badge: "Deterministic",
-      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    },
-    {
-      title: "Core Web Vitals Telemetry",
-      score: "LCP 1.2s • FCP 0.8s",
-      grade: "Passing",
-      category: "Google Lab Vitals",
-      desc: "Measured via official Google PageSpeed Insights API. Pinpoints render-blocking CSS, slow TTFB, and layout shifts.",
-      badge: "Google API",
-      badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
-    },
-    {
-      title: "50+ Stack Fingerprints",
-      score: "14 Techs Detected",
-      grade: "Identified",
-      category: "Infrastructure",
-      desc: "Detects Next.js, React, Tailwind CSS, Shopify, WordPress, Cloudflare, Stripe, and Google Tag Manager from page signatures.",
-      badge: "Signature Engine",
-      badgeColor: "bg-purple-50 text-purple-700 border-purple-200",
-    },
-    {
-      title: "Heuristic Traffic Modeling",
-      score: "420M - 550M / mo",
-      grade: "High Confidence",
-      category: "Audience Reach",
-      desc: "Empirical click distribution models based on discoverable content footprint. Always displays explicit confidence ratings.",
-      badge: "Transparent Model",
-      badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
-    },
-  ];
-
-  const pillars = [
-    {
-      icon: Search,
-      title: "Deterministic 0–100 Technical Auditing",
-      suite: "Site Health & Audits",
-      tier: "Free",
-      tierColor: "bg-slate-100 text-slate-700 border-slate-200",
-      desc: "Evaluates 20+ technical rules across Metadata (25 pts), Content & Structure (25 pts), Indexability (25 pts), and Security (25 pts).",
-      color: "text-blue-600 bg-blue-50 border-blue-200",
-      link: "/analyze",
-    },
-    {
-      icon: Zap,
-      title: "Core Web Vitals & PageSpeed Lab",
-      suite: "Speed & Authority",
-      tier: "Starter",
-      tierColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      desc: "Measures real Google Lighthouse metrics (FCP, LCP, CLS, TTFB) offloading heavy computation to Google Cloud infrastructure.",
-      color: "text-amber-600 bg-amber-50 border-amber-200",
-      link: "/analyze?tab=performance",
-    },
-    {
-      icon: TrendingUp,
-      title: "DomCop Open PageRank & Traffic",
-      suite: "Speed & Authority",
-      tier: "Starter",
-      tierColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      desc: "Syncs verified Common Crawl PageRank data, global ranking tiers, and empirical click volume ranges with zero hallucinations.",
-      color: "text-emerald-600 bg-emerald-50 border-emerald-200",
-      link: "/analyze?tab=traffic",
-    },
-    {
-      icon: GitCompare,
-      title: "Competitor Benchmark & Topic Gap",
-      suite: "Competitive Suite",
-      tier: "Pro",
-      tierColor: "bg-blue-50 text-blue-700 border-blue-200",
-      desc: "Crawls two domains concurrently, computing score deltas and uncovering DOM TF-IDF semantic topic gaps.",
-      color: "text-indigo-600 bg-indigo-50 border-indigo-200",
-      link: "/compare",
-    },
-    {
+      title: "Broken Link & 404 Checker",
+      category: "Site Health",
+      desc: "Deep-crawls internal and external hyperlinks, detecting dead 404 errors, broken redirects, and anchor issues.",
+      href: "/tools/broken-links",
+      badge: "Free Utility",
       icon: Link2,
-      title: "404 Broken Link & Redirect Crawler",
-      suite: "Site Health & Audits",
-      tier: "Pro",
-      tierColor: "bg-purple-50 text-purple-700 border-purple-200",
-      desc: "Recursively inspects internal and outbound links, detecting dead hrefs, slow responses, and multi-hop 301 redirect chains.",
-      color: "text-purple-600 bg-purple-50 border-purple-200",
-      link: "/analyze?tab=deadlinks",
+      color: "text-red-600 bg-red-50 border-red-200",
     },
     {
-      icon: Sparkles,
-      title: "Connected Telemetry & Agency Mode B",
-      suite: "Agency Automation",
-      tier: "Agency",
-      tierColor: "bg-slate-900 text-white border-slate-800",
-      desc: "Connects read-only Google Search Console (GSC) and GA4 OAuth telemetry, automated webhook health alerts, and white-label client PDF reports.",
+      title: "Core Web Vitals & PageSpeed Lab",
+      category: "Performance",
+      desc: "Direct Google Lighthouse API telemetry measuring real LCP, FCP, CLS, INP, and TTFB lab scores.",
+      href: "/tools/speed-lab",
+      badge: "Lighthouse API",
+      icon: Zap,
+      color: "text-amber-600 bg-amber-50 border-amber-200",
+    },
+    {
+      title: "Schema JSON-LD & OG Validator",
+      category: "Structured Data",
+      desc: "Validates Schema.org JSON-LD syntax, entity types, and OpenGraph social previews with copy-paste code snippets.",
+      href: "/tools/schema-validator",
+      badge: "Code Studio",
+      icon: Code2,
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+    },
+    {
+      title: "Google Desktop & Mobile SERP Preview",
+      category: "Search Simulator",
+      desc: "Pixel-accurate Google SERP preview simulator with real-time title and meta description truncation warnings.",
+      href: "/tools/serp-preview",
+      badge: "SERP Studio",
+      icon: Search,
       color: "text-emerald-600 bg-emerald-50 border-emerald-200",
-      link: "/dashboard?tab=connected",
+    },
+    {
+      title: "50+ Tech Stack Profiler",
+      category: "Infrastructure",
+      desc: "Fingerprints React, Next.js, Vue, Tailwind, Cloudflare, Shopify, WordPress, and 45+ other technologies instantly.",
+      href: "/tools/tech-detector",
+      badge: "Signature Engine",
+      icon: Cpu,
+      color: "text-indigo-600 bg-indigo-50 border-indigo-200",
+    },
+    {
+      title: "DomCop Open PageRank Lookup",
+      category: "Authority & Reach",
+      desc: "Live Common Crawl Open PageRank lookup (0–10 rank, status, global percentile) without fabricated metrics.",
+      href: "/tools/authority-checker",
+      badge: "Open Data",
+      icon: TrendingUp,
+      color: "text-cyan-600 bg-cyan-50 border-cyan-200",
+    },
+    {
+      title: "Brand Radar AI (AEO Visibility)",
+      category: "AI Search",
+      desc: "Measures brand recommendation citations across ChatGPT, Google Gemini, Claude, and Perplexity for buyer prompts.",
+      href: "/tools/brand-radar",
+      badge: "AI Share of Voice",
+      icon: Radar,
+      color: "text-purple-600 bg-purple-50 border-purple-200",
+    },
+    {
+      title: "Semantic Content Gap & Keywords",
+      category: "Competitive Intel",
+      desc: "Cross-domain TF-IDF keyword overlap, missing competitor terms, and heading topic disparities.",
+      href: "/tools/content-gap",
+      badge: "Keyword Matrix",
+      icon: GitCompare,
+      color: "text-pink-600 bg-pink-50 border-pink-200",
+    },
+    {
+      title: "Multi-URL Batch SEO Auditor",
+      category: "Bulk Engine",
+      desc: "Concurrently audits up to 15 URLs in parallel with master spreadsheet matrix, score sorting, and CSV export.",
+      href: "/tools/batch-audit",
+      badge: "Up to 15 URLs",
+      icon: ListChecks,
+      color: "text-slate-800 bg-slate-100 border-slate-300",
     },
   ];
 
   const comparisonRows = [
     {
       feature: "Monthly Cost",
-      seoseite: "Free Starter / $24 Pro",
-      traditional: "$129 – $499 / month (Ahrefs / Semrush)",
+      seoseite: "$0 Free Forever / $49 Pro",
+      traditional: "$129 – $449 / mo (Ahrefs / Semrush)",
+      win: true,
+    },
+    {
+      feature: "Team Member Seats",
+      seoseite: "3 Seats on Pro ($0 extra) • Unlimited on Agency",
+      traditional: "1 Seat only (+$40 to $80/mo per extra seat!)",
       win: true,
     },
     {
       feature: "Crawl Latency",
-      seoseite: "< 100 ms (High-Speed Cheerio)",
+      seoseite: "< 100 ms (High-Speed Cheerio Stream)",
       traditional: "4–8 seconds (Heavy Headless Browser)",
       win: true,
     },
     {
+      feature: "Model Context Protocol (MCP)",
+      seoseite: "Native stdio & HTTP MCP for Claude/Cursor",
+      traditional: "Proprietary locked-down API add-on",
+      win: true,
+    },
+    {
       feature: "Data Integrity & Honesty",
-      seoseite: "100% Deterministic + Confidence Scores",
+      seoseite: "100% Deterministic + Explicit Confidence",
       traditional: "Opaque, black-box traffic estimates",
       win: true,
     },
     {
       feature: "Tech Stack Fingerprinting",
-      seoseite: "Included (50+ signatures detected)",
+      seoseite: "Included Free (50+ Deep Signatures)",
       traditional: "Requires separate tool (BuiltWith $295/mo)",
       win: true,
     },
     {
       feature: "AI Developer Action Items",
       seoseite: "Google Gemini + Copyable Code Snippets",
-      traditional: "Generic text recommendations",
+      traditional: "Generic, non-actionable text tips",
       win: true,
     },
     {
-      feature: "Permanent Shareable Snapshots",
-      seoseite: "Included via immutable UUID links",
-      traditional: "Requires paid team seat login",
-      win: true,
-    },
-    {
-      feature: "Infrastructure Security",
-      seoseite: "Zero-Trust SSRF & Cloud Metadata Shield",
+      feature: "Infrastructure Defense",
+      seoseite: "Zero-Trust SSRF & DNS Pinning Shield",
       traditional: "Proprietary / Unknown",
       win: true,
     },
   ];
 
+  const faqs = [
+    {
+      q: "What makes SeoSeite different from Ahrefs or Semrush?",
+      a: "Commercial SEO giants cost $129 to $449 every month and heavily penalize teams by charging $40–$80 for every single extra user seat. SeoSeite provides sub-second deterministic audits, 9 focused standalone micro-tools, Content Gap, and native AI MCP integration at an accessible price ($0 to $49/mo) with zero per-user seat penalties.",
+    },
+    {
+      q: "Can I use the standalone tools without an account?",
+      a: "Yes! All 9 standalone tools (Broken Links, Core Web Vitals, Schema Validator, SERP Preview, Tech Detector, Open PageRank, etc.) can be used freely without entering a credit card or creating an account.",
+    },
+    {
+      q: "What is the SeoSeite SEO Model Context Protocol (MCP)?",
+      a: "The Model Context Protocol (MCP) lets developers query SeoSeite conversationally inside Claude Desktop, Cursor IDE, or custom autonomous agents. Ask Claude 'Audit https://stripe.com' and it automatically calls SeoSeite's engine for verified JSON diagnostic data.",
+    },
+    {
+      q: "Are the SEO scores and traffic numbers trustworthy?",
+      a: "Our 0–100 SEO health score is 100% deterministic and rule-based, calculated directly from your page's live HTML, DOM structure, and HTTP security headers. We never fabricate exact visitor counts and transparently indicate heuristic confidence ratings.",
+    },
+    {
+      q: "How does 24/7 automated monitoring work?",
+      a: "Our background cron worker crawls your monitored domains weekly. If your SEO score drops by more than 5 points or dead links are detected, an instant notification is dispatched to your registered Slack or Discord webhook.",
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Top Pro Banner */}
-      <div className="bg-slate-900 text-white py-2 px-4 text-center text-xs font-medium">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
+      {/* Top Announcement Bar */}
+      <div className="bg-slate-900 text-white py-2 px-4 text-center text-xs font-medium border-b border-slate-800">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
           <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded tracking-wider">
-            Live Platform
+            Live Platform v2.4
           </span>
-          <span>
-            Enterprise Website Intelligence & Competitive Benchmarking Engine.
+          <span className="text-slate-200">
+            Now with Native Claude &amp; Cursor MCP Server, 9 Standalone Tools, and Content Gap Studio.
           </span>
-          <Link href="/pricing" className="text-blue-400 hover:text-blue-300 font-semibold underline ml-1">
-            Explore Subscription Plans →
+          <Link href="/tools" className="text-blue-400 hover:text-blue-300 font-semibold underline ml-1">
+            Browse All Tools →
           </Link>
         </div>
       </div>
 
       {/* Hero Section */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-        {/* Modern Pill Badge */}
+        {/* Pill Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-8 shadow-sm">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          Sub-Second Crawling • 50+ Frameworks • Zero Fabricated Metrics
+          Sub-Second Crawling • 50+ Frameworks • 9 Standalone Micro-Tools • Zero Hallucinations
         </div>
 
+        {/* Hero Title */}
         <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-5xl mx-auto leading-tight sm:leading-tight mb-6">
-          Inspect, Benchmark & Optimize <br className="hidden sm:inline" />
+          Inspect, Benchmark &amp; Optimize <br className="hidden sm:inline" />
           <span className="text-blue-600">Any Website in Sub-Second Time.</span>
         </h1>
 
-        <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
-          The deterministic website intelligence platform for modern engineering and SEO teams. 
-          Uncover technical health, detect 50+ technology stacks, measure real Core Web Vitals, and estimate traffic reach with absolute transparency.
+        <p className="text-base sm:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
+          The deterministic website intelligence platform for modern developers, agencies, and SEO consultants. 
+          Uncover technical health, detect 50+ technology stacks, measure real Core Web Vitals, and track AI search visibility with absolute transparency.
         </p>
 
         {/* URL Input Form */}
@@ -225,132 +245,111 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Google PageSpeed Insights API</span>
+            <span>Native Claude &amp; Cursor MCP</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Google Gemini 3.5 Flash Diagnostics</span>
+            <span>Zero-Trust SSRF Defense</span>
           </div>
         </div>
       </section>
 
-      {/* Live Sample Audit Card Showcase (Flat & Modern) */}
-      <section className="py-14 bg-slate-50/70 border-y border-slate-200">
+      {/* 9 Standalone Free Micro-Tools Grid (Ahrefs-Inspired Modular Hub) */}
+      <section className="py-16 sm:py-20 bg-slate-50/70 border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
               <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-1">
-                Deterministic Architecture
+                Modular SEO Ecosystem
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                Grounded Intelligence. Zero Hallucinations.
+                9 Standalone Tools for Focused Jobs
               </h2>
-              <p className="text-sm text-slate-600 mt-1">
-                Every score, metric, and tech signature is verified by deterministic code and open web standards.
+              <p className="text-sm text-slate-600 mt-1 max-w-2xl">
+                No need to wade through a monolithic scan when you only need a quick 404 check or a PageSpeed score. Use each tool individually with zero clutter.
               </p>
             </div>
             <Link
-              href="/capstone"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm"
+              href="/tools"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-white px-3.5 py-2.5 rounded-lg border border-slate-200 shadow-sm transition-colors shrink-0"
             >
-              Read full methodology spec
+              Explore Tools Directory Hub
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {auditCards.map((card, idx) => (
-              <div key={idx} className="flat-card p-5 bg-white flex flex-col justify-between hover:border-slate-300 transition-colors">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      {card.category}
-                    </span>
-                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${card.badgeColor}`}>
-                      {card.badge}
-                    </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {standaloneTools.map((tool, idx) => {
+              const Icon = tool.icon;
+              return (
+                <Link
+                  key={idx}
+                  href={tool.href}
+                  className="flat-card p-5 bg-white hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className={`w-9 h-9 rounded-lg border flex items-center justify-center ${tool.color}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                        {tool.badge}
+                      </span>
+                    </div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                      {tool.category}
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-1.5">
+                      {tool.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {tool.desc}
+                    </p>
                   </div>
-                  <div className="text-2xl font-black text-slate-900 mb-1 tracking-tight">
-                    {card.score}
+                  <div className="pt-3 mt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
+                    <span>Launch Tool</span>
+                    <ChevronRight className="w-3.5 h-3.5 ml-1" />
                   </div>
-                  <div className="text-xs font-semibold text-emerald-600 mb-2">{card.grade}</div>
-                  <h3 className="text-sm font-bold text-slate-900 mb-1.5">{card.title}</h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">{card.desc}</p>
-                </div>
-              </div>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Core Analytical Pillars Section */}
+      {/* Interactive Live Feature Studio Showcase */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-12">
           <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
-            Complete Diagnostic Suite
+            Interactive Product Studio
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-            Everything You Need to Understand & Outrank Competitors
+            Experience the Engine Before You Run It
           </h2>
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Consolidate your SEO scraper, technology detector, Core Web Vitals lab, and AI consultant into one high-velocity platform.
+            Click through our 5 core capabilities below to see real-world diagnostic previews across technical health, competitive intelligence, AI brand radar, and MCP protocols.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pillars.map((pillar, idx) => {
-            const Icon = pillar.icon;
-            return (
-              <Link
-                key={idx}
-                href={pillar.link}
-                className="flat-card p-6 bg-white hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${pillar.color}`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${pillar.tierColor}`}>
-                      {pillar.tier}
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                    {pillar.suite}
-                  </div>
-                  <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-2">
-                    {pillar.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    {pillar.desc}
-                  </p>
-                </div>
-                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
-                  Explore Feature Suite
-                  <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <HomeInteractiveShowcase />
       </section>
 
       {/* SeoSeite vs Traditional Tools Comparison Table */}
-      <section className="py-16 bg-slate-50 border-y border-slate-200">
+      <section className="py-16 sm:py-20 bg-slate-50 border-y border-slate-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
               Why We Built SeoSeite
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-3">
-              SeoSeite vs Traditional Platforms
+              SeoSeite vs Traditional SEO Platforms
             </h2>
             <p className="text-sm text-slate-600">
-              See how our deterministic, sub-second engine compares against costly legacy SEO suites.
+              See why modern engineering and growth teams switch from expensive, black-box legacy suites.
             </p>
           </div>
 
-          <div className="flat-card overflow-hidden bg-white">
+          <div className="flat-card overflow-hidden bg-white shadow-sm border border-slate-200">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead>
@@ -378,105 +377,110 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Real Audit Demonstration Preview */}
+      {/* Developer Platform & MCP Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="flat-badge text-indigo-700 bg-indigo-50 border-indigo-200 mb-4">
-              Instant Engineering Diagnostics
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold mb-4">
+              <Terminal className="w-3.5 h-3.5" />
+              Agentic AI &amp; Developer Integration
             </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-              Turn Raw Audit Findings Into Copyable Code Snippets
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+              Connect SEO Audits to Claude Desktop, Cursor &amp; CI/CD
             </h2>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
-              Instead of giving you vague advice like &quot;improve your heading hierarchy,&quot; SeoSeite synthesizes exact HTML, Nginx configurations, and JSON-LD schema blocks tailored to your target domain.
+              Modern engineering teams don&apos;t just look at dashboards—they automate them. With SeoSeite&apos;s native Model Context Protocol (MCP) server and REST API, your AI coding assistants can audit URLs and diagnose regressions conversationally.
             </p>
 
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Parallel Competitor Benchmarking</h4>
-                  <p className="text-xs text-slate-600">Compare any two domains simultaneously at <code className="text-blue-600 font-mono">/compare</code> to see exact score deltas and shared frameworks.</p>
-                </div>
+            <div className="space-y-3.5 text-xs sm:text-sm text-slate-700">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span><strong>Claude Desktop &amp; Cursor IDE:</strong> Audit target domains directly from your coding prompt.</span>
               </div>
-
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Google Cloud Run & Cloud SQL Backbone</h4>
-                  <p className="text-xs text-slate-600">Hosted in a stateless, autoscaling Google Cloud Run container backed by managed PostgreSQL 16.</p>
-                </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span><strong>GitHub Actions CI/CD:</strong> Enforce SEO health thresholds before merging pull requests.</span>
               </div>
-
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Zero-Trust SSRF Defense</h4>
-                  <p className="text-xs text-slate-600">Pre-flight DNS filters drop internal RFC 1918 subnets, loopbacks, and cloud metadata APIs before opening sockets.</p>
-                </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span><strong>24/7 Automated Webhooks:</strong> Receive real-time alerts in Slack or Discord if a score drops &gt;5 points.</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mt-8">
+            <div className="flex flex-wrap items-center gap-3 mt-8">
               <Link
-                href="/compare"
-                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
+                href="/mcp"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-lg transition-colors"
               >
-                <GitCompare className="w-4 h-4" />
-                Launch Competitor Benchmark
+                <Terminal className="w-4 h-4" />
+                Explore SEO MCP Server
               </Link>
               <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                href="/api-docs"
+                className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-lg border border-slate-300 transition-colors"
               >
-                View Subscription Plans →
+                <Code2 className="w-4 h-4" />
+                REST API Reference
               </Link>
             </div>
           </div>
 
-          {/* Clean Flat Mockup Card */}
-          <div className="p-6 bg-slate-900 text-white rounded-2xl shadow-xl border border-slate-800">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="font-mono text-xs text-slate-400 ml-2">github.com — Live Technical Audit</span>
-              </div>
-              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
-                Score: 85/100 (Grade A)
+          <div className="flat-card p-6 bg-slate-950 text-slate-200 rounded-2xl border border-slate-800 font-mono text-xs shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-slate-400">
+              <span className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                claude-desktop-config.json
               </span>
+              <span className="text-[11px] text-blue-400">MCP JSON-RPC 2.0</span>
             </div>
 
-            <div className="space-y-3 font-mono text-xs">
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
-                <span className="text-slate-400">Crawl Response Time</span>
-                <span className="text-emerald-400 font-bold">95 ms (Cheerio Stream)</span>
-              </div>
+            <pre className="text-slate-300 leading-relaxed overflow-x-auto">
+{`{
+  "mcpServers": {
+    "seoseite": {
+      "command": "node",
+      "args": ["scripts/seoseite-mcp.mjs"],
+      "env": {
+        "SEOSEITE_API_URL": "https://seoseite.com"
+      }
+    }
+  }
+}`}
+            </pre>
 
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
-                <span className="text-slate-400">Core Web Vitals (LCP)</span>
-                <span className="text-emerald-400 font-bold">1.2s (Passing Google CWV)</span>
-              </div>
-
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                <div className="text-slate-400 mb-1">Detected Stack Footprint:</div>
-                <div className="text-blue-400">Tailwind CSS, Next.js, Cloudflare, Fastly</div>
-              </div>
-
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                <div className="text-amber-400 font-bold mb-1">Gemini AI Prioritized Fix:</div>
-                <div className="text-slate-300 text-[11px] leading-relaxed">
-                  Consolidate secondary headers into H2 and enforce Strict-Transport-Security with includeSubDomains.
-                </div>
-              </div>
+            <div className="p-3.5 bg-slate-900 rounded-lg border border-slate-800 text-[11px] text-slate-300 space-y-1">
+              <div className="text-amber-400 font-bold">User prompt to Claude:</div>
+              <div className="text-slate-400">&quot;Run seoseite_audit_url on https://example.com and tell me what critical tags are missing.&quot;</div>
+              <div className="text-emerald-400 pt-1">Claude executes tool → Receives verified deterministic JSON audit in 85ms.</div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-              <span>Immutable Snapshot ID: scan_179165...</span>
-              <span className="text-emerald-400">● PostgreSQL Synchronized</span>
-            </div>
+      {/* Frequently Asked Questions */}
+      <section className="py-16 bg-slate-50 border-t border-slate-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-sm text-slate-600">
+              Everything you need to know about our deterministic architecture, tools, and pricing.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
+              <div key={idx} className="flat-card p-5 sm:p-6 bg-white border border-slate-200 rounded-xl">
+                <h3 className="text-base font-bold text-slate-900 mb-2 flex items-start gap-2">
+                  <HelpCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                  {faq.q}
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed pl-7">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -500,10 +504,16 @@ export default function Home() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
+              href="/tools"
+              className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm px-6 py-3.5 rounded-lg border border-blue-500 transition-colors"
+            >
+              Browse 9 Standalone Tools
+            </Link>
+            <Link
               href="/pricing"
               className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm px-6 py-3.5 rounded-lg border border-blue-500 transition-colors"
             >
-              View Pricing Tiers
+              View Transparent Plans
             </Link>
           </div>
         </div>
