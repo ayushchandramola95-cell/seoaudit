@@ -17,6 +17,8 @@ import {
   Radar,
   Bot,
   Flame,
+  GitCompare,
+  ListChecks,
 } from "lucide-react";
 
 interface ToolCard {
@@ -104,6 +106,26 @@ export default function ToolsHubClient() {
       badge: "AEO Flagship",
       icon: Radar,
       metric: "AI Share of Voice",
+    },
+    {
+      id: "content-gap",
+      name: "Semantic Content Gap & Keyword Matrix",
+      description: "Compare your webpage against any competitor to uncover missing keywords, topical heading gaps, and content length disparity.",
+      href: "/tools/content-gap",
+      category: "crawl",
+      badge: "Competitor Intelligence",
+      icon: GitCompare,
+      metric: "Missing Keywords",
+    },
+    {
+      id: "batch-audit",
+      name: "Multi-URL Batch SEO Auditor",
+      description: "Audit up to 15 website URLs simultaneously. Compare SEO scores, response times, tech stacks, and Open PageRank in one table.",
+      href: "/tools/batch-audit",
+      category: "crawl",
+      badge: "Bulk Engine",
+      icon: ListChecks,
+      metric: "Up to 15 URLs",
     },
   ];
 

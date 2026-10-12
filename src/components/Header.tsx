@@ -252,18 +252,33 @@ export default function Header() {
                             </p>
                           </Link>
 
-                          <Link href="/compare" className="group block">
+                          <Link href="/tools/content-gap" className="group block">
                             <div className="flex items-center gap-2">
                               <Search className="w-4 h-4 text-blue-600 shrink-0" />
                               <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600">
-                                Semantic Topic Gap
+                                Semantic Content Gap
                               </span>
                               <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-800">
                                 Pro
                               </span>
                             </div>
                             <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
-                              DOM TF-IDF cross-domain content gaps.
+                              Missing keywords &amp; heading topics.
+                            </p>
+                          </Link>
+
+                          <Link href="/tools/batch-audit" className="group block">
+                            <div className="flex items-center gap-2">
+                              <Layers className="w-4 h-4 text-indigo-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600">
+                                Multi-URL Batch Audit
+                              </span>
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-900 text-white">
+                                Bulk
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 pl-6 leading-tight">
+                              Audit up to 15 URLs in parallel.
                             </p>
                           </Link>
 
@@ -337,7 +352,7 @@ export default function Header() {
                               Free Standalone Tools
                             </span>
                             <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[10px] font-bold text-blue-600 hover:underline">
-                              All 7 Tools →
+                              All 9 Tools →
                             </Link>
                           </div>
                           <ul className="space-y-1.5 text-xs text-slate-600">

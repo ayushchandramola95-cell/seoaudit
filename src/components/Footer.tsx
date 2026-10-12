@@ -170,6 +170,16 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/tools/content-gap" className="hover:text-white transition-colors text-emerald-300 font-medium">
+                  Content Gap &amp; Keyword Studio
+                </Link>
+              </li>
+              <li>
+                <Link href="/tools/batch-audit" className="hover:text-white transition-colors text-purple-300 font-medium">
+                  Multi-URL Batch SEO Auditor
+                </Link>
+              </li>
+              <li>
                 <Link href="/tools/broken-links" className="hover:text-white transition-colors">
                   Broken Link Checker (404)
                 </Link>
