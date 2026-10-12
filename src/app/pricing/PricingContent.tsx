@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { 
   Check, 
@@ -20,8 +20,7 @@ import {
   ListChecks,
   GitCompare,
   Terminal,
-  Bell,
-  Sliders
+  Bell
 } from "lucide-react";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -31,16 +30,12 @@ export default function PricingContent() {
   const { tier: activeTier, setTier } = usePlan();
   const { user, isAuthenticated, updateUser } = useAuth();
   const [isAnnual, setIsAnnual] = useState(true);
-  const [loadingTier, setLoadingTier] = useState<string | null>(null);
-  const [switchedNotice, setSwitchedNotice] = useState<string | null>(null);
 
   const handleSwitchTier = (newTier: PlanTier) => {
     setTier(newTier);
     if (user) {
       updateUser({ tier: newTier });
     }
-    setSwitchedNotice(`Switched to ${formatTierName(newTier)}! Your active limits and feature access have been updated.`);
-    setTimeout(() => setSwitchedNotice(null), 4000);
   };
 
   const handleSelectPlan = (planId: PlanTier) => {
@@ -234,8 +229,8 @@ export default function PricingContent() {
       a: "Ahrefs plans cost $129 to $449/month with strict single-user limits (charging an extra $40–$80/mo per extra seat) and credit consumption caps. SeoSeite provides sub-second deterministic audits, 9 modular micro-tools, Content Gap, and Batch Auditing starting at $0 to $49/mo, with 3 team seats included on Pro and zero per-seat fees on Agency.",
     },
     {
-      q: "What is the Live Plan Simulator above?",
-      a: "The simulator lets you test-drive any tier immediately in your browser without entering a credit card. Switch to Starter, Pro, or Agency to instantly unlock gated tools like Content Gap, Batch Auditor, and White-Label PDF exports.",
+      q: "Can I upgrade, downgrade, or cancel my subscription anytime?",
+      a: "Yes. You can switch plans or cancel with one click from your Account dashboard at any time. When upgrading, new audit quotas and tools activate immediately. When canceling, access continues until the end of your prepaid billing period.",
     },
     {
       q: "How does the SeoSeite SEO MCP Server work?",
@@ -254,96 +249,58 @@ export default function PricingContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
       {/* Top Header */}
-      <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-4">
-          <Sparkles className="w-3.5 h-3.5" />
-          Transparent, Predictable Plans
+      <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold mb-4 shadow-2xs">
+          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+          <span>Simple, Transparent Pricing • Zero Credit Burn Traps</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+        <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight mb-4">
           Invest in Technical Clarity, <br className="hidden sm:inline" />
           Not Expensive Black Boxes.
         </h1>
-        <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-6">
+        <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto mb-8">
           Sub-second crawling, deterministic SEO scores, 9 standalone micro-tools, Content Gap intelligence, and native AI MCP. 
-          Start for free, then scale as your agency or platform expands.
+          Start for free, or select a paid plan with unlimited scans and zero per-seat penalty fees.
         </p>
 
-        {/* Live Plan Simulator Bar */}
-        <div className="flat-card p-4 sm:p-5 bg-slate-900 text-white rounded-xl text-left border border-slate-800 mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
-                <Sliders className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  Interactive Plan Simulator
-                </div>
-                <div className="text-sm font-bold text-white flex items-center gap-2">
-                  Active Tier: <span className="text-blue-400 capitalize">{formatTierName(activeTier)}</span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    Live
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {(["free", "starter", "pro", "enterprise"] as PlanTier[]).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => handleSwitchTier(t)}
-                  className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    activeTier === t
-                      ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-400/50"
-                      : "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
-                  }`}
-                >
-                  {t === "free" && "Free ($0)"}
-                  {t === "starter" && "Starter ($19)"}
-                  {t === "pro" && "Pro ($49)"}
-                  {t === "enterprise" && "Agency ($149)"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {switchedNotice && (
-            <div className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2 text-xs text-emerald-400 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-              <span>{switchedNotice}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Monthly vs Annual Toggle */}
-        <div className="flex items-center justify-center gap-3 mt-4">
-          <span className={`text-sm font-medium ${!isAnnual ? "text-slate-900 font-bold" : "text-slate-500"}`}>
-            Monthly Billing
-          </span>
+        {/* Modern SaaS Billing Toggle */}
+        <div className="inline-flex items-center p-1.5 rounded-2xl bg-slate-100 border border-slate-200/80 shadow-xs">
           <button
-            onClick={() => setIsAnnual(!isAnnual)}
-            className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-slate-900 focus:outline-none"
-            role="switch"
-            aria-checked={isAnnual}
+            type="button"
+            onClick={() => setIsAnnual(false)}
+            className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              !isAnnual
+                ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
           >
-            <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                isAnnual ? "translate-x-5" : "translate-x-0"
-              }`}
-            />
+            Monthly Billing
           </button>
-          <span className={`text-sm font-medium flex items-center gap-1.5 ${isAnnual ? "text-slate-900 font-bold" : "text-slate-500"}`}>
-            Annual Billing
-            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <button
+            type="button"
+            onClick={() => setIsAnnual(true)}
+            className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              isAnnual
+                ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <span>Annual Billing</span>
+            <span
+              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                isAnnual
+                  ? "bg-white text-blue-700"
+                  : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+              }`}
+            >
               Save 20%
             </span>
-          </span>
+          </button>
         </div>
       </div>
 
-      {/* Pricing Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-16 items-stretch">
+      {/* Pricing Cards Grid (Modeled on Ahrefs & Semrush Enterprise Quality) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-20 items-stretch">
         {tiers.map((tierItem) => {
           const price = isAnnual ? tierItem.annualPrice : tierItem.monthlyPrice;
           const isCurrentActive = activeTier === tierItem.id;
@@ -351,102 +308,117 @@ export default function PricingContent() {
           return (
             <div
               key={tierItem.id}
-              className={`flat-card p-5 sm:p-6 flex flex-col justify-between relative bg-white ${
+              className={`p-6 sm:p-7 rounded-3xl flex flex-col justify-between relative transition-all duration-200 bg-white ${
                 isCurrentActive
-                  ? "border-2 border-emerald-600 shadow-md ring-1 ring-emerald-600/30"
+                  ? "border-2 border-emerald-600 shadow-lg ring-4 ring-emerald-500/10"
                   : tierItem.isPopular
-                  ? "border-2 border-blue-600 shadow-md ring-1 ring-blue-600/20"
-                  : "border-slate-200"
+                  ? "border-2 border-blue-600 shadow-xl shadow-blue-500/10 ring-4 ring-blue-500/10"
+                  : "border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300"
               }`}
             >
               {isCurrentActive && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm whitespace-nowrap flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Active Plan
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[11px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-sm whitespace-nowrap flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Active Subscription</span>
                 </div>
               )}
 
               {!isCurrentActive && tierItem.isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[11px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm whitespace-nowrap">
-                  Most Popular
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[11px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-md shadow-blue-500/20 whitespace-nowrap flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-blue-200" />
+                  <span>Most Popular Choice</span>
                 </div>
               )}
 
               <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <h3 className="text-lg font-bold text-slate-900">{tierItem.name}</h3>
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                <div className="flex items-center justify-between gap-2 mb-2 pt-1">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">{tierItem.name}</h3>
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                     {tierItem.badge}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 mb-5 min-h-[34px] leading-relaxed">{tierItem.description}</p>
+                <p className="text-xs text-slate-500 mb-6 min-h-[34px] leading-relaxed">{tierItem.description}</p>
 
-                <div className="flex items-baseline gap-1 mb-5 pb-5 border-b border-slate-200">
-                  <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                    ${price}
-                  </span>
-                  <span className="text-xs font-medium text-slate-500">
-                    / mo {isAnnual && price > 0 && "(annual)"}
-                  </span>
+                {/* Pricing Block */}
+                <div className="mb-6 pb-6 border-b border-slate-100">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                      ${price}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      / month
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-medium mt-1">
+                    {price === 0 
+                      ? "Free forever • No credit card required"
+                      : isAnnual 
+                      ? `Billed annually ($${price * 12}/yr) • Save 20%`
+                      : "Billed monthly • Cancel anytime"}
+                  </div>
                 </div>
 
-                <div className="space-y-2.5 mb-6">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Included Capabilities:
+                {/* Primary Action Button */}
+                <div className="mb-6">
+                  {isCurrentActive ? (
+                    <button
+                      disabled
+                      className="w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center justify-center gap-2 cursor-default"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Current Plan Active</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleSelectPlan(tierItem.id)}
+                      className={`w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md ${
+                        tierItem.isPopular
+                          ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25"
+                          : "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/15"
+                      }`}
+                    >
+                      <span>
+                        {!isAuthenticated
+                          ? tierItem.id === "free"
+                            ? "Get Started Free"
+                            : `Select ${tierItem.name}`
+                          : tierItem.id === "free"
+                          ? "Switch to Free"
+                          : `Upgrade to ${tierItem.name}`}
+                      </span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
+                  <p className="text-[10px] text-center text-slate-400 mt-2 font-medium">
+                    {tierItem.id === "free" ? "No credit card required" : "Instant activation • Zero per-user penalties"}
+                  </p>
+                </div>
+
+                {/* Feature Bullet Inclusions */}
+                <div className="space-y-3">
+                  <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                    What&apos;s Included:
                   </div>
                   {tierItem.features.map((feat, fIdx) => (
-                    <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-700">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <div key={fIdx} className="flex items-start gap-2.5 text-xs text-slate-700">
+                      <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      </div>
                       <span className="leading-snug">{feat}</span>
                     </div>
                   ))}
 
                   {tierItem.notIncluded.length > 0 && (
-                    <div className="pt-2.5 mt-2.5 border-t border-slate-100 space-y-1.5">
+                    <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
                       {tierItem.notIncluded.map((feat, nIdx) => (
-                        <div key={nIdx} className="flex items-start gap-2 text-[11px] text-slate-400">
-                          <span className="w-3.5 h-3.5 text-slate-300 text-center font-bold">✕</span>
+                        <div key={nIdx} className="flex items-start gap-2.5 text-[11px] text-slate-400">
+                          <span className="w-4 h-4 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 text-[10px]">✕</span>
                           <span className="line-through leading-snug">{feat}</span>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                {isCurrentActive ? (
-                  <button
-                    disabled
-                    className="w-full inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold py-2.5 px-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 cursor-default"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Active Subscription</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleSelectPlan(tierItem.id)}
-                    className={`w-full inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold py-2.5 px-3 rounded-lg transition-all cursor-pointer shadow-sm ${
-                      tierItem.isPopular
-                        ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
-                        : "bg-slate-900 hover:bg-slate-800 text-white"
-                    }`}
-                  >
-                    <span>
-                      {!isAuthenticated
-                        ? tierItem.id === "free"
-                          ? "Select Free Plan"
-                          : `Select ${tierItem.name}`
-                        : tierItem.id === "free"
-                        ? "Switch to Free"
-                        : `Upgrade to ${tierItem.name}`}
-                    </span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <p className="text-[10px] text-center text-slate-400">
-                  {tierItem.id === "free" ? "No credit card required" : "Instant activation • Cancel anytime"}
-                </p>
               </div>
             </div>
           );
@@ -572,8 +544,8 @@ export default function PricingContent() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {comparisonFeatures.map((section, sIdx) => (
-                <tbody key={`sec-group-${sIdx}`}>
-                  <tr key={`sec-${sIdx}`} className="bg-slate-50 font-bold text-slate-800">
+                <React.Fragment key={`sec-group-${sIdx}`}>
+                  <tr className="bg-slate-50 font-bold text-slate-800">
                     <td colSpan={5} className="py-2.5 px-4 uppercase text-[11px] tracking-wider text-slate-500">
                       {section.category}
                     </td>
@@ -587,7 +559,7 @@ export default function PricingContent() {
                       <td className={`py-3 px-3 text-center text-slate-900 font-medium ${activeTier === "enterprise" ? "bg-emerald-50/50 font-semibold" : ""}`}>{item.enterprise}</td>
                     </tr>
                   ))}
-                </tbody>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
