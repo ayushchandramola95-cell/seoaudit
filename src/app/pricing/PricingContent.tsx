@@ -24,21 +24,31 @@ import {
   Sliders
 } from "lucide-react";
 import { usePlan } from "@/lib/auth/PlanContext";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { PlanTier, formatTierName, PLAN_CONFIGS } from "@/lib/auth/tierLimits";
 
 export default function PricingContent() {
   const { tier: activeTier, setTier } = usePlan();
+  const { user, isAuthenticated, updateUser } = useAuth();
   const [isAnnual, setIsAnnual] = useState(true);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const [switchedNotice, setSwitchedNotice] = useState<string | null>(null);
 
   const handleSwitchTier = (newTier: PlanTier) => {
     setTier(newTier);
-    setSwitchedNotice(`Simulated switch to ${formatTierName(newTier)}! Your active limits and feature access have been updated.`);
+    if (user) {
+      updateUser({ tier: newTier });
+    }
+    setSwitchedNotice(`Switched to ${formatTierName(newTier)}! Your active limits and feature access have been updated.`);
     setTimeout(() => setSwitchedNotice(null), 4000);
   };
 
   const handleCheckout = async (planId: string) => {
+    if (!isAuthenticated) {
+      window.location.href = `/signup?plan=${planId}`;
+      return;
+    }
+
     if (planId === "free") {
       handleSwitchTier("free");
       return;

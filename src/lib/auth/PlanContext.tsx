@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PlanTier, PlanLimits, getPlanLimits, canAccessFeature } from "./tierLimits";
 import UpgradeGateModal from "@/components/UpgradeGateModal";
+import { useAuth } from "./AuthContext";
 
 interface UpgradeModalConfig {
   requiredTier: PlanTier;
@@ -25,9 +26,17 @@ interface PlanContextType {
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
-  const [tier, setTierState] = useState<PlanTier>("free");
+  const { user, updateUser } = useAuth();
+  const [tier, setTierState] = useState<PlanTier>(user?.tier || "free");
   const [scansUsed, setScansUsed] = useState<number>(0);
   const [modalConfig, setModalConfig] = useState<UpgradeModalConfig | null>(null);
+
+  // Synchronize with user profile when logged in
+  useEffect(() => {
+    if (user?.tier && user.tier !== tier) {
+      setTierState(user.tier);
+    }
+  }, [user?.tier]);
 
   // Synchronize with query param or localStorage
   useEffect(() => {
@@ -39,13 +48,20 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         if (queryTier && ["free", "starter", "pro", "enterprise"].includes(queryTier)) {
           setTierState(queryTier);
           localStorage.setItem("seoseite_tier", queryTier);
+          if (user && user.tier !== queryTier) {
+            updateUser({ tier: queryTier });
+          }
           return;
         }
 
-        // 2. Check localStorage
-        const storedTier = localStorage.getItem("seoseite_tier") as PlanTier | null;
-        if (storedTier && ["free", "starter", "pro", "enterprise"].includes(storedTier)) {
-          setTierState(storedTier);
+        // 2. Check user tier or localStorage
+        if (user?.tier) {
+          setTierState(user.tier);
+        } else {
+          const storedTier = localStorage.getItem("seoseite_tier") as PlanTier | null;
+          if (storedTier && ["free", "starter", "pro", "enterprise"].includes(storedTier)) {
+            setTierState(storedTier);
+          }
         }
 
         // 3. Check daily scan quota tracking
@@ -70,6 +86,9 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     try {
       if (typeof window !== "undefined") {
         localStorage.setItem("seoseite_tier", newTier);
+        if (user && user.tier !== newTier) {
+          updateUser({ tier: newTier });
+        }
       }
     } catch {
       // ignore

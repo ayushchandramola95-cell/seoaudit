@@ -31,21 +31,27 @@ import {
   ExternalLink,
   Sliders,
   CheckCircle2,
+  User as UserIcon,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { formatTierName, PlanTier } from "@/lib/auth/tierLimits";
 
 export default function Header() {
   const pathname = usePathname();
-  const { tier, setTier } = usePlan();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { tier, setTier, scansUsed, limits } = usePlan();
   const [productOpen, setProductOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tierMenuOpen, setTierMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const productRef = useRef<HTMLDivElement>(null);
   const resourcesRef = useRef<HTMLDivElement>(null);
   const tierRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Close menus on click outside
   useEffect(() => {
@@ -59,6 +65,9 @@ export default function Header() {
       if (tierRef.current && !tierRef.current.contains(event.target as Node)) {
         setTierMenuOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -69,6 +78,7 @@ export default function Header() {
     setProductOpen(false);
     setResourcesOpen(false);
     setMobileMenuOpen(false);
+    setUserMenuOpen(false);
   }, [pathname]);
 
   return (
@@ -722,12 +732,12 @@ export default function Header() {
           </div>
 
           {/* Right Action buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Plan Tier Simulator (Cleaner, more stylish) */}
             <div className="relative" ref={tierRef}>
               <button
                 onClick={() => setTierMenuOpen(!tierMenuOpen)}
-                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors border border-slate-200/90 cursor-pointer"
+                className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors border border-slate-200/90 cursor-pointer"
                 title="Switch active testing tier"
               >
                 <Sliders className="w-3.5 h-3.5 text-blue-600" />
@@ -771,12 +781,113 @@ export default function Header() {
               )}
             </div>
 
-            {/* Primary Action Button */}
+            {/* Authentication States (Like Ahrefs & Semrush) */}
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden md:inline-flex items-center px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs sm:text-sm font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm"
+                >
+                  Start free
+                </Link>
+              </>
+            ) : (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 p-1 pl-1.5 rounded-full border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer"
+                  aria-expanded={userMenuOpen}
+                >
+                  <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center">
+                    {user?.name?.charAt(0) || "U"}
+                  </div>
+                  <div className="hidden lg:flex flex-col text-left pr-1">
+                    <span className="text-xs font-bold text-slate-900 leading-none truncate max-w-[90px]">
+                      {user?.name?.split(" ")[0]}
+                    </span>
+                    <span className="text-[10px] text-blue-600 font-semibold leading-none mt-0.5">
+                      {formatTierName(tier)}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 text-xs animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="p-3 bg-slate-50 rounded-xl mb-1 border border-slate-100">
+                      <div className="font-bold text-slate-900 truncate">{user?.name}</div>
+                      <div className="text-[11px] text-slate-500 truncate">{user?.email}</div>
+                      <div className="mt-2 flex items-center justify-between pt-2 border-t border-slate-200/80">
+                        <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">
+                          {formatTierName(tier)}
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          {scansUsed} / {limits.dailyScans === Infinity ? "∞" : limits.dailyScans} scans
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium transition-colors"
+                      >
+                        <LayoutDashboard className="w-4 h-4 text-slate-500" />
+                        <span>Operations Dashboard</span>
+                      </Link>
+                      <Link
+                        href="/account"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium transition-colors"
+                      >
+                        <UserIcon className="w-4 h-4 text-slate-500" />
+                        <span>Account &amp; Subscription</span>
+                      </Link>
+                      <Link
+                        href="/pricing"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center justify-between px-3 py-2 rounded-lg text-blue-700 hover:bg-blue-50 font-bold transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-blue-600" />
+                          <span>Upgrade Plan</span>
+                        </div>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+
+                    <div className="mt-1 pt-1 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logout();
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 font-medium transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 text-rose-500" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Quick Analyze Site Button */}
             <Link
               href="/analyze"
-              className="inline-flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm"
+              className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors"
             >
-              Analyze Site
+              Analyze
             </Link>
 
             {/* Mobile Hamburger Toggle */}
@@ -792,7 +903,52 @@ export default function Header() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white p-4 space-y-3">
+        <div className="md:hidden border-t border-slate-200 bg-white p-4 space-y-4">
+          {/* User Status Bar in Mobile */}
+          {isAuthenticated ? (
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-900">{user?.name}</div>
+                <div className="text-[11px] text-blue-600 font-semibold">{formatTierName(tier)}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/account"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-xs font-bold text-slate-700 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200"
+                >
+                  Account
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-xs font-bold text-rose-600 px-2 py-1.5"
+                >
+                  Log out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-100">
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2 rounded-xl border border-slate-200 text-center font-bold text-xs text-slate-800 hover:bg-slate-50"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2 rounded-xl bg-blue-600 text-center font-bold text-xs text-white hover:bg-blue-500"
+              >
+                Start Free
+              </Link>
+            </div>
+          )}
+
           <div className="space-y-1">
             <Link
               href="/analyze"
