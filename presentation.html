@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SeoSeite — Project Presentation Deck</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --text-main: #f9fafb;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-grad: linear-gradient(135deg, #3b82f6, #6366f1);
+      --emerald: #10b981;
+      --purple: #8b5cf6;
+      --border: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Top Progress Bar */
+    .progress-bar-container {
+      width: 100%;
+      height: 4px;
+      background: #1e293b;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent-grad);
+      width: 10%;
+      transition: width 0.3s ease;
+    }
+
+    /* Top Bar */
+    header.deck-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 40px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      z-index: 10;
+    }
+    .brand-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+    .brand-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    /* Slides Container */
+    .deck-viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 40px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 90%;
+      max-width: 1200px;
+      height: 82vh;
+      background: rgba(17, 24, 39, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 50px 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.96) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+      z-index: 2;
+    }
+
+    /* Slide Content Typography */
+    .slide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #60a5fa;
+      margin-bottom: 12px;
+    }
+
+    .slide h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide h2 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .slide-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+      max-width: 850px;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      flex: 1;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .card:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateY(-2px);
+    }
+    .card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card p, .card ul {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .card ul {
+      list-style: none;
+    }
+    .card ul li {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .card ul li::before {
+      content: "•";
+      color: #3b82f6;
+      font-weight: bold;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .metric-badge {
+      display: inline-block;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #38bdf8;
+      margin-bottom: 4px;
+      font-family: monospace;
+    }
+
+    /* Speaker Notes Box */
+    .speaker-callout {
+      margin-top: 16px;
+      padding: 12px 18px;
+      background: rgba(30, 41, 59, 0.8);
+      border-left: 3px solid #3b82f6;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .speaker-callout strong {
+      color: #60a5fa;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Bottom Navigation Bar */
+    footer.deck-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    button.nav-btn {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    button.nav-btn:hover {
+      background: #334155;
+    }
+    button.nav-btn.primary {
+      background: #2563eb;
+    }
+    button.nav-btn.primary:hover {
+      background: #1d4ed8;
+    }
+    .slide-counter {
+      font-family: monospace;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+    .keyboard-hint {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* Code Snippet Box */
+    pre.code-box {
+      background: #0b1120;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: #a5b4fc;
+      overflow-x: auto;
+      line-height: 1.4;
+    }
+
+    /* Print Styles for PDF Export */
+    @media print {
+      body {
+        overflow: visible;
+        background: #0b0f19;
+      }
+      .progress-bar-container, .deck-header, .deck-footer {
+        display: none !important;
+      }
+      .slide {
+        position: relative !important;
+        opacity: 1 !important;
+        transform: none !important;
+        page-break-after: always;
+        width: 100% !important;
+        height: 100vh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 40px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="deck-header">
+    <div class="brand-pill">
+      <span>SeoSeite</span>
+      <span class="brand-badge">BCA Capstone 2026</span>
+    </div>
+    <div>Final Year Project Presentation • Ayush Chandramola</div>
+    <div class="keyboard-hint">Press [Space] or [Arrow Keys] to advance • [F] for Fullscreen</div>
+  </header>
+
+  <!-- Viewport -->
+  <main class="deck-viewport">
+
+    <!-- SLIDE 1: Title Slide -->
+    <section class="slide active" id="slide-1">
+      <div>
+        <div class="slide-tag">Capstone Project Defense • 2025–2026</div>
+        <h1>SeoSeite (WebIntel)</h1>
+        <p class="slide-subtitle" style="font-size: 1.35rem; color: #cbd5e1; max-width: 900px;">
+          An AI-Powered Website Intelligence, Deterministic SEO Auditing, Traffic Estimation &amp; Competitor Benchmarking Platform
+        </p>
+      </div>
+
+      <div class="grid-3" style="flex: none; margin-bottom: 20px;">
+        <div class="card" style="padding: 18px;">
+          <span style="font-size: 0.72rem; color: #64748b; text-transform: uppercase; font-weight: 800;">Presenter</span>
+          <div style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 4px;">Ayush Chandramola</div>
+          <div style="font-size: 0.8rem; color: #94a3b8;">Final Year BCA Candidate</div>
+        </div>
+
+        <div class="card" style="padding: 18px;">
+          <span style="font-size: 0.72rem; color: #64748b; text-transform: uppercase; font-weight: 800;">Core Tech Stack</span>
+          <div style="font-size: 1.15rem; font-weight: 800; color: #60a5fa; margin-top: 4px;">Next.js 16 + React 19</div>
+          <div style="font-size: 0.8rem; color: #94a3b8;">TypeScript • Cloud Run • Cloud SQL</div>
+        </div>
+
+        <div class="card" style="padding: 18px;">
+          <span style="font-size: 0.72rem; color: #64748b; text-transform: uppercase; font-weight: 800;">Deployment Status</span>
+          <div style="font-size: 1.15rem; font-weight: 800; color: #10b981; margin-top: 4px;">Live Production</div>
+          <div style="font-size: 0.8rem; color: #94a3b8;">Google Cloud Platform Native</div>
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "Good morning professors and evaluators. Today I am presenting SeoSeite, an enterprise-grade website intelligence SaaS platform built with Next.js 16, TypeScript, Google Cloud Run, and Gemini AI to deliver sub-second, deterministic technical audits."
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Problem Statement -->
+    <section class="slide" id="slide-2">
+      <div>
+        <div class="slide-tag">Problem Statement &amp; Motivation</div>
+        <h2>Why Does the Web Need SeoSeite?</h2>
+        <p class="slide-subtitle">Existing commercial platforms (Ahrefs, Semrush, Similarweb) create significant barriers for developers, freelancers, and SMEs.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card" style="border-top: 3px solid #ef4444;">
+          <h3>Expensive Pricing</h3>
+          <p style="margin-bottom: 12px;">Commercial tools cost <strong>$100 to $499/month</strong>, making enterprise intelligence completely inaccessible for students, independent creators, and small agencies.</p>
+          <div class="metric-badge" style="color: #f87171;">$1,200+/yr</div>
+          <div style="font-size: 0.75rem; color: #64748b;">Typical barrier to entry</div>
+        </div>
+
+        <div class="card" style="border-top: 3px solid #f59e0b;">
+          <h3>Opaque &amp; Fabricated Data</h3>
+          <p style="margin-bottom: 12px;">Commercial tools use black-box proprietary ratings that hallucinate exact visitor counts and domain ranks without disclosing confidence bounds or mathematical methodology.</p>
+          <div class="metric-badge" style="color: #fbbf24;">Black Box</div>
+          <div style="font-size: 0.75rem; color: #64748b;">Zero algorithmic transparency</div>
+        </div>
+
+        <div class="card" style="border-top: 3px solid #6366f1;">
+          <h3>Heavy Server Overhead</h3>
+          <p style="margin-bottom: 12px;">Traditional crawlers launch headless Chromium (Puppeteer/Playwright) instances that consume 1–2 GB RAM per crawl, causing severe latency and memory exhaustion under concurrent traffic.</p>
+          <div class="metric-badge" style="color: #818cf8;">2 GB RAM</div>
+          <div style="font-size: 0.75rem; color: #64748b;">Per-process resource bloat</div>
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "We identified three major flaws in modern SEO software: exorbitant subscription pricing, black-box data fabrication, and heavy headless browsers that crash servers. SeoSeite directly solves all three."
+      </div>
+    </section>
+
+    <!-- SLIDE 3: Proposed Solution & Core Value -->
+    <section class="slide" id="slide-3">
+      <div>
+        <div class="slide-tag">Solution Architecture</div>
+        <h2>The SeoSeite Solution &amp; Architectural Pillars</h2>
+        <p class="slide-subtitle">A high-performance SaaS delivering honest, verifiable website diagnostics across five analytical pillars.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Core System Guarantees</h3>
+          <ul>
+            <li><strong>Sub-Second Crawl Latency (&lt;100ms):</strong> Lightweight Cheerio DOM parser extracts headers and tags without launching Chromium.</li>
+            <li><strong>Deterministic 0–100 SEO Scoring:</strong> Transparent mathematical formula divided into 4 equal 25-point categories.</li>
+            <li><strong>Signature-Based Stack Detection:</strong> Identifies 50+ frameworks, CMSs, CDNs, and server engines in milliseconds.</li>
+            <li><strong>Core Web Vitals Telemetry:</strong> Google PageSpeed Insights REST API measures LCP, CLS, INP, and TTFB.</li>
+            <li><strong>Statistical Traffic Estimator:</strong> Transparent heuristic model with High/Medium/Low confidence tiers.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="background: rgba(30, 58, 138, 0.2); border-color: rgba(59, 130, 246, 0.4);">
+          <h3>Zero-Hallucination AI Philosophy</h3>
+          <p style="margin-bottom: 14px;"><strong>AI is strictly an analytical interpreter, never the source of truth for numbers.</strong></p>
+          <ul style="margin-bottom: 14px;">
+            <li>Deterministic TypeScript code calculates all metrics, scores, and HTTP headers.</li>
+            <li>Google Gemini receives verified findings to synthesize executive summaries and generate copy-paste code fixes.</li>
+            <li>Heuristic Rule Synthesizer fallback activates automatically if API limits occur.</li>
+          </ul>
+          <div style="font-size: 0.8rem; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px; font-family: monospace; color: #93c5fd;">
+            Deterministic Math + Gemini LLM Reasoning
+          </div>
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "Our primary engineering rule: Zero Fabricated Metrics. Numbers are computed with deterministic math and verified APIs, while Gemini AI is strictly used as an analytical reasoning layer to suggest developer code fixes."
+      </div>
+    </section>
+
+    <!-- SLIDE 4: Architecture & Data Flow -->
+    <section class="slide" id="slide-4">
+      <div>
+        <div class="slide-tag">System Design</div>
+        <h2>Full-Stack System Architecture &amp; Data Flow</h2>
+        <p class="slide-subtitle">Microservice containerization deployed on Google Cloud Run with Google Cloud SQL PostgreSQL 16.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Architectural Pipeline</h3>
+          <ul>
+            <li><strong>Layer 1 (Client):</strong> Next.js 16 App Router + React 19 UI with Tailwind CSS and SSR.</li>
+            <li><strong>Layer 2 (Security Guard):</strong> SSRF pre-flight DNS filter blocks private subnets, localhost, and cloud metadata.</li>
+            <li><strong>Layer 3 (Extraction Engine):</strong> Cheerio HTML parser + HTTP response header inspector (&lt;100ms).</li>
+            <li><strong>Layer 4 (Telemetry &amp; Scoring):</strong> Rule-based scorer (0–100) + Google PageSpeed REST API + DomCop PageRank.</li>
+            <li><strong>Layer 5 (AI Synthesis):</strong> Google Gemini 1.5 Flash generates executive fixes with local rule fallback.</li>
+            <li><strong>Layer 6 (Persistence):</strong> PostgreSQL 16 connection pool (Google Cloud SQL) stores immutable report snapshots.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="justify-content: center;">
+          <h3>Data Flow Summary</h3>
+          <pre class="code-box">
+User Submits Target URL
+   │
+   ▼
+[SSRF Security Shield] ──► (Blocks Private IPs / 169.254.x)
+   │ (Validated)
+   ▼
+[Cheerio DOM & Headers Parser] ──► Sub-100ms
+   │
+   ├─► [0–100 Scorer] (Metadata, Content, Index, Security)
+   ├─► [Tech Detector] (50+ Framework Signatures)
+   ├─► [PageSpeed API] (LCP, CLS, INP Web Vitals)
+   ├─► [DomCop PageRank] (0–10 Decimal Rating)
+   │
+   ▼
+[Google Gemini AI] ──► Code Fixes &amp; Executive Summary
+   │
+   ▼
+[PostgreSQL Cloud SQL] ──► Permanent Snapshot UUID (/report/[id])
+          </pre>
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "Here is our 6-layer architecture. Requests pass through our SSRF security shield first, feed into Cheerio in under 100 milliseconds, compute deterministic metrics, generate Gemini AI code fixes, and save immutable snapshots in Cloud SQL."
+      </div>
+    </section>
+
+    <!-- SLIDE 5: 9 Diagnostic Engines & Feature Suite -->
+    <section class="slide" id="slide-5">
+      <div>
+        <div class="slide-tag">Product Capabilities</div>
+        <h2>9 Specialized Diagnostic Engines</h2>
+        <p class="slide-subtitle">A comprehensive suite engineered for technical SEO, webmasters, agencies, and autonomous AI agents.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div style="font-size: 0.75rem; color: #60a5fa; font-weight: 800;">01 • ON-PAGE &amp; CRAWL</div>
+          <h3>Technical SEO Scorer</h3>
+          <p>Deterministic 0–100 audit with animated radial gauges, heading hierarchy tree, and security headers guard.</p>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 0.75rem; color: #a78bfa; font-weight: 800;">02 • BENCHMARKING</div>
+          <h3>Competitor Compare</h3>
+          <p>Side-by-side URL comparison with differential win metrics, delta bars, and comparative AI synthesis.</p>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 0.75rem; color: #34d399; font-weight: 800;">03 • WEB VITALS</div>
+          <h3>Speed Lab (CWV)</h3>
+          <p>Google PageSpeed API integration testing real synthetic LCP, CLS, INP, and TTFB latency scores.</p>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 0.75rem; color: #f472b6; font-weight: 800;">04 • CODE STUDIO</div>
+          <h3>Schema JSON-LD Validator</h3>
+          <p>Validates Schema.org structured data, rich snippet preview, OpenGraph, and Twitter Cards.</p>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 0.75rem; color: #fbbf24; font-weight: 800;">05 • STACK PROFILER</div>
+          <h3>50+ Tech Detector</h3>
+          <p>Detects CMS, React, Next.js, Cloudflare, payment gateways, analytics, and server engines in &lt;100ms.</p>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 0.75rem; color: #38bdf8; font-weight: 800;">06 • AI SEARCH AEO</div>
+          <h3>Brand Radar AI</h3>
+          <p>Measures brand citation Share of Voice (SoV) across ChatGPT, Perplexity, Claude, and Gemini.</p>
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "Beyond the full audit, SeoSeite includes 9 focused utility engines: side-by-side competitor benchmarking, PageSpeed Lab, Schema Validator, Tech Detector, 404 Broken Link Crawler, and Brand Radar AEO."
+      </div>
+    </section>
+
+    <!-- SLIDE 6: SSRF Security Engineering -->
+    <section class="slide" id="slide-6">
+      <div>
+        <div class="slide-tag">Security Engineering</div>
+        <h2>Enterprise SSRF Defense &amp; Safe Crawling</h2>
+        <p class="slide-subtitle">Server-Side Request Forgery mitigation implemented at the network resolution level.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>The SSRF Threat Model</h3>
+          <p style="margin-bottom: 12px;">Public URL scrapers are highly vulnerable to attackers submitting internal network addresses (e.g., <code>http://127.0.0.1</code> or cloud metadata endpoints) to exfiltrate database passwords or cloud IAM credentials.</p>
+          <ul style="margin-top: 10px;">
+            <li><strong>Blocked:</strong> RFC 1918 Private Subnets (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)</li>
+            <li><strong>Blocked:</strong> Loopback &amp; Localhost (127.0.0.1, ::1, 0.0.0.0)</li>
+            <li><strong>Blocked:</strong> Cloud Metadata Endpoints (169.254.169.254, metadata.google.internal)</li>
+            <li><strong>Blocked:</strong> Dangerous protocols (file://, ftp://, gopher://)</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Pre-Flight DNS Resolution (src/lib/security/ssrf.ts)</h3>
+          <pre class="code-box">
+// Pre-flight DNS resolution before opening socket
+const ipAddresses = await dns.resolve4(parsedUrl.hostname);
+
+for (const ip of ipAddresses) {
+  if (isPrivateOrReservedIp(ip)) {
+    throw new SecurityException(
+      "SSRF_ATTEMPT_BLOCKED: Resolved IP is internal"
+    );
+  }
+}
+
+// Timeout constraint: 8000ms max
+// Payload limit: 5 MB stream cutoff
+          </pre>
+          <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">
+            Enforces strict pre-flight DNS lookup to prevent DNS Rebinding attacks.
+          </p>
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "Security was a day-one priority. We engineered a pre-flight DNS resolution filter that resolves destination IPs before opening a socket, dropping all private subnets, loopbacks, and cloud metadata attacks."
+      </div>
+    </section>
+
+    <!-- SLIDE 7: AI & Model Context Protocol (MCP) -->
+    <section class="slide" id="slide-7">
+      <div>
+        <div class="slide-tag">AI Innovation</div>
+        <h2>Model Context Protocol (FastMCP) for AI Agents</h2>
+        <p class="slide-subtitle">Connecting Claude Desktop, Cursor IDE, and autonomous agents directly to SeoSeite via JSON-RPC 2.0.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>What is MCP?</h3>
+          <p style="margin-bottom: 12px;">Model Context Protocol is the emerging open standard by Anthropic allowing LLMs to call local and remote tools securely.</p>
+          <ul>
+            <li><strong>seoseite_audit_url:</strong> Autonomous technical health audits and PageSpeed metrics.</li>
+            <li><strong>seoseite_compare_domains:</strong> Head-to-head competitive analysis in developer IDEs.</li>
+            <li><strong>seoseite_detect_tech:</strong> Live tech stack interrogation during coding sessions.</li>
+            <li><strong>seoseite_check_broken_links:</strong> Crawls dead links and outputs markdown reports in Cursor.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>IDE Integration Configuration</h3>
+          <pre class="code-box">
+// In .cursor/mcp.json or Claude Desktop config:
+{
+  "mcpServers": {
+    "seoseite": {
+      "command": "npx",
+      "args": ["-y", "@seoseite/mcp-server"],
+      "env": {
+        "SEOSEITE_API_KEY": "sk_live_enterprise_token"
+      }
+    }
+  }
+}
+          </pre>
+          <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">
+            Enables developers to type <code>"Audit linear.app with SeoSeite"</code> inside their code editor.
+          </p>
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "We also implemented an enterprise Model Context Protocol gateway. Developers using Cursor or Claude Desktop can directly ask their AI to audit websites and detect tech stacks using our live tools."
+      </div>
+    </section>
+
+    <!-- SLIDE 8: Deployment & Cloud Metrics -->
+    <section class="slide" id="slide-8">
+      <div>
+        <div class="slide-tag">DevOps &amp; Performance</div>
+        <h2>Google Cloud Run &amp; Production Metrics</h2>
+        <p class="slide-subtitle">Serverless containerization delivering enterprise scalability with zero idle maintenance cost.</p>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: 20px;">
+        <div class="card" style="text-align: center;">
+          <div class="metric-badge">&lt; 100ms</div>
+          <div style="font-size: 0.8rem; font-weight: 700; color: #fff;">Average Crawl Latency</div>
+          <div style="font-size: 0.72rem; color: #64748b;">Cheerio in-memory DOM</div>
+        </div>
+
+        <div class="card" style="text-align: center;">
+          <div class="metric-badge">140 MB</div>
+          <div style="font-size: 0.8rem; font-weight: 700; color: #fff;">Container Size</div>
+          <div style="font-size: 0.72rem; color: #64748b;">Alpine Multi-Stage Build</div>
+        </div>
+
+        <div class="card" style="text-align: center;">
+          <div class="metric-badge">$0.00</div>
+          <div style="font-size: 0.8rem; font-weight: 700; color: #fff;">Idle Cloud Cost</div>
+          <div style="font-size: 0.72rem; color: #64748b;">Scales to 0 on Google Cloud Run</div>
+        </div>
+
+        <div class="card" style="text-align: center;">
+          <div class="metric-badge">46 / 46</div>
+          <div style="font-size: 0.8rem; font-weight: 700; color: #fff;">Next.js Routes</div>
+          <div style="font-size: 0.72rem; color: #64748b;">Compiled Cleanly in 2.0s</div>
+        </div>
+      </div>
+
+      <div class="card" style="flex: none;">
+        <h3>Container Infrastructure Highlights</h3>
+        <p style="font-size: 0.85rem;">
+          • Multi-stage Docker build utilizing Next.js <code>output: 'standalone'</code> mode.<br>
+          • Google Cloud SQL PostgreSQL 16 database pool with automatic in-memory fallback during network partitioning.<br>
+          • Immutable permanent snapshot URLs (<code>/report/[id]</code>) and white-label client PDF export styling.
+        </p>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "Our production container is just 140MB, runs on Google Cloud Run with sub-second cold starts, scales to zero when idle costing $0.00, and passes all 46 Next.js route builds with zero TypeScript errors."
+      </div>
+    </section>
+
+    <!-- SLIDE 9: Project Achievements & Features Delivered -->
+    <section class="slide" id="slide-9">
+      <div>
+        <div class="slide-tag">Deliverables</div>
+        <h2>Comprehensive Features Delivered</h2>
+        <p class="slide-subtitle">All 10 project development phases completed, tested, and pushed to production.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Core Technical Milestones</h3>
+          <ul>
+            <li><strong>Full-Stack SSR Platform:</strong> Next.js 16 App Router, React 19, TypeScript, Tailwind CSS.</li>
+            <li><strong>Deterministic 0–100 Scorer:</strong> Metadata (25), Content (25), Indexing (25), Security (25).</li>
+            <li><strong>Competitor Benchmark:</strong> Head-to-head compare engine with delta calculations and swap controls.</li>
+            <li><strong>AI Developer Synthesizer:</strong> Grounded recommendations with copyable H1/schema markup.</li>
+            <li><strong>Heuristic Traffic Estimator:</strong> Transparent logarithmic footprint model with confidence intervals.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Enterprise SaaS Enhancements</h3>
+          <ul>
+            <li><strong>Operational Dashboard (/dashboard):</strong> Historical audit tables, latency charts, and pre-warmed benchmarks.</li>
+            <li><strong>Permanent Snapshot URLs (/report/[id]):</strong> Immutable share links for client audits.</li>
+            <li><strong>White-Label Client PDF Engine:</strong> Clean print stylesheets for agency reports.</li>
+            <li><strong>Tiered Subscription Accounting:</strong> Free, Starter, Pro, and Enterprise quotas with demo logins.</li>
+            <li><strong>Academic Documentation:</strong> Complete SRS, DFD diagrams, and viva voce defense guide.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "We successfully executed all 10 project phases, delivering a complete commercial SaaS experience with subscription tiers, shareable report snapshots, white-label exports, and full academic dissertation docs."
+      </div>
+    </section>
+
+    <!-- SLIDE 10: Conclusion & Q&A -->
+    <section class="slide" id="slide-10">
+      <div>
+        <div class="slide-tag">Conclusion &amp; Defense</div>
+        <h2>Summary &amp; Project Demonstration</h2>
+        <p class="slide-subtitle">SeoSeite bridges the gap between high-cost commercial SEO platforms and honest, developer-centric website intelligence.</p>
+      </div>
+
+      <div class="grid-3" style="margin-bottom: 24px;">
+        <div class="card" style="border-color: rgba(59, 130, 246, 0.4);">
+          <h3>Open &amp; Transparent</h3>
+          <p>Zero fabricated metrics. Full algorithmic clarity and verifiable data sources.</p>
+        </div>
+
+        <div class="card" style="border-color: rgba(16, 185, 129, 0.4);">
+          <h3>High Performance</h3>
+          <p>Sub-second Cheerio DOM crawling, Next.js 16 SSR, and Google Cloud Run scalability.</p>
+        </div>
+
+        <div class="card" style="border-color: rgba(139, 92, 246, 0.4);">
+          <h3>AI Agent Ready</h3>
+          <p>Model Context Protocol (FastMCP) integration for modern autonomous workflows.</p>
+        </div>
+      </div>
+
+      <div class="card" style="text-align: center; background: rgba(30, 41, 59, 0.8); padding: 30px;">
+        <h2 style="font-size: 1.8rem; color: #fff; margin-bottom: 8px;">Thank You!</h2>
+        <p style="font-size: 1rem; color: #94a3b8; margin-bottom: 16px;">
+          Ready for Live Demonstration &amp; Viva Voce Questions
+        </p>
+        <div style="font-size: 0.85rem; font-family: monospace; color: #60a5fa;">
+          GitHub: https://github.com/ayushchandramola95-cell/seoaudit
+        </div>
+      </div>
+
+      <div class="speaker-callout">
+        <strong>Talking Script:</strong> "Thank you for your time and attention. I am now pleased to demonstrate the live platform and welcome your questions."
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer Navigation -->
+  <footer class="deck-footer">
+    <div class="slide-counter">
+      <span id="currentSlideNum">01</span> / <span id="totalSlidesNum">10</span>
+    </div>
+
+    <div class="controls">
+      <button class="nav-btn" id="prevBtn" onclick="prevSlide()">← Previous</button>
+      <button class="nav-btn primary" id="nextBtn" onclick="nextSlide()">Next Slide →</button>
+      <button class="nav-btn" onclick="window.print()">Print / PDF</button>
+      <button class="nav-btn" onclick="toggleFullScreen()">Fullscreen [F]</button>
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    document.getElementById('totalSlidesNum').textContent = String(totalSlides).padStart(2, '0');
+
+    function updateSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      currentSlide = index;
+
+      slides.forEach((slide, idx) => {
+        if (idx === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      // Update counter and progress bar
+      document.getElementById('currentSlideNum').textContent = String(currentSlide + 1).padStart(2, '0');
+      const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+      document.getElementById('progressBar').style.width = progressPercent + '%';
+
+      // Update buttons
+      document.getElementById('prevBtn').disabled = currentSlide === 0;
+      document.getElementById('nextBtn').textContent = currentSlide === totalSlides - 1 ? 'Finish Presentation' : 'Next Slide →';
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        updateSlide(currentSlide + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        updateSlide(currentSlide - 1);
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'Backspace') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      }
+    });
+
+    // Touch Swipes
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+    document.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 50) nextSlide();
+      if (touchEndX > touchStartX + 50) prevSlide();
+    });
+
+    updateSlide(0);
+  </script>
+</body>
+</html>
