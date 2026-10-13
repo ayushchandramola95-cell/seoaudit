@@ -5,6 +5,7 @@ import ToolsAnimatedGrid from "@/components/ToolsAnimatedGrid";
 import AskAiShowcase from "@/components/AskAiShowcase";
 import AiBentoGrid from "@/components/AiBentoGrid";
 import IntegrationTicker from "@/components/IntegrationTicker";
+import McpTerminalCard from "@/components/McpTerminalCard";
 import { 
   Search, 
   Layers, 
@@ -442,35 +443,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flat-card p-6 bg-slate-950 text-slate-200 rounded-2xl border border-slate-800 font-mono text-xs shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-slate-400">
-              <span className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                claude-desktop-config.json
-              </span>
-              <span className="text-[11px] text-blue-400">MCP JSON-RPC 2.0</span>
-            </div>
-
-            <pre className="text-slate-300 leading-relaxed overflow-x-auto">
-{`{
-  "mcpServers": {
-    "seoseite": {
-      "command": "node",
-      "args": ["scripts/seoseite-mcp.mjs"],
-      "env": {
-        "SEOSEITE_API_URL": "https://seoseite.com"
-      }
-    }
-  }
-}`}
-            </pre>
-
-            <div className="p-3.5 bg-slate-900 rounded-lg border border-slate-800 text-[11px] text-slate-300 space-y-1">
-              <div className="text-amber-400 font-bold">User prompt to Claude:</div>
-              <div className="text-slate-400">&quot;Run seoseite_audit_url on https://example.com and tell me what critical tags are missing.&quot;</div>
-              <div className="text-emerald-400 pt-1">Claude executes tool → Receives verified deterministic JSON audit in 85ms.</div>
-            </div>
-          </div>
+          <McpTerminalCard />
         </div>
       </section>
 
