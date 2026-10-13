@@ -99,7 +99,7 @@ export default function AskAiShowcase() {
                 href="/tools"
                 className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm transition-all inline-flex items-center gap-2"
               >
-                <span>Explore All 9 Tools</span>
+                <span>Explore Complete SEO Suite</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>

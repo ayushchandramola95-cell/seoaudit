@@ -247,7 +247,7 @@ export default function ToolsAnimatedGrid() {
               {tool.preview}
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-bold text-blue-600 group-hover:text-blue-700">
-                <span>Launch Micro-Tool</span>
+                <span>Launch SEO Engine</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>

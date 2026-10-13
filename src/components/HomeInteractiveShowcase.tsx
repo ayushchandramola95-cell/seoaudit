@@ -127,16 +127,16 @@ export default function HomeInteractiveShowcase() {
 
                   {/* Text Content */}
                   <div className="flex-1 min-w-0 pr-1">
-                    <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-start justify-between gap-2 mb-1">
                       <h4
-                        className={`text-sm font-black truncate ${
+                        className={`text-sm font-black leading-tight ${
                           isActive ? "text-slate-900" : "text-slate-800"
                         }`}
                       >
                         {opt.title}
                       </h4>
                       <span
-                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shrink-0 ${
+                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shrink-0 whitespace-nowrap ${
                           isActive
                             ? "bg-slate-900 text-white"
                             : "bg-slate-100 text-slate-600 border border-slate-200"
@@ -170,7 +170,7 @@ export default function HomeInteractiveShowcase() {
               href="/tools"
               className="text-blue-700 font-bold hover:underline inline-flex items-center gap-1 shrink-0"
             >
-              <span>Explore tools</span>
+              <span>Explore SEO Suite</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

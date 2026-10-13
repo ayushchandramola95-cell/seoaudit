@@ -6,6 +6,7 @@ import AskAiShowcase from "@/components/AskAiShowcase";
 import AiBentoGrid from "@/components/AiBentoGrid";
 import IntegrationTicker from "@/components/IntegrationTicker";
 import McpTerminalCard from "@/components/McpTerminalCard";
+import StrategicWorkflowSection from "@/components/StrategicWorkflowSection";
 import { 
   Search, 
   Layers, 
@@ -96,11 +97,11 @@ export default function Home() {
   const faqs = [
     {
       q: "What makes SeoSeite different from Ahrefs or Semrush?",
-      a: "Commercial SEO giants cost $129 to $449 every month and heavily penalize teams by charging $40–$80 for every single extra user seat. SeoSeite provides sub-second deterministic audits, 9 focused standalone micro-tools, Content Gap, and native AI MCP integration at an accessible price ($0 to $49/mo) with zero per-user seat penalties.",
+      a: "Commercial SEO giants cost $129 to $449 every month and heavily penalize teams by charging $40–$80 for every single extra user seat. SeoSeite provides an all-in-one SEO and website intelligence platform with sub-second deterministic audits, 9 specialized growth engines, Content Gap, Brand Radar AI, and native MCP automation at an accessible price ($0 to $49/mo) with zero seat penalties.",
     },
     {
-      q: "Can I use the standalone tools without an account?",
-      a: "Yes! All 9 standalone tools (Broken Links, Core Web Vitals, Schema Validator, SERP Preview, Tech Detector, Open PageRank, etc.) can be used freely without entering a credit card or creating an account.",
+      q: "Can I use the standalone engines without an account?",
+      a: "Yes! All 9 specialized engines (Broken Links, Core Web Vitals, Schema Validator, SERP Preview, Tech Detector, Open PageRank, Brand Radar, Content Gap, Batch Auditor) can be used freely without entering a credit card or creating an account.",
     },
     {
       q: "What is the SeoSeite SEO Model Context Protocol (MCP)?",
@@ -123,35 +124,34 @@ export default function Home() {
         {/* Pill Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-8 shadow-xs">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          Sub-Second Crawling • 50+ Frameworks • 9 Standalone Micro-Tools • Zero Hallucinations
+          All-in-One SEO Platform • Sub-Second Crawls • AI Search Visibility • Zero Hallucinations
         </div>
 
         {/* Hero Title */}
         <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-5xl mx-auto leading-tight sm:leading-tight mb-6">
-          Inspect, Benchmark &amp; Optimize <br className="hidden sm:inline" />
-          <span className="text-blue-600">Any Website in Sub-Second Time.</span>
+          The Modern AI SEO &amp; Website Intelligence <br className="hidden sm:inline" />
+          <span className="text-blue-600">Platform for High-Growth Teams.</span>
         </h1>
 
         <p className="text-base sm:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
-          The deterministic website intelligence platform for modern developers, agencies, and SEO consultants. 
-          Uncover technical health, detect 50+ technology stacks, measure real Core Web Vitals, and track AI search visibility with absolute transparency.
+          Audit technical health in sub-seconds, outrank competitors with semantic content gaps, benchmark Core Web Vitals, and dominate brand visibility across AI search engines — with 100% deterministic transparency.
         </p>
 
-        {/* Primary Call-to-Actions (Services & Tools Showcase - Replaced Search Box) */}
+        {/* Primary Call-to-Actions (Ahrefs/Semrush High-Impact Conversion) */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
           <Link
-            href="/tools"
-            className="px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
+            href="/signup"
+            className="px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
           >
-            <span>Explore 9 Standalone SEO Tools</span>
+            <span>Start Free Website Audit</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <Link
-            href="/pricing"
-            className="px-7 py-3.5 rounded-xl bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold text-sm sm:text-base transition-all inline-flex items-center gap-2 cursor-pointer shadow-xs"
+          <a
+            href="#workbench"
+            className="px-8 py-3.5 rounded-xl bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold text-sm sm:text-base transition-all inline-flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <span>Start Free ($0 Forever)</span>
-          </Link>
+            <span>Explore Platform Workbench</span>
+          </a>
         </div>
 
         {/* Trust Badges */}
@@ -233,14 +233,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Integration Marquee & 24/7 Autopilot (Inspired by User Image 2 & 3) */}
-      <IntegrationTicker />
+      {/* Interactive Live Feature Studio Workbench (Moved Up for Maximum Impact) */}
+      <section id="workbench" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
+            Interactive Product Workbench
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+            Experience the Complete SEO Engine Before You Run It
+          </h2>
+          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+            Click through our 5 core growth and diagnostic pillars with real-world live telemetry previews across technical health, competitive intelligence, AI brand radar, and MCP protocols.
+          </p>
+        </div>
+
+        <HomeInteractiveShowcase />
+      </section>
+
+      {/* The 4-Step Strategic SEO Growth Operating System (Modeled after Ahrefs & Semrush) */}
+      <StrategicWorkflowSection />
 
       {/* "Skip the digging. Just ask." AI Assistant Console (Directly from User Image 4) */}
       <AskAiShowcase />
 
       {/* AI Search & Modern Visibility Suite Bento Grid (Directly from User Image 5) */}
       <AiBentoGrid />
+
+      {/* The Complete SEO Suite: 9 Specialized Growth & Technical Engines */}
+      <section className="py-16 sm:py-20 bg-slate-50/70 border-y border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
+            <div>
+              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-1">
+                Complete SEO Suite
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                9 Specialized Growth &amp; Technical Engines
+              </h2>
+              <p className="text-sm text-slate-600 mt-1 max-w-2xl">
+                From hyperlink crawl forensics to generative AI brand radar, deploy dedicated sub-second diagnostic engines tailored for modern web engineering and organic search.
+              </p>
+            </div>
+            <Link
+              href="/tools"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-white px-3.5 py-2.5 rounded-lg border border-slate-200 shadow-sm transition-colors shrink-0"
+            >
+              Explore All 9 SEO Engines
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <ToolsAnimatedGrid />
+        </div>
+      </section>
+
+      {/* Integration Marquee & 24/7 Autopilot (Inspired by User Image 2 & 3) */}
+      <IntegrationTicker />
 
       {/* Why Engineering & Growth Teams Choose SeoSeite (3 Pillars) */}
       <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -305,51 +353,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* 9 Standalone Free Micro-Tools Grid (Ahrefs & Semrush Modular Hub) */}
-      <section className="py-16 sm:py-20 bg-slate-50/70 border-y border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
-            <div>
-              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-1">
-                Modular SEO Ecosystem
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                9 Standalone Tools for Focused Jobs
-              </h2>
-              <p className="text-sm text-slate-600 mt-1 max-w-2xl">
-                No need to wade through a monolithic scan when you only need a quick 404 check or a PageSpeed score. Use each tool individually with zero clutter.
-              </p>
-            </div>
-            <Link
-              href="/tools"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-white px-3.5 py-2.5 rounded-lg border border-slate-200 shadow-sm transition-colors shrink-0"
-            >
-              Explore Tools Directory Hub
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <ToolsAnimatedGrid />
-        </div>
-      </section>
-
-      {/* Interactive Live Feature Studio Showcase */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
-            Interactive Product Studio
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-            Experience the Engine Before You Run It
-          </h2>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Click through our 5 core capabilities below to see real-world diagnostic previews across technical health, competitive intelligence, AI brand radar, and MCP protocols.
-          </p>
-        </div>
-
-        <HomeInteractiveShowcase />
       </section>
 
       {/* SeoSeite vs Traditional Tools Comparison Table */}
@@ -455,7 +458,7 @@ export default function Home() {
               Frequently Asked Questions
             </h2>
             <p className="text-sm text-slate-600">
-              Everything you need to know about our deterministic architecture, tools, and pricing.
+              Everything you need to know about our platform architecture, engines, and pricing.
             </p>
           </div>
 
@@ -471,6 +474,51 @@ export default function Home() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* High-Impact Bottom Conversion Banner (Semrush / Ahrefs Style) */}
+      <section className="py-20 bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-950 text-white relative overflow-hidden text-center">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <span className="text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-blue-200 inline-block mb-4">
+            Start Growing Today
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight mb-4 leading-tight">
+            Ready to Supercharge Your Website&apos;s Visibility &amp; Technical Health?
+          </h2>
+          <p className="text-base sm:text-lg text-blue-100 max-w-2xl mx-auto mb-8 leading-relaxed">
+            Get instant deterministic insights, uncover competitor keyword gaps, benchmark Core Web Vitals, and automate your SEO workflow today.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/signup"
+              className="px-8 py-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-black text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
+            >
+              <span>Start Free Audit Today</span>
+              <ArrowRight className="w-4 h-4 text-blue-600" />
+            </Link>
+            <Link
+              href="/pricing"
+              className="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-sm sm:text-base transition-all inline-flex items-center gap-2 cursor-pointer"
+            >
+              <span>Explore Pricing &amp; Plans</span>
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-blue-200 mt-8">
+            <span className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-400" /> Free Forever Plan
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-400" /> No Credit Card Required
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-400" /> Unlimited Teammates ($0 Seat Fee)
+            </span>
           </div>
         </div>
       </section>
