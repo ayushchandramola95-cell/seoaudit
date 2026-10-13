@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
+  Minimize2,
   Printer,
   Sparkles,
   ShieldCheck,
@@ -38,6 +39,18 @@ export default function PresentationClient() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showNotes, setShowNotes] = useState(false);
   const [showVivaModal, setShowVivaModal] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const deckContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   const vivaQuestions = [
     {
@@ -557,10 +570,13 @@ for (const ip of ips) {
 
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+      const target = deckContainerRef.current || document.documentElement;
+      if (target.requestFullscreen) {
+        target.requestFullscreen().catch(() => {});
+      }
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen();
+        document.exitFullscreen().catch(() => {});
       }
     }
   };
@@ -574,6 +590,7 @@ for (const ip of ips) {
         e.preventDefault();
         handlePrev();
       } else if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
         toggleFullScreen();
       }
     };
@@ -582,62 +599,102 @@ for (const ip of ips) {
   }, [currentSlide]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
-      {/* Top Header Bar */}
-      <header className="border-b border-slate-800/80 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="font-black text-lg text-white tracking-tight flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-xs">S</span>
-            <span>SeoSeite</span>
-          </Link>
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-400 border border-blue-800">
-            Project Presentation Deck
-          </span>
-        </div>
+    <div
+      ref={deckContainerRef}
+      className={`min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white relative ${
+        isFullscreen ? "h-screen overflow-hidden p-0" : ""
+      }`}
+    >
+      {/* Top Header Bar — Completely hidden during Fullscreen mode */}
+      {!isFullscreen && (
+        <header className="border-b border-slate-800/80 px-6 py-4 flex items-center justify-between animate-in fade-in duration-200">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="font-black text-lg text-white tracking-tight flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-xs">S</span>
+              <span>SeoSeite</span>
+            </Link>
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-400 border border-blue-800">
+              Project Presentation Deck
+            </span>
+          </div>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-          <span>Ayush Chandramola • Final Year BCA Capstone</span>
-        </div>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
+            <span>Ayush Chandramola • Final Year BCA Capstone</span>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowVivaModal(true)}
-            className="px-3 py-1.5 rounded-lg border border-purple-800/80 bg-purple-950/60 text-purple-300 hover:bg-purple-900/60 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
-            <span>Viva Cheat Sheet</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowVivaModal(true)}
+              className="px-3 py-1.5 rounded-lg border border-purple-800/80 bg-purple-950/60 text-purple-300 hover:bg-purple-900/60 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+              <span>Viva Cheat Sheet</span>
+            </button>
+            <button
+              onClick={() => setShowNotes(!showNotes)}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                showNotes
+                  ? "bg-blue-600 border-blue-500 text-white"
+                  : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Speaker Script</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print / PDF</span>
+            </button>
+            <button
+              onClick={toggleFullScreen}
+              className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Enter Fullscreen (F)"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>[F]</span>
+            </button>
+          </div>
+        </header>
+      )}
+
+      {/* Fullscreen Floating Controls (Auto-fades, reveals on hover) */}
+      {isFullscreen && (
+        <div className="absolute top-4 right-6 z-40 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-200">
           <button
             onClick={() => setShowNotes(!showNotes)}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 rounded-full border text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md shadow-xl transition-all cursor-pointer ${
               showNotes
                 ? "bg-blue-600 border-blue-500 text-white"
-                : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
+                : "bg-slate-900/90 border-slate-700 text-slate-300 hover:bg-slate-800"
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5" />
-            <span>Speaker Script</span>
+            <span>{showNotes ? "Hide Script" : "Speaker Script"}</span>
           </button>
           <button
-            onClick={() => window.print()}
-            className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            onClick={() => setShowVivaModal(true)}
+            className="px-3 py-1.5 rounded-full bg-purple-950/90 hover:bg-purple-900 border border-purple-700 text-xs font-semibold text-purple-200 flex items-center gap-1.5 backdrop-blur-md shadow-xl transition-all cursor-pointer"
           >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Print / PDF</span>
+            <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+            <span>Viva Guide</span>
           </button>
           <button
             onClick={toggleFullScreen}
-            className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 backdrop-blur-md shadow-xl transition-all cursor-pointer"
+            title="Exit Fullscreen (Esc or F)"
           >
-            <Maximize2 className="w-3.5 h-3.5" />
-            <span>[F]</span>
+            <Minimize2 className="w-3.5 h-3.5 text-blue-400" />
+            <span>Exit [Esc]</span>
           </button>
         </div>
-      </header>
+      )}
 
       {/* Slide Viewport */}
-      <main className="flex-1 flex flex-col justify-center px-4 sm:px-12 py-6 max-w-6xl mx-auto w-full">
-        <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl relative flex flex-col justify-between min-h-[560px]">
+      <main className={`flex-1 flex flex-col justify-center px-4 sm:px-12 ${isFullscreen ? "py-2 max-w-7xl" : "py-6 max-w-6xl"} mx-auto w-full transition-all`}>
+        <div className={`bg-slate-900/50 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl relative flex flex-col justify-between ${isFullscreen ? "min-h-[78vh]" : "min-h-[560px]"}`}>
           {/* Top Tag & Title */}
           <div>
             <div className="text-[11px] font-extrabold uppercase tracking-wider text-blue-400 mb-2">
@@ -691,6 +748,14 @@ for (const ip of ips) {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={toggleFullScreen}
+            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+            title={isFullscreen ? "Exit Fullscreen (Esc or F)" : "Enter Fullscreen (F)"}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4 text-blue-400" /> : <Maximize2 className="w-4 h-4" />}
+            <span>{isFullscreen ? "Exit [F]" : "Fullscreen [F]"}</span>
+          </button>
           <button
             onClick={handlePrev}
             disabled={currentSlide === 0}
