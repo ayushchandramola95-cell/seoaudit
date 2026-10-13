@@ -300,14 +300,14 @@ export default function Header() {
                         </div>
                       </div>
 
-                      {/* Column 3: Free Standalone Micro-Tools */}
+                      {/* Column 3: Specialized SEO Engines */}
                       <div className="col-span-3 p-6 lg:p-7 space-y-4">
                         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                           <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                            Free Standalone Tools
+                            Specialized SEO Engines
                           </span>
                           <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[11px] font-bold text-blue-600 hover:underline">
-                            All 9 Tools →
+                            All 9 Engines →
                           </Link>
                         </div>
                         <div className="space-y-1">
@@ -382,10 +382,10 @@ export default function Header() {
                               </div>
                               <div>
                                 <div className="text-sm font-bold text-slate-900 group-hover:text-violet-600 transition-colors">
-                                  Tools Directory Hub
+                                  Full SEO Suite Hub
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
-                                  Full suite of 9 micro-tools with live runners.
+                                  Complete suite of 9 specialized SEO engines with live runners.
                                 </div>
                               </div>
                             </div>
@@ -460,7 +460,7 @@ export default function Header() {
                         onClick={() => setProductOpen(false)}
                         className="font-bold text-sm text-slate-900 hover:text-blue-600 flex items-center gap-2 transition-colors"
                       >
-                        <span>Discover all tools</span>
+                        <span>Discover All SEO Engines &amp; Suite</span>
                         <ArrowRight className="w-4 h-4" />
                       </Link>
                       <span className="text-slate-500 font-medium hidden md:inline">

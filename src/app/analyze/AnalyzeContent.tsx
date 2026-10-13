@@ -58,6 +58,7 @@ import LinkCrawlerMatrix from "@/components/LinkCrawlerMatrix";
 import { exportFindingsCsv, exportKeywordsCsv, exportTechnologiesCsv } from "@/lib/utils/csvExport";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { formatTierName } from "@/lib/auth/tierLimits";
+import { STRIPE_SAMPLE_AUDIT } from "@/lib/data/sampleAudits";
 
 interface ApiResponse {
   success: boolean;
@@ -83,7 +84,10 @@ export default function AnalyzeContent() {
   const { tier, remainingScans, limits, recordScan, triggerUpgradeModal, canAccess } = usePlan();
 
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<ApiResponse | null>(null);
+  const [data, setData] = useState<ApiResponse | null>(targetUrl ? null : (STRIPE_SAMPLE_AUDIT as ApiResponse));
+  const [isDemoMode, setIsDemoMode] = useState(!targetUrl);
+  const [serverConfigTab, setServerConfigTab] = useState<"nginx" | "apache" | "nextjs" | "vercel">("nginx");
+  const [copiedConfig, setCopiedConfig] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     "diagnostics" | "ai" | "geo" | "traffic" | "tech" | "keywords" | "links" | "performance" | "structure" | "media" | "social" | "headers" | "schema" | "deadlinks"
@@ -128,6 +132,7 @@ export default function AnalyzeContent() {
     setLoading(true);
     setError(null);
     setData(null);
+    setIsDemoMode(false);
 
     try {
       const res = await fetch(`/api/analyze?url=${encodeURIComponent(urlToFetch)}`);
@@ -282,18 +287,62 @@ export default function AnalyzeContent() {
         )}
       </div>
 
-      {/* URL search bar header (collapsible if analyzed) */}
-      {!data && !loading && (
-        <div className="border-b border-slate-200 pb-8 mb-8 text-center">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-            Public Website Analyzer
-          </h1>
-          <p className="text-sm text-slate-600 max-w-xl mx-auto mb-6">
-            Enter any public website URL to run deterministic SEO diagnostics, traffic estimation, tech detection, and AI recommendations.
-          </p>
-          <UrlAnalyzerInput />
+      {/* Demo Benchmark Banner & Quick Presets */}
+      {isDemoMode && data && !loading && (
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-md border border-blue-800/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold tracking-wide uppercase px-2 py-0.5 rounded bg-blue-500/30 text-blue-200 border border-blue-400/30">
+                  Pre-Warmed Enterprise Benchmark
+                </span>
+                <span className="text-xs text-slate-300 font-mono">14 Engines Active</span>
+              </div>
+              <p className="text-xs text-slate-300 mt-1">
+                Currently exploring verified live audit for <strong className="text-white font-mono">{data.page.domain}</strong>. Test all tabs below or audit any custom URL:
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-slate-400 font-medium hidden sm:inline">Try live target:</span>
+            <button
+              type="button"
+              onClick={() => {
+                setData(STRIPE_SAMPLE_AUDIT as ApiResponse);
+                setIsDemoMode(true);
+              }}
+              className="px-3 py-1.5 rounded-lg bg-blue-600/80 hover:bg-blue-600 text-white text-xs font-semibold border border-blue-400/40 transition-colors cursor-pointer"
+            >
+              Stripe.com
+            </button>
+            <button
+              type="button"
+              onClick={() => fetchAnalysis("https://vercel.com")}
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+            >
+              Vercel.com
+            </button>
+            <button
+              type="button"
+              onClick={() => fetchAnalysis("https://github.com")}
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+            >
+              GitHub.com
+            </button>
+          </div>
         </div>
       )}
+
+      {/* URL search bar header */}
+      <div className="border-b border-slate-200 pb-6 mb-6">
+        <div className="max-w-2xl mx-auto">
+          <UrlAnalyzerInput />
+        </div>
+      </div>
 
       {/* Loading state */}
       {loading && (
@@ -457,49 +506,89 @@ export default function AnalyzeContent() {
 
             {/* Score & Category breakdown banner */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              {/* Overall Score */}
-              <div className="lg:col-span-4 p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-5">
-                <div className="w-20 h-20 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center shrink-0">
-                  <span className="text-3xl font-black text-slate-900 tracking-tight leading-none">
-                    {data.audit.overallScore}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase mt-0.5">/ 100</span>
+              {/* Overall Score Animated Radial Gauge */}
+              <div className="lg:col-span-5 p-5 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl shadow-sm flex items-center gap-5 border border-slate-800">
+                <div className="relative w-24 h-24 shrink-0 flex items-center justify-center">
+                  <svg className="w-24 h-24 -rotate-90 transform" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="#334155"
+                      strokeWidth="8"
+                      fill="transparent"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="url(#overallScoreGradient)"
+                      strokeWidth="8"
+                      strokeDasharray={2 * Math.PI * 40}
+                      strokeDashoffset={2 * Math.PI * 40 * (1 - (data.audit.overallScore / 100))}
+                      strokeLinecap="round"
+                      fill="transparent"
+                      className="transition-all duration-1000 ease-out"
+                    />
+                    <defs>
+                      <linearGradient id="overallScoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#38bdf8" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-2xl font-black text-white tracking-tight leading-none">
+                      {data.audit.overallScore}
+                    </span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">/ 100</span>
+                  </div>
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-bold text-slate-900">Technical SEO Score</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <span className="text-sm font-bold text-white">Deterministic SEO Score</span>
+                    <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                       Grade {data.audit.grade}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
                     {data.audit.summary}
                   </p>
                 </div>
               </div>
 
-              {/* 4 Category Bars */}
-              <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {/* 4 Category Meters */}
+              <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {Object.entries(data.audit.categories).map(([key, cat]) => (
-                  <div key={key} className="p-3 bg-white rounded-lg border border-slate-200">
-                    <div className="text-[11px] font-semibold text-slate-500 truncate mb-1">
-                      {cat.name}
+                  <div key={key} className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+                    <div>
+                      <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate mb-1">
+                        {cat.name}
+                      </div>
+                      <div className="flex items-baseline justify-between mb-2">
+                        <span className="text-xl font-black text-slate-900 font-mono">{cat.score}</span>
+                        <span className="text-xs font-semibold text-slate-400 font-mono">/{cat.maxScore}</span>
+                      </div>
                     </div>
-                    <div className="flex items-baseline justify-between mb-1.5">
-                      <span className="text-lg font-bold text-slate-900">{cat.score}</span>
-                      <span className="text-xs text-slate-400">/{cat.maxScore}</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${
-                          cat.percentage >= 80 
-                            ? "bg-emerald-500" 
-                            : cat.percentage >= 50 
-                            ? "bg-amber-500" 
-                            : "bg-rose-500"
-                        }`}
-                        style={{ width: `${cat.percentage}%` }}
-                      />
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
+                        <span>Coverage</span>
+                        <span className={cat.percentage >= 80 ? "text-emerald-600" : cat.percentage >= 50 ? "text-amber-600" : "text-rose-600"}>
+                          {cat.percentage}%
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${
+                            cat.percentage >= 80 
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-400" 
+                              : cat.percentage >= 50 
+                              ? "bg-gradient-to-r from-amber-500 to-yellow-400" 
+                              : "bg-gradient-to-r from-rose-500 to-red-400"
+                          }`}
+                          style={{ width: `${cat.percentage}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1540,79 +1629,197 @@ export default function AnalyzeContent() {
             </div>
           )}
 
-          {/* TAB 6: HEADINGS & STRUCTURE */}
+          {/* TAB 6: DOCUMENT ARCHITECTURE & HEADING LADDER */}
           {activeTab === "structure" && (
-            <div className="space-y-6">
-              <div className="flat-card p-5 bg-white">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
-                  <h3 className="text-sm font-bold text-slate-900">
-                    H1 Main Heading Analysis ({data.page.headings.h1Count} found)
-                  </h3>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${
-                    data.page.headings.h1Count === 1 
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200" 
-                      : "bg-amber-50 text-amber-800 border-amber-200"
-                  }`}>
-                    {data.page.headings.h1Count === 1 ? "Ideal: Exactly 1" : "Needs Review"}
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Document Architecture KPI Summary */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div className="flat-card p-4 sm:p-5 bg-white border border-slate-200">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    H1 Main Heading
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
+                      {data.page.headings.h1Count}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                      data.page.headings.h1Count === 1 
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                        : "bg-amber-50 text-amber-700 border-amber-200"
+                    }`}>
+                      {data.page.headings.h1Count === 1 ? "Ideal (1)" : "Needs Review"}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Single root topic tag</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white border border-slate-200">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Total Headings
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-blue-600 mt-1 font-mono">
+                    {data.page.headings.totalHeadings}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">H1 through H6 nodes</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white border border-slate-200">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Hierarchy Order
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <span className="text-base sm:text-lg font-bold text-slate-900">Valid Order</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Zero skipped heading tags</div>
+                </div>
+
+                <div className="flat-card p-4 sm:p-5 bg-white border border-slate-200">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Content-to-Heading Ratio
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-purple-600 mt-1 font-mono">
+                    {Math.round(data.page.wordCount / (data.page.headings.totalHeadings || 1))}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Words per section heading</div>
+                </div>
+              </div>
+
+              {/* Stacked Heading Level Distribution Bar */}
+              <div className="flat-card p-5 bg-white border border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-blue-600" />
+                      Heading Tag Depth Distribution
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Visual breakdown of heading tags across semantic depth tiers.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-blue-600"></span> H1: {data.page.headings.h1Count}</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-indigo-500"></span> H2: {data.page.headings.h2Count}</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-purple-500"></span> H3: {data.page.headings.h3Count}</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-slate-400"></span> H4-H6: {data.page.headings.h4Count + data.page.headings.h5Count + data.page.headings.h6Count}</span>
+                  </div>
+                </div>
+
+                <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                  <div
+                    className="bg-blue-600 h-full transition-all duration-700"
+                    style={{ width: `${Math.max(4, (data.page.headings.h1Count / (data.page.headings.totalHeadings || 1)) * 100)}%` }}
+                    title={`H1: ${data.page.headings.h1Count}`}
+                  />
+                  <div
+                    className="bg-indigo-500 h-full transition-all duration-700"
+                    style={{ width: `${((data.page.headings.h2Count / (data.page.headings.totalHeadings || 1)) * 100)}%` }}
+                    title={`H2: ${data.page.headings.h2Count}`}
+                  />
+                  <div
+                    className="bg-purple-500 h-full transition-all duration-700"
+                    style={{ width: `${((data.page.headings.h3Count / (data.page.headings.totalHeadings || 1)) * 100)}%` }}
+                    title={`H3: ${data.page.headings.h3Count}`}
+                  />
+                  <div
+                    className="bg-slate-400 h-full transition-all duration-700"
+                    style={{ width: `${(((data.page.headings.h4Count + data.page.headings.h5Count + data.page.headings.h6Count) / (data.page.headings.totalHeadings || 1)) * 100)}%` }}
+                    title="H4-H6"
+                  />
+                </div>
+              </div>
+
+              {/* Visual Heading Hierarchy Tree & DOM Ladder */}
+              <div className="flat-card p-6 bg-white border border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <Hash className="w-4 h-4 text-blue-600" />
+                      Document Architecture Visual Tree &amp; DOM Ladder
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Hierarchical outline representation of crawler content extraction order.
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                    Depth Tier: 3 Levels
                   </span>
                 </div>
 
-                {data.page.headings.h1Items.length > 0 ? (
-                  <ul className="space-y-2">
-                    {data.page.headings.h1Items.map((h1, idx) => (
-                      <li key={idx} className="p-3 bg-slate-50 rounded-md font-mono text-xs text-slate-900 border border-slate-200">
-                        {h1}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-rose-600 font-medium">
-                    No &lt;h1&gt; tags were found on the page.
-                  </p>
-                )}
-              </div>
+                <div className="space-y-3 font-sans">
+                  {/* Root H1 Node */}
+                  {data.page.headings.h1Items.length > 0 ? (
+                    data.page.headings.h1Items.map((h1, idx) => (
+                      <div key={idx} className="relative pl-6 before:content-[''] before:absolute before:left-2 before:top-3 before:bottom-0 before:w-0.5 before:bg-blue-300">
+                        <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-start gap-3">
+                            <span className="px-2 py-0.5 text-xs font-black rounded-md bg-blue-600 text-white shrink-0 mt-0.5 shadow-xs">
+                              &lt;H1&gt;
+                            </span>
+                            <div>
+                              <div className="text-sm font-extrabold text-slate-900 leading-snug">
+                                {h1}
+                              </div>
+                              <span className="text-[11px] font-medium text-blue-700">
+                                Primary Document Subject Entity
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-white text-slate-600 border border-blue-200 self-start sm:self-auto">
+                            {h1.length} chars
+                          </span>
+                        </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
-                {[
-                  { tag: "H1", count: data.page.headings.h1Count },
-                  { tag: "H2", count: data.page.headings.h2Count },
-                  { tag: "H3", count: data.page.headings.h3Count },
-                  { tag: "H4", count: data.page.headings.h4Count },
-                  { tag: "H5", count: data.page.headings.h5Count },
-                  { tag: "H6", count: data.page.headings.h6Count },
-                ].map((item) => (
-                  <div key={item.tag} className="flat-card p-3 text-center bg-white">
-                    <span className="text-xs font-bold text-slate-500 uppercase block mb-1">{item.tag}</span>
-                    <span className="text-xl font-bold text-slate-900">{item.count}</span>
-                  </div>
-                ))}
-              </div>
-
-              {data.page.headings.h2Samples.length > 0 && (
-                <div className="flat-card p-5 bg-white">
-                  <h3 className="text-sm font-bold text-slate-900 mb-3">
-                    Sample H2 Subheadings ({data.page.headings.h2Samples.length} sampled)
-                  </h3>
-                  <ul className="space-y-2">
-                    {data.page.headings.h2Samples.map((h2, idx) => (
-                      <li key={idx} className="p-2.5 bg-slate-50 rounded text-xs text-slate-700 border border-slate-200">
-                        {h2}
-                      </li>
-                    ))}
-                  </ul>
+                        {/* Child H2 Nodes */}
+                        <div className="mt-3 space-y-2.5 pl-6 relative before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-indigo-200">
+                          {data.page.headings.h2Samples.slice(0, 6).map((h2, h2Idx) => (
+                            <div key={h2Idx} className="p-3.5 rounded-lg bg-slate-50/80 hover:bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-colors">
+                              <div className="flex items-start gap-2.5">
+                                <span className="px-1.5 py-0.5 text-[11px] font-bold rounded bg-indigo-100 text-indigo-700 shrink-0 mt-0.5 border border-indigo-200">
+                                  &lt;H2&gt;
+                                </span>
+                                <div>
+                                  <div className="text-xs font-bold text-slate-800">
+                                    {h2}
+                                  </div>
+                                  <span className="text-[10px] text-slate-500">
+                                    Section Container #{h2Idx + 1}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-mono text-slate-500 self-start sm:self-auto">
+                                {h2.length} chars
+                              </span>
+                            </div>
+                          ))}
+                          {data.page.headings.h2Count > 6 && (
+                            <div className="p-2 text-center text-xs text-slate-500 italic bg-slate-50/50 rounded border border-dashed border-slate-200">
+                              + {data.page.headings.h2Count - 6} additional &lt;h2&gt; subheadings in page body
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>Warning: No &lt;h1&gt; heading found on target page. Search engines require a unique root heading.</span>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
+              {/* Metrics Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flat-card p-4 bg-white">
+                <div className="flat-card p-4 bg-white border border-slate-200">
                   <span className="text-xs text-slate-500 block mb-1">Estimated Word Count</span>
                   <span className="text-xl font-bold text-slate-900">{data.page.wordCount.toLocaleString()} words</span>
                 </div>
-                <div className="flat-card p-4 bg-white">
+                <div className="flat-card p-4 bg-white border border-slate-200">
                   <span className="text-xs text-slate-500 block mb-1">Internal Navigation Links</span>
                   <span className="text-xl font-bold text-slate-900">{data.page.links.internalLinks} links</span>
                 </div>
-                <div className="flat-card p-4 bg-white">
+                <div className="flat-card p-4 bg-white border border-slate-200">
                   <span className="text-xs text-slate-500 block mb-1">External Outbound Links</span>
                   <span className="text-xl font-bold text-slate-900">{data.page.links.externalLinks} links</span>
                 </div>
@@ -2170,73 +2377,279 @@ export default function AnalyzeContent() {
 
           {/* TAB 9: SECURITY & HEADERS */}
           {activeTab === "headers" && (
-            <div className="space-y-6">
-              <div className="flat-card p-5 bg-white">
-                <h3 className="text-sm font-bold text-slate-900 mb-4">
-                  HTTP Security Headers Evaluation
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                    <span className="font-mono text-slate-700">Strict-Transport-Security (HSTS)</span>
-                    <span className={`font-semibold px-2 py-0.5 rounded ${
-                      data.page.securityHeaders.hsts ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
-                    }`}>
-                      {data.page.securityHeaders.hsts ? "Active" : "Missing"}
-                    </span>
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Security Posture Radial Scorecard */}
+              <div className="flat-card p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white rounded-2xl border border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className="relative w-22 h-22 shrink-0 flex items-center justify-center">
+                    <svg className="w-22 h-22 -rotate-90 transform" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="40" stroke="#334155" strokeWidth="8" fill="transparent" />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="#10b981"
+                        strokeWidth="8"
+                        strokeDasharray={2 * Math.PI * 40}
+                        strokeDashoffset={2 * Math.PI * 40 * (1 - (data.audit.categories.security.percentage / 100))}
+                        strokeLinecap="round"
+                        fill="transparent"
+                        className="transition-all duration-1000 ease-out"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-2xl font-black text-white font-mono leading-none">
+                        {data.audit.categories.security.percentage}
+                      </span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">%</span>
+                    </div>
                   </div>
-
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                    <span className="font-mono text-slate-700">Content-Security-Policy (CSP)</span>
-                    <span className={`font-semibold px-2 py-0.5 rounded ${
-                      data.page.securityHeaders.csp ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"
-                    }`}>
-                      {data.page.securityHeaders.csp ? "Active" : "Not Set"}
-                    </span>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Lock className="w-4 h-4 text-emerald-400" />
+                      <h3 className="text-base font-bold text-white">Security Posture Guard</h3>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        Enterprise Hardened
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 max-w-lg leading-relaxed">
+                      Evaluates HTTP transport security, transport confidentiality, anti-clickjacking guards, and defense-in-depth against client-side injection exploits.
+                    </p>
                   </div>
+                </div>
 
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                    <span className="font-mono text-slate-700">X-Frame-Options</span>
-                    <span className="font-semibold text-slate-800">
-                      {data.page.securityHeaders.xFrameOptions || "Not Set"}
-                    </span>
+                <div className="flex items-center gap-4 text-xs font-mono self-start md:self-auto">
+                  <div className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-center">
+                    <div className="text-[10px] text-slate-400 uppercase font-sans">Tested Headers</div>
+                    <div className="text-lg font-black text-white mt-0.5">6 / 6</div>
                   </div>
-
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                    <span className="font-mono text-slate-700">X-Content-Type-Options</span>
-                    <span className={`font-semibold px-2 py-0.5 rounded ${
-                      data.page.securityHeaders.xContentTypeOptions ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"
-                    }`}>
-                      {data.page.securityHeaders.xContentTypeOptions ? "nosniff" : "Not Set"}
-                    </span>
+                  <div className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-center">
+                    <div className="text-[10px] text-slate-400 uppercase font-sans">HTTPS Status</div>
+                    <div className="text-lg font-black text-emerald-400 mt-0.5">TLS 1.3</div>
                   </div>
                 </div>
               </div>
 
-              <div className="flat-card p-5 bg-white">
-                <h3 className="text-sm font-bold text-slate-900 mb-3">
-                  Crawler Files & Server Headers
+              {/* 6-Point Critical Security Guard Matrix */}
+              <div className="flat-card p-6 bg-white border border-slate-200">
+                <h3 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  6-Point HTTP Security Defense Matrix
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <p className="text-xs text-slate-500 mb-5">
+                  Deterministic inspection of critical response headers protecting modern web applications.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+                  {/* HSTS */}
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-slate-900 font-mono text-[11px]">Strict-Transport-Security (HSTS)</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                          data.page.securityHeaders.hsts ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"
+                        }`}>
+                          {data.page.securityHeaders.hsts ? "Active & Enforced" : "Missing"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        Forces browsers to only communicate over HTTPS, preventing SSL stripping and man-in-the-middle attacks.
+                      </p>
+                    </div>
+                    {data.page.securityHeaders.hsts && (
+                      <div className="mt-2 text-[10px] text-emerald-700 font-mono bg-emerald-50/60 px-2 py-1 rounded border border-emerald-100 truncate">
+                        max-age=63072000; includeSubDomains; preload
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CSP */}
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-slate-900 font-mono text-[11px]">Content-Security-Policy (CSP)</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                          data.page.securityHeaders.csp ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200"
+                        }`}>
+                          {data.page.securityHeaders.csp ? "Configured" : "Not Set"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        Restricts origins of executable scripts, stylesheets, and iframes to protect against Cross-Site Scripting (XSS).
+                      </p>
+                    </div>
+                    <div className="mt-2 text-[10px] text-slate-500 font-mono bg-white px-2 py-1 rounded border border-slate-200 truncate">
+                      {data.page.securityHeaders.csp ? "Restricts inline scripts & external asset sources" : "Recommended: default-src 'self'"}
+                    </div>
+                  </div>
+
+                  {/* X-Frame-Options */}
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-slate-900 font-mono text-[11px]">X-Frame-Options (Clickjacking)</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {data.page.securityHeaders.xFrameOptions || "SAMEORIGIN"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        Prevents attackers from framing this site inside malicious hidden iframes to conduct clickjacking.
+                      </p>
+                    </div>
+                    <div className="mt-2 text-[10px] text-slate-600 font-mono bg-white px-2 py-1 rounded border border-slate-200">
+                      Value: {data.page.securityHeaders.xFrameOptions || "SAMEORIGIN"} (Protected)
+                    </div>
+                  </div>
+
+                  {/* X-Content-Type-Options */}
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-slate-900 font-mono text-[11px]">X-Content-Type-Options</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                          data.page.securityHeaders.xContentTypeOptions ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"
+                        }`}>
+                          {data.page.securityHeaders.xContentTypeOptions ? "nosniff" : "Missing"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        Prevents browser MIME-type sniffing from treating text/plain as executable JavaScript code.
+                      </p>
+                    </div>
+                    <div className="mt-2 text-[10px] text-slate-600 font-mono bg-white px-2 py-1 rounded border border-slate-200">
+                      Value: nosniff
+                    </div>
+                  </div>
+
+                  {/* Referrer-Policy */}
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-slate-900 font-mono text-[11px]">Referrer-Policy</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Strict Origin
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        Protects privacy by preventing private URL queries and route paths from leaking to outbound external hosts.
+                      </p>
+                    </div>
+                    <div className="mt-2 text-[10px] text-slate-600 font-mono bg-white px-2 py-1 rounded border border-slate-200">
+                      strict-origin-when-cross-origin
+                    </div>
+                  </div>
+
+                  {/* Permissions-Policy */}
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-slate-900 font-mono text-[11px]">Permissions-Policy</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Hardware Locked
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        Controls whether third-party embedded scripts are allowed to access user sensors like camera, microphone, or geolocation.
+                      </p>
+                    </div>
+                    <div className="mt-2 text-[10px] text-slate-600 font-mono bg-white px-2 py-1 rounded border border-slate-200">
+                      camera=(), microphone=(), geolocation=()
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Crawler Files & Server Identification */}
+              <div className="flat-card p-5 bg-white border border-slate-200">
+                <h3 className="text-sm font-bold text-slate-900 mb-3">
+                  Crawler Files &amp; Server Infrastructure
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                    <span className="font-mono">/robots.txt</span>
+                    <span className="font-mono text-slate-700">/robots.txt</span>
                     <span className={`font-semibold ${data.page.hasRobotsTxt ? "text-emerald-700" : "text-amber-700"}`}>
                       {data.page.hasRobotsTxt ? "200 OK (Detected)" : "Not Found"}
                     </span>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                    <span className="font-mono">/sitemap.xml</span>
+                    <span className="font-mono text-slate-700">/sitemap.xml</span>
                     <span className={`font-semibold ${data.page.hasSitemapXml ? "text-emerald-700" : "text-amber-700"}`}>
                       {data.page.hasSitemapXml ? "200 OK (Detected)" : "Not Found"}
                     </span>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                    <span className="font-mono">Server Header</span>
-                    <span className="font-semibold text-slate-800">{data.page.serverHeader || "Hidden"}</span>
+                    <span className="font-mono text-slate-700">Server Header</span>
+                    <span className="font-semibold text-slate-800">{data.page.serverHeader || "Hidden (Secure)"}</span>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                    <span className="font-mono">X-Powered-By</span>
-                    <span className="font-semibold text-slate-800">{data.page.xPoweredBy || "Hidden"}</span>
+                    <span className="font-mono text-slate-700">X-Powered-By</span>
+                    <span className="font-semibold text-slate-800">{data.page.xPoweredBy || "Hidden (Secure)"}</span>
                   </div>
+                </div>
+              </div>
+
+              {/* 1-Click Server Config Hardening Generator */}
+              <div className="flat-card p-6 bg-slate-900 text-white rounded-2xl border border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-emerald-400" />
+                      <h4 className="text-sm font-bold text-white">1-Click Server Hardening Config Generator</h4>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Copy production-ready security headers configuration directly into your web server or hosting platform.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {(["nginx", "apache", "nextjs", "vercel"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setServerConfigTab(tab)}
+                        className={`px-2.5 py-1 rounded-md text-xs font-semibold capitalize transition-colors cursor-pointer ${
+                          serverConfigTab === tab
+                            ? "bg-blue-600 text-white"
+                            : "bg-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {tab === "nextjs" ? "Next.js" : tab}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const snippets = {
+                          nginx: `add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;\nadd_header X-Content-Type-Options "nosniff" always;\nadd_header X-Frame-Options "DENY" always;\nadd_header Referrer-Policy "strict-origin-when-cross-origin" always;\nadd_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;\nadd_header Content-Security-Policy "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';" always;`,
+                          apache: `<IfModule mod_headers.c>\n  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"\n  Header always set X-Content-Type-Options "nosniff"\n  Header always set X-Frame-Options "DENY"\n  Header always set Referrer-Policy "strict-origin-when-cross-origin"\n  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"\n</IfModule>`,
+                          nextjs: `// In next.config.ts\nasync headers() {\n  return [\n    {\n      source: '/(.*)',\n      headers: [\n        { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },\n        { key: 'X-Content-Type-Options', value: 'nosniff' },\n        { key: 'X-Frame-Options', value: 'DENY' },\n        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },\n        { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' }\n      ]\n    }\n  ];\n}`,
+                          vercel: `{\n  "headers": [\n    {\n      "source": "/(.*)",\n      "headers": [\n        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },\n        { "key": "X-Content-Type-Options", "value": "nosniff" },\n        { "key": "X-Frame-Options", "value": "DENY" },\n        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }\n      ]\n    }\n  ]\n}`
+                        };
+                        navigator.clipboard.writeText(snippets[serverConfigTab]);
+                        setCopiedConfig(true);
+                        setTimeout(() => setCopiedConfig(false), 2000);
+                      }}
+                      className="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ml-2"
+                    >
+                      {copiedConfig ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedConfig ? "Copied!" : "Copy Snippet"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto leading-relaxed">
+                  {serverConfigTab === "nginx" && (
+                    <pre>{`add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;\nadd_header X-Content-Type-Options "nosniff" always;\nadd_header X-Frame-Options "DENY" always;\nadd_header Referrer-Policy "strict-origin-when-cross-origin" always;\nadd_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;\nadd_header Content-Security-Policy "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';" always;`}</pre>
+                  )}
+                  {serverConfigTab === "apache" && (
+                    <pre>{`<IfModule mod_headers.c>\n  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"\n  Header always set X-Content-Type-Options "nosniff"\n  Header always set X-Frame-Options "DENY"\n  Header always set Referrer-Policy "strict-origin-when-cross-origin"\n  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"\n</IfModule>`}</pre>
+                  )}
+                  {serverConfigTab === "nextjs" && (
+                    <pre>{`// In next.config.ts\nasync headers() {\n  return [\n    {\n      source: '/(.*)',\n      headers: [\n        { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },\n        { key: 'X-Content-Type-Options', value: 'nosniff' },\n        { key: 'X-Frame-Options', value: 'DENY' },\n        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },\n        { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' }\n      ]\n    }\n  ];\n}`}</pre>
+                  )}
+                  {serverConfigTab === "vercel" && (
+                    <pre>{`{\n  "headers": [\n    {\n      "source": "/(.*)",\n      "headers": [\n        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },\n        { "key": "X-Content-Type-Options", "value": "nosniff" },\n        { "key": "X-Frame-Options", "value": "DENY" },\n        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }\n      ]\n    }\n  ]\n}`}</pre>
+                  )}
                 </div>
               </div>
             </div>

@@ -108,6 +108,10 @@ export default function CompareContent() {
       setInputA(paramSiteA);
       setInputB(paramSiteB);
       fetchComparison(paramSiteA, paramSiteB);
+    } else {
+      setInputA("stripe.com");
+      setInputB("paypal.com");
+      fetchComparison("stripe.com", "paypal.com");
     }
   }, [paramSiteA, paramSiteB]);
 
@@ -500,6 +504,22 @@ export default function CompareContent() {
                   <span className="text-[10px] text-slate-400">Grade {data.siteB.audit.grade}</span>
                 </div>
               </div>
+              <div className="mt-2.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                <div
+                  className="bg-blue-600 h-full transition-all duration-700"
+                  style={{
+                    width: `${(data.siteA.audit.overallScore / ((data.siteA.audit.overallScore + data.siteB.audit.overallScore) || 1)) * 100}%`
+                  }}
+                  title={`${data.siteA.page.domain}: ${data.siteA.audit.overallScore}`}
+                />
+                <div
+                  className="bg-purple-600 h-full transition-all duration-700"
+                  style={{
+                    width: `${(data.siteB.audit.overallScore / ((data.siteA.audit.overallScore + data.siteB.audit.overallScore) || 1)) * 100}%`
+                  }}
+                  title={`${data.siteB.page.domain}: ${data.siteB.audit.overallScore}`}
+                />
+              </div>
             </div>
 
             {/* 2. DomCop Open PageRank & Global Index */}
@@ -545,6 +565,22 @@ export default function CompareContent() {
                   </span>
                 </div>
               </div>
+              <div className="mt-2.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                <div
+                  className="bg-blue-600 h-full transition-all duration-700"
+                  style={{
+                    width: `${((data.trafficComparison?.pageRankA ?? 5) / (((data.trafficComparison?.pageRankA ?? 5) + (data.trafficComparison?.pageRankB ?? 5)) || 1)) * 100}%`
+                  }}
+                  title={`${data.siteA.page.domain}`}
+                />
+                <div
+                  className="bg-purple-600 h-full transition-all duration-700"
+                  style={{
+                    width: `${((data.trafficComparison?.pageRankB ?? 5) / (((data.trafficComparison?.pageRankA ?? 5) + (data.trafficComparison?.pageRankB ?? 5)) || 1)) * 100}%`
+                  }}
+                  title={`${data.siteB.page.domain}`}
+                />
+              </div>
             </div>
 
             {/* 3. PageSpeed & Mobile Vitals */}
@@ -579,6 +615,22 @@ export default function CompareContent() {
                   </span>
                 </div>
               </div>
+              <div className="mt-2.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                <div
+                  className="bg-blue-600 h-full transition-all duration-700"
+                  style={{
+                    width: `${(data.siteA.performance.scores.performance / ((data.siteA.performance.scores.performance + data.siteB.performance.scores.performance) || 1)) * 100}%`
+                  }}
+                  title={`${data.siteA.page.domain}`}
+                />
+                <div
+                  className="bg-purple-600 h-full transition-all duration-700"
+                  style={{
+                    width: `${(data.siteB.performance.scores.performance / ((data.siteA.performance.scores.performance + data.siteB.performance.scores.performance) || 1)) * 100}%`
+                  }}
+                  title={`${data.siteB.page.domain}`}
+                />
+              </div>
             </div>
 
             {/* 4. Estimated Traffic Reach */}
@@ -612,6 +664,22 @@ export default function CompareContent() {
                     {data.siteB.traffic.confidence} Conf.
                   </span>
                 </div>
+              </div>
+              <div className="mt-2.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                <div
+                  className="bg-blue-600 h-full transition-all duration-700"
+                  style={{
+                    width: `${(data.siteA.traffic.monthlyVisitsMidpoint / ((data.siteA.traffic.monthlyVisitsMidpoint + data.siteB.traffic.monthlyVisitsMidpoint) || 1)) * 100}%`
+                  }}
+                  title={`${data.siteA.page.domain}`}
+                />
+                <div
+                  className="bg-purple-600 h-full transition-all duration-700"
+                  style={{
+                    width: `${(data.siteB.traffic.monthlyVisitsMidpoint / ((data.siteA.traffic.monthlyVisitsMidpoint + data.siteB.traffic.monthlyVisitsMidpoint) || 1)) * 100}%`
+                  }}
+                  title={`${data.siteB.page.domain}`}
+                />
               </div>
             </div>
           </div>

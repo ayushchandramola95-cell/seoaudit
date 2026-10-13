@@ -56,11 +56,65 @@ const PRESET_BATCHES = [
   },
 ];
 
+const DEMO_BATCH_RESULTS: BatchItemResult[] = [
+  {
+    success: true,
+    url: "https://stripe.com",
+    domain: "stripe.com",
+    httpStatus: 200,
+    seoScore: 98,
+    grade: "Grade A+",
+    responseTimeMs: 68,
+    wordCount: 2480,
+    techCount: 14,
+    pageRank: 9.6,
+    globalRank: "Top 0.001%",
+    isHttps: true,
+    criticalIssue: null,
+    passedChecks: 22,
+    totalChecks: 22,
+  },
+  {
+    success: true,
+    url: "https://vercel.com",
+    domain: "vercel.com",
+    httpStatus: 200,
+    seoScore: 96,
+    grade: "Grade A",
+    responseTimeMs: 74,
+    wordCount: 1950,
+    techCount: 12,
+    pageRank: 8.8,
+    globalRank: "Top 0.01%",
+    isHttps: true,
+    criticalIssue: null,
+    passedChecks: 21,
+    totalChecks: 22,
+  },
+  {
+    success: true,
+    url: "https://supabase.com",
+    domain: "supabase.com",
+    httpStatus: 200,
+    seoScore: 94,
+    grade: "Grade A",
+    responseTimeMs: 82,
+    wordCount: 2210,
+    techCount: 11,
+    pageRank: 8.2,
+    globalRank: "Top 0.01%",
+    isHttps: true,
+    criticalIssue: null,
+    passedChecks: 20,
+    totalChecks: 22,
+  },
+];
+
 export default function BatchAuditClient() {
   const { tier, triggerUpgradeModal } = usePlan();
   const [urlsInput, setUrlsInput] = useState(PRESET_BATCHES[0].urls);
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<BatchItemResult[] | null>(null);
+  const [results, setResults] = useState<BatchItemResult[] | null>(DEMO_BATCH_RESULTS);
   const [error, setError] = useState<string | null>(null);
   const [scoreFilter, setScoreFilter] = useState<"all" | "high" | "low">("all");
 
@@ -300,7 +354,41 @@ export default function BatchAuditClient() {
 
       {/* RESULTS TABLE */}
       {results && (
-        <div className="space-y-4 animate-in fade-in-50 duration-200">
+        <div className="space-y-6 animate-in fade-in-50 duration-200">
+          {/* Batch Summary KPI Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 bg-white border border-slate-200/90 rounded-xl shadow-2xs text-left">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Average Health</div>
+              <div className="text-2xl font-black text-slate-900 font-mono">
+                {Math.round(results.reduce((acc, r) => acc + r.seoScore, 0) / (results.length || 1))} / 100
+              </div>
+              <div className="text-[10px] text-emerald-600 font-semibold mt-1">Grade A Batch Average</div>
+            </div>
+
+            <div className="p-4 bg-white border border-slate-200/90 rounded-xl shadow-2xs text-left">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Fastest Latency</div>
+              <div className="text-2xl font-black text-emerald-600 font-mono">
+                {Math.min(...results.map((r) => r.responseTimeMs))} ms
+              </div>
+              <div className="text-[10px] text-slate-500 mt-1">Sub-second response</div>
+            </div>
+
+            <div className="p-4 bg-white border border-slate-200/90 rounded-xl shadow-2xs text-left">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Stacks Detected</div>
+              <div className="text-2xl font-black text-purple-600 font-mono">
+                {results.reduce((acc, r) => acc + r.techCount, 0)}
+              </div>
+              <div className="text-[10px] text-slate-500 mt-1">Frameworks &amp; CDNs</div>
+            </div>
+
+            <div className="p-4 bg-white border border-slate-200/90 rounded-xl shadow-2xs text-left">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Top-Tier Passing</div>
+              <div className="text-2xl font-black text-blue-600 font-mono">
+                {results.filter((r) => r.seoScore >= 90).length} / {results.length}
+              </div>
+              <div className="text-[10px] text-blue-600 font-semibold mt-1">Score ≥ 90/100</div>
+            </div>
+          </div>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <h3 className="text-base font-bold text-slate-900">

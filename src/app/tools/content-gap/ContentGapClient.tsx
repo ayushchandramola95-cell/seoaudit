@@ -70,6 +70,71 @@ interface ContentGapData {
   }>;
 }
 
+const DEMO_GAP: ContentGapData = {
+  success: true,
+  timestamp: new Date().toISOString(),
+  target: {
+    domain: "stripe.com",
+    url: "https://stripe.com",
+    wordCount: 2480,
+    title: "Financial Infrastructure for the Internet",
+    h1Count: 1,
+    h2Count: 12,
+  },
+  competitor: {
+    domain: "paypal.com",
+    url: "https://paypal.com",
+    wordCount: 3120,
+    title: "Digital Wallets, Money Management and Payments",
+    h1Count: 1,
+    h2Count: 16,
+  },
+  gapSummary: {
+    missingKeywordsCount: 18,
+    sharedKeywordsCount: 42,
+    targetLeadsCount: 26,
+    wordDisparity: 640,
+    topicCoverageScore: 74,
+  },
+  missingKeywords: [
+    { term: "buyer protection guarantee", targetCount: 0, competitorCount: 8, gapStatus: "missing" },
+    { term: "peer-to-peer money transfer", targetCount: 0, competitorCount: 6, gapStatus: "missing" },
+    { term: "consumer digital wallet app", targetCount: 0, competitorCount: 9, gapStatus: "missing" },
+    { term: "crypto checkout settlement", targetCount: 0, competitorCount: 4, gapStatus: "missing" },
+    { term: "point of sale card reader hardware", targetCount: 0, competitorCount: 5, gapStatus: "missing" },
+    { term: "cross-border currency conversion rate", targetCount: 0, competitorCount: 7, gapStatus: "missing" },
+  ],
+  sharedKeywords: [
+    { term: "online payments", targetCount: 14, competitorCount: 18, gapStatus: "shared" },
+    { term: "fraud detection radar", targetCount: 8, competitorCount: 6, gapStatus: "shared" },
+    { term: "merchant accounts", targetCount: 6, competitorCount: 12, gapStatus: "shared" },
+    { term: "recurring billing invoices", targetCount: 11, competitorCount: 8, gapStatus: "shared" },
+  ],
+  targetLeads: [
+    { term: "developer api endpoints", targetCount: 16, competitorCount: 2, gapStatus: "lead" },
+    { term: "webhooks latency", targetCount: 9, competitorCount: 0, gapStatus: "lead" },
+    { term: "saas subscription billing", targetCount: 14, competitorCount: 3, gapStatus: "lead" },
+  ],
+  missingTopics: [
+    "Consumer Buyer Protection Program",
+    "Physical Point of Sale Hardware Kits",
+    "QR Code Contactless In-Store Checkout",
+    "Global Currency Exchange Rate Calculator",
+  ],
+  suggestedOutline: [
+    {
+      heading: "Comprehensive Consumer Protection & Dispute Handling",
+      recommendedKeywords: ["buyer protection guarantee", "chargeback protection", "resolution center"],
+      importance: "High Commercial Value",
+    },
+    {
+      heading: "In-Person Point of Sale & Terminal SDK Integrations",
+      recommendedKeywords: ["point of sale card reader hardware", "tap to pay on iPhone", "omnichannel payments"],
+      importance: "High Search Volume",
+    },
+  ],
+};
+
 const SAMPLE_PAIRS = [
   { target: "https://stripe.com", competitor: "https://paypal.com", label: "Stripe vs PayPal" },
   { target: "https://vercel.com", competitor: "https://netlify.com", label: "Vercel vs Netlify" },
@@ -81,7 +146,7 @@ export default function ContentGapClient() {
   const [targetUrl, setTargetUrl] = useState("https://stripe.com");
   const [competitorUrl, setCompetitorUrl] = useState("https://paypal.com");
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<ContentGapData | null>(null);
+  const [data, setData] = useState<ContentGapData | null>(DEMO_GAP);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"missing" | "topics" | "outline" | "shared">("missing");
   const [copiedTerm, setCopiedTerm] = useState<string | null>(null);
@@ -415,6 +480,61 @@ export default function ContentGapClient() {
               </div>
               <h3 className="text-sm font-bold text-slate-900 truncate">{data.competitor.domain}</h3>
               <p className="text-xs text-slate-500 truncate font-mono">{data.competitor.url}</p>
+            </div>
+          </div>
+
+          {/* Visual Semantic Distribution Chart */}
+          <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  Semantic Keyword Overlap &amp; Coverage Distribution
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Cross-domain TF-IDF intersection between {data.target.domain} and {data.competitor.domain}.
+                </p>
+              </div>
+              <span className="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
+                {data.gapSummary.topicCoverageScore}% Common Coverage
+              </span>
+            </div>
+
+            {/* Stacked Proportional Bar */}
+            <div className="h-4 rounded-full overflow-hidden flex bg-slate-100 border border-slate-200/80 p-0.5">
+              <div
+                style={{ width: `${Math.round((data.targetLeads.length / (data.missingKeywords.length + data.sharedKeywords.length + data.targetLeads.length || 1)) * 100)}%` }}
+                className="bg-blue-600 h-full rounded-l-full transition-all duration-700"
+                title="Target Exclusive Keywords"
+              />
+              <div
+                style={{ width: `${data.gapSummary.topicCoverageScore}%` }}
+                className="bg-purple-600 h-full transition-all duration-700"
+                title="Shared Keywords"
+              />
+              <div
+                style={{ width: `${Math.round((data.missingKeywords.length / (data.missingKeywords.length + data.sharedKeywords.length + data.targetLeads.length || 1)) * 100)}%` }}
+                className="bg-rose-500 h-full rounded-r-full transition-all duration-700"
+                title="Missing Competitor Keywords"
+              />
+            </div>
+
+            {/* Legend Strip */}
+            <div className="flex flex-wrap items-center justify-between gap-4 text-xs pt-1">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-blue-600" />
+                <span className="font-bold text-slate-800">{data.targetLeads.length} Target Leads</span>
+                <span className="text-slate-400 text-[11px]">Unique to you</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-purple-600" />
+                <span className="font-bold text-slate-800">{data.sharedKeywords.length} Shared Terms</span>
+                <span className="text-slate-400 text-[11px]">Intersecting topics</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500" />
+                <span className="font-bold text-slate-800">{data.missingKeywords.length} Missing Gaps</span>
+                <span className="text-slate-400 text-[11px]">Ranked by competitor only</span>
+              </div>
             </div>
           </div>
 

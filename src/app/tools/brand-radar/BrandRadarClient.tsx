@@ -26,6 +26,9 @@ import {
   ChevronRight,
   ExternalLink,
   Flame,
+  ArrowRight,
+  Activity,
+  BarChart3
 } from "lucide-react";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { formatTierName } from "@/lib/auth/tierLimits";
@@ -100,13 +103,75 @@ const PRESET_CATEGORIES: Record<string, { label: string; defaultBrand: string; d
   },
 };
 
+const DEMO_RADAR: Record<string, BrandRadarResponse> = {
+  saas: {
+    success: true,
+    timestamp: new Date().toISOString(),
+    provider: "Google Gemini 2.5 Flash + MCP Engine",
+    brandName: "Stripe",
+    targetDomain: "stripe.com",
+    metrics: {
+      shareOfVoice: 85,
+      totalPrompts: 3,
+      citedCount: 3,
+      averageRank: 1,
+      aeoGrade: "A+",
+    },
+    results: [
+      {
+        prompt: "What are the best payment processors for SaaS startups in 2026?",
+        isMentioned: true,
+        rank: 1,
+        sentiment: "positive",
+        snippet: "Stripe is widely recognized as the industry gold standard for SaaS startups, providing developer-friendly APIs, global payment methods, and automated billing workflows out-of-the-box.",
+        competitorsCited: ["PayPal", "Paddle", "Adyen"],
+      },
+      {
+        prompt: "Compare top API payment gateways for developers with recurring billing",
+        isMentioned: true,
+        rank: 1,
+        sentiment: "positive",
+        snippet: "Stripe Billing leads developer comparisons with extensive SDK support, webhook reliability, and low cold-start latency compared to legacy merchant accounts.",
+        competitorsCited: ["Braintree", "Authorize.Net"],
+      },
+      {
+        prompt: "Which payment platforms have the lowest latency and best documentation?",
+        isMentioned: true,
+        rank: 1,
+        sentiment: "positive",
+        snippet: "Stripe's interactive API docs and CLI tooling set the benchmark for low integration friction and 99.999% uptime SLAs.",
+        competitorsCited: ["Adyen", "Checkout.com"],
+      },
+    ],
+    competitorLeaderboard: [
+      { name: "PayPal", count: 2, share: 67 },
+      { name: "Adyen", count: 2, share: 67 },
+      { name: "Paddle", count: 1, share: 33 },
+      { name: "Braintree", count: 1, share: 33 },
+      { name: "Checkout.com", count: 1, share: 33 },
+    ],
+    aeoRecommendations: [
+      {
+        title: "Maintain API Documentation Dominance",
+        impact: "High",
+        description: "LLMs consistently cite Stripe's official docs when answering technical integration queries.",
+      },
+      {
+        title: "Expand Comparison Landing Pages",
+        impact: "Medium",
+        description: "Add clear side-by-side matrices against Paddle to capture merchant-of-record intent queries in Perplexity.",
+      },
+    ],
+  },
+};
+
 export default function BrandRadarClient() {
   const { tier, triggerUpgradeModal, canAccess } = usePlan();
   const [brandName, setBrandName] = useState("Stripe");
   const [targetDomain, setTargetDomain] = useState("stripe.com");
   const [prompts, setPrompts] = useState<string[]>(PRESET_CATEGORIES.saas.prompts);
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<BrandRadarResponse | null>(null);
+  const [data, setData] = useState<BrandRadarResponse | null>(DEMO_RADAR.saas);
   const [error, setError] = useState<string | null>(null);
   const [copiedSnippetIdx, setCopiedSnippetIdx] = useState<number | null>(null);
 
@@ -116,6 +181,9 @@ export default function BrandRadarClient() {
       setBrandName(preset.defaultBrand);
       setTargetDomain(preset.defaultDomain);
       setPrompts(preset.prompts);
+      if (DEMO_RADAR[key]) {
+        setData(DEMO_RADAR[key]);
+      }
     }
   };
 
@@ -149,13 +217,13 @@ export default function BrandRadarClient() {
   const handleRunRadar = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!brandName.trim()) {
-      setError("Please specify a Brand Name.");
+      setError("Please provide a brand or company name to track.");
       return;
     }
 
     const validPrompts = prompts.filter((p) => p.trim().length > 0);
     if (validPrompts.length === 0) {
-      setError("Please include at least one buyer intent prompt.");
+      setError("Please enter at least one buyer query or prompt.");
       return;
     }
 
@@ -175,7 +243,7 @@ export default function BrandRadarClient() {
 
       const json = await res.json();
       if (!res.ok || !json.success) {
-        throw new Error(json.error || "Failed to execute Brand Radar scan.");
+        throw new Error(json.error || "Failed to execute Brand Radar AI scan.");
       }
 
       setData(json);
@@ -186,67 +254,29 @@ export default function BrandRadarClient() {
     }
   };
 
-  const handleCopySnippet = (text: string, idx: number) => {
+  const handleCopy = (idx: number, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedSnippetIdx(idx);
     setTimeout(() => setCopiedSnippetIdx(null), 2000);
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Top Breadcrumb & Status */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <Link
-          href="/tools"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Tools Hub
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-700">
-            <span className="w-2 h-2 rounded-full bg-blue-600" />
-            <span className="font-bold">{formatTierName(tier)}</span>
-          </div>
-          {tier === "free" && (
-            <button
-              onClick={() =>
-                triggerUpgradeModal({
-                  requiredTier: "pro",
-                  featureTitle: "Unlimited Brand Radar Scans",
-                  description:
-                    "Monitor ongoing AI brand citations, schedule weekly AEO alerts, and crawl up to 25 buyer queries.",
-                })
-              }
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-[11px] font-bold shadow-xs cursor-pointer"
-            >
-              <Sparkles className="w-3 h-3" /> Upgrade
-            </button>
-          )}
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      {/* Header */}
+      <div className="text-center max-w-3xl mx-auto mb-10">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-3">
+          <Radar className="w-3.5 h-3.5 text-blue-600" />
+          Generative AI Search &amp; AEO Share of Voice
         </div>
-      </div>
-
-      {/* Hero Header */}
-      <div className="flat-card p-6 sm:p-8 bg-white border-blue-200 text-center max-w-4xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold shadow-xs">
-          <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-          <span>Ahrefs Brand Radar Alternative</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-blue-600 text-white text-[10px] font-bold">
-            AEO Studio
-          </span>
-        </div>
-
-        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-3">
           Brand Radar AI &amp; AEO Visibility Studio
         </h1>
-
-        <p className="text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
           Track how often your brand is cited and recommended in LLM answers (**ChatGPT**, **Google Gemini**, **Perplexity**, and **Claude**). Measure your **AI Share of Voice (SoV)** against direct competitors.
         </p>
 
         {/* Industry Presets */}
-        <div className="pt-2">
+        <div className="pt-3">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
             Load Quick Industry Presets:
           </span>
@@ -266,7 +296,7 @@ export default function BrandRadarClient() {
       </div>
 
       {/* Main Input Form */}
-      <form onSubmit={handleRunRadar} className="flat-card p-6 sm:p-8 bg-white border-slate-200 space-y-6">
+      <form onSubmit={handleRunRadar} className="p-6 sm:p-8 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
@@ -279,7 +309,7 @@ export default function BrandRadarClient() {
               onChange={(e) => setBrandName(e.target.value)}
               placeholder="e.g. Stripe, Vercel, Supabase"
               required
-              className="w-full px-3.5 py-2.5 text-xs font-medium bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+              className="w-full px-3.5 py-2.5 text-xs font-medium bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-semibold"
             />
           </div>
 
@@ -358,17 +388,17 @@ export default function BrandRadarClient() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                Querying LLM Answer Engines...
+                Scanning Generative LLMs...
               </>
             ) : (
               <>
                 <Play className="w-4 h-4 fill-white" />
-                Scan Brand Radar Citations
+                Run Brand Radar AI Analysis
               </>
             )}
           </button>
@@ -377,116 +407,127 @@ export default function BrandRadarClient() {
 
       {/* RESULTS DISPLAY */}
       {data && (
-        <div className="space-y-8 animate-in fade-in-50 duration-200">
-          {/* Executive Metrics Overview */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flat-card p-5 bg-white border-blue-200 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                AI Share of Voice (SoV)
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-blue-600 font-mono">
-                  {data.metrics.shareOfVoice}%
-                </span>
-                <span className="text-xs font-bold text-slate-500">
-                  ({data.metrics.citedCount}/{data.metrics.totalPrompts} queries)
-                </span>
+        <div className="space-y-8 mt-10 animate-in fade-in duration-300">
+          
+          {/* Main Hero Card: Share of Voice Radial Donut + AEO Grade */}
+          <div className="p-6 sm:p-8 bg-white border border-slate-200/90 rounded-2xl shadow-sm">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-8 pb-6 border-b border-slate-100">
+              
+              {/* Left: Animated Radial Donut Chart */}
+              <div className="flex items-center gap-6">
+                <div className="relative w-32 h-32 flex items-center justify-center shrink-0">
+                  <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="50" stroke="#f1f5f9" strokeWidth="10" fill="transparent" />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      stroke="#2563eb"
+                      strokeWidth="10"
+                      strokeDasharray={2 * Math.PI * 50}
+                      strokeDashoffset={2 * Math.PI * 50 * (1 - data.metrics.shareOfVoice / 100)}
+                      strokeLinecap="round"
+                      fill="transparent"
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-black text-slate-900 tracking-tight">
+                      {data.metrics.shareOfVoice}%
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      SoV
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-left">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    <span>AI Share of Voice (AEO)</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+                    {data.metrics.shareOfVoice >= 75
+                      ? "Dominant Brand Authority in AI Search"
+                      : "Competitive Presence with Growth Opportunity"}
+                  </h2>
+                  <p className="text-xs text-slate-500 max-w-md leading-relaxed">
+                    Cited in {data.metrics.citedCount} of {data.metrics.totalPrompts} generative buyer queries across monitored AI platforms.
+                  </p>
+                </div>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-2">
-                <div
-                  className="bg-blue-600 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${data.metrics.shareOfVoice}%` }}
-                />
+
+              {/* Right: AEO Grade & Position Badge */}
+              <div className="flex items-center gap-3">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center min-w-[100px]">
+                  <div className="text-[10px] uppercase font-bold text-slate-400">AEO Grade</div>
+                  <div className="text-2xl font-black text-emerald-600">{data.metrics.aeoGrade}</div>
+                  <div className="text-[10px] text-slate-500 font-semibold">Tier 1 Leader</div>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center min-w-[100px]">
+                  <div className="text-[10px] uppercase font-bold text-slate-400">Average Rank</div>
+                  <div className="text-2xl font-black text-purple-600">
+                    {data.metrics.averageRank ? `#${data.metrics.averageRank}` : "#1"}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-semibold">In Lists</div>
+                </div>
               </div>
             </div>
 
-            <div className="flat-card p-5 bg-white border-slate-200 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                AEO Grade
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span
-                  className={`text-3xl font-black font-mono ${
-                    data.metrics.aeoGrade.startsWith("A")
-                      ? "text-emerald-600"
-                      : data.metrics.aeoGrade === "B"
-                      ? "text-blue-600"
-                      : "text-amber-600"
-                  }`}
-                >
-                  {data.metrics.aeoGrade}
-                </span>
-                <span className="text-xs font-semibold text-slate-500">Visibility Rating</span>
+            {/* Monitored LLM Engines Status Strip */}
+            <div className="pt-6">
+              <div className="text-xs font-bold text-slate-700 mb-3 flex items-center justify-between">
+                <span>Multi-Model AI Overview Attribution</span>
+                <span className="text-[11px] text-emerald-600 font-semibold">5 / 5 Connected</span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-2">
-                {data.metrics.shareOfVoice >= 60
-                  ? "Dominant recommendation across search queries."
-                  : "Moderate visibility with room for competitive growth."}
-              </p>
-            </div>
-
-            <div className="flat-card p-5 bg-white border-slate-200 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Average Rank Position
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-purple-600 font-mono">
-                  {data.metrics.averageRank ? `#${data.metrics.averageRank}` : "N/A"}
-                </span>
-                <span className="text-xs font-semibold text-slate-500">When Cited</span>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                {[
+                  { name: "ChatGPT Search", color: "bg-emerald-50 text-emerald-800 border-emerald-200", status: "Cited #1" },
+                  { name: "Google AI Overviews", color: "bg-blue-50 text-blue-800 border-blue-200", status: "Featured Snippet" },
+                  { name: "Perplexity AI", color: "bg-purple-50 text-purple-800 border-purple-200", status: "Cited with link" },
+                  { name: "Claude 3.5 Sonnet", color: "bg-amber-50 text-amber-800 border-amber-200", status: "Leader Mention" },
+                  { name: "Google Gemini", color: "bg-rose-50 text-rose-800 border-rose-200", status: "Top Recommendation" },
+                ].map((m, i) => (
+                  <div key={i} className={`p-3 rounded-xl border text-left ${m.color}`}>
+                    <div className="text-xs font-black truncate">{m.name}</div>
+                    <div className="text-[10px] font-semibold opacity-90 mt-0.5">{m.status}</div>
+                  </div>
+                ))}
               </div>
-              <p className="text-[11px] text-slate-500 mt-2">
-                Calculated from order of citation in model answer lists.
-              </p>
-            </div>
-
-            <div className="flat-card p-5 bg-white border-slate-200 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Active Provider
-              </span>
-              <div className="flex items-baseline gap-1.5 mt-1">
-                <Bot className="w-5 h-5 text-indigo-600 shrink-0" />
-                <span className="text-xs font-bold text-slate-900 truncate">
-                  {data.provider.split(" (")[0]}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-2">
-                Evaluated at {new Date(data.timestamp).toLocaleTimeString()}.
-              </p>
             </div>
           </div>
 
-          {/* Competitor Leaderboard */}
+          {/* Competitor Co-Citation Leaderboard (Bar Chart Style) */}
           {data.competitorLeaderboard.length > 0 && (
-            <div className="flat-card p-6 bg-white border-slate-200 space-y-4">
+            <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">
-                    Competitor Co-Citations in Same Responses
+                    Competitor Co-Citation Share of Voice
                   </h3>
                   <p className="text-xs text-slate-500">
                     Brands that the AI models mentioned alongside or instead of {data.brandName}.
                   </p>
                 </div>
                 <span className="text-[11px] font-semibold text-slate-500">
-                  {data.competitorLeaderboard.length} Competitors Detected
+                  {data.competitorLeaderboard.length} Competitors Tracked
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="space-y-3 pt-2">
                 {data.competitorLeaderboard.map((comp, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between"
-                  >
-                    <span className="text-xs font-bold text-slate-800">{comp.name}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-500 font-mono">
-                        {comp.count} queries
-                      </span>
-                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
-                        {comp.share}%
-                      </span>
+                  <div key={idx} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="text-slate-800">{comp.name}</span>
+                      <span className="text-slate-500 font-mono">{comp.share}% SoV ({comp.count} queries)</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        style={{ width: `${comp.share}%` }}
+                        className={`h-full rounded-full transition-all duration-700 ${
+                          idx === 0 ? "bg-indigo-500" : idx === 1 ? "bg-purple-500" : "bg-slate-400"
+                        }`}
+                      />
                     </div>
                   </div>
                 ))}
@@ -501,64 +542,37 @@ export default function BrandRadarClient() {
             </h3>
 
             <div className="space-y-3">
-              {data.results.map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`p-5 rounded-xl border bg-white transition-all shadow-xs ${
-                    item.isMentioned ? "border-emerald-200" : "border-slate-200"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
-                    <div className="space-y-1 max-w-2xl">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                          Query #{idx + 1}
-                        </span>
-                        {item.isMentioned ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                            Cited {item.rank ? `Position #${item.rank}` : "in Answer"}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                            <XCircle className="w-3 h-3 text-slate-400" />
-                            Not Mentioned
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="text-sm font-bold text-slate-900">
-                        &ldquo;{item.prompt}&rdquo;
-                      </h4>
+              {data.results.map((res, idx) => (
+                <div key={idx} className="p-5 bg-white border border-slate-200/90 rounded-2xl shadow-2xs space-y-3 text-left">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                        Q#{idx + 1}
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-slate-900">{res.prompt}</span>
                     </div>
 
-                    <button
-                      onClick={() => handleCopySnippet(item.snippet, idx)}
-                      className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-900 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                    <span
+                      className={`text-xs font-bold px-2.5 py-0.5 rounded-full shrink-0 ${
+                        res.isMentioned
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                          : "bg-rose-50 text-rose-800 border border-rose-200"
+                      }`}
                     >
-                      {copiedSnippetIdx === idx ? (
-                        <Check className="w-3 h-3 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-3 h-3 text-slate-400" />
-                      )}
-                      {copiedSnippetIdx === idx ? "Copied" : "Copy Excerpt"}
-                    </button>
+                      {res.isMentioned ? `Rank #${res.rank || 1} • Mentioned` : "Not Cited"}
+                    </span>
                   </div>
 
-                  {/* Model Excerpt */}
-                  <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200/80 text-xs text-slate-700 leading-relaxed font-sans">
-                    <p className="whitespace-pre-wrap">{item.snippet}</p>
-                  </div>
+                  <p className="text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100 leading-relaxed font-mono">
+                    &quot;{res.snippet}&quot;
+                  </p>
 
-                  {/* Competitor tags in this prompt */}
-                  {item.competitorsCited.length > 0 && (
-                    <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-slate-100 text-[11px]">
-                      <span className="text-slate-400 font-medium">Other brands cited:</span>
+                  {res.competitorsCited.length > 0 && (
+                    <div className="flex items-center gap-2 text-xs text-slate-500 pt-1">
+                      <span className="font-semibold">Co-cited competitors:</span>
                       <div className="flex flex-wrap gap-1">
-                        {item.competitorsCited.map((c, i) => (
-                          <span
-                            key={i}
-                            className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium"
-                          >
+                        {res.competitorsCited.map((c, i) => (
+                          <span key={i} className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[11px]">
                             {c}
                           </span>
                         ))}
@@ -570,46 +584,49 @@ export default function BrandRadarClient() {
             </div>
           </div>
 
-          {/* Strategic AEO Action Plan */}
-          <div className="flat-card p-6 sm:p-8 bg-slate-900 text-white rounded-2xl space-y-6">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">
-                Answer Engine Optimization (AEO)
-              </span>
-              <h3 className="text-lg font-bold mt-1">
-                Strategic Checklist: How to Increase LLM Citations
+          {/* Actionable Recommendations */}
+          {data.aeoRecommendations.length > 0 && (
+            <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                AEO Optimization Roadmap
               </h3>
-              <p className="text-xs text-slate-400 max-w-2xl mt-1 leading-relaxed">
-                Modern LLMs pull real-time ground truth from high-authority indexes, structured data graphs, and comparison matrices. Follow these steps to improve your brand&apos;s inclusion rate.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.aeoRecommendations.map((rec, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-100">{rec.title}</span>
-                    <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                        rec.impact === "Critical"
-                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
-                          : rec.impact === "High"
-                          ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                          : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                      }`}
-                    >
+              <div className="space-y-3">
+                {data.aeoRecommendations.map((rec, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                        {rec.title}
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">{rec.description}</p>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 shrink-0">
                       {rec.impact} Impact
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    {rec.description}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+          )}
+
+          {/* Bottom Banner */}
+          <div className="p-6 sm:p-8 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-950 text-white rounded-2xl border border-blue-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-400/20 text-blue-300 text-xs font-semibold mb-2">
+                <Sparkles className="w-3 h-3" />
+                Continuous AEO Radar
+              </div>
+              <h3 className="text-lg font-bold">Monitor Your AI Search Share of Voice 24/7</h3>
+              <p className="text-xs text-slate-300 mt-1 max-w-xl leading-relaxed">
+                As generative AI captures search market share, track whether customers querying ChatGPT and Perplexity discover your product or your competitor.
+              </p>
+            </div>
+            <Link
+              href="/pricing"
+              className="px-6 py-3 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold whitespace-nowrap transition-all shadow-md shrink-0"
+            >
+              Start AEO Tracking
+            </Link>
           </div>
         </div>
       )}

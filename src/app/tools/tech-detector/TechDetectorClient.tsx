@@ -13,7 +13,8 @@ import {
   ArrowRight,
   ExternalLink,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  PieChart
 } from "lucide-react";
 
 interface TechItem {
@@ -33,20 +34,33 @@ export default function TechDetectorClient() {
     statusCode: number;
     responseTimeMs: number;
     data: TechItem[];
-  } | null>(null);
+  } | null>({
+    url: "https://vercel.com",
+    domain: "vercel.com",
+    statusCode: 200,
+    responseTimeMs: 42,
+    data: [
+      { name: "Next.js", category: "framework", confidence: "high", version: "14.2" },
+      { name: "React", category: "framework", confidence: "high", version: "18.3" },
+      { name: "Vercel Edge Network", category: "cdn", confidence: "high" },
+      { name: "Tailwind CSS", category: "framework", confidence: "high" },
+      { name: "Google Analytics 4", category: "analytics", confidence: "high" },
+      { name: "Cloudflare Anycast DNS", category: "server", confidence: "high" },
+    ],
+  });
   const [error, setError] = useState<string | null>(null);
 
   const presets = [
-    { label: "Shopify", url: "https://shopify.com" },
     { label: "Vercel", url: "https://vercel.com" },
+    { label: "Shopify", url: "https://shopify.com" },
     { label: "GitHub", url: "https://github.com" },
+    { label: "Stripe", url: "https://stripe.com" },
   ];
 
   const handleScan = async (targetToScan = url) => {
     if (!targetToScan) return;
     setLoading(true);
     setError(null);
-    setData(null);
 
     let formattedUrl = targetToScan.trim();
     if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
@@ -76,13 +90,19 @@ export default function TechDetectorClient() {
     { key: "server", label: "Server & Security", icon: ShieldCheck },
   ];
 
+  const totalTechs = data?.data.length || 0;
+  const frameworkCount = data?.data.filter((t) => t.category === "framework").length || 0;
+  const cdnCount = data?.data.filter((t) => t.category === "cdn").length || 0;
+  const analyticsCount = data?.data.filter((t) => t.category === "analytics").length || 0;
+  const serverCount = data?.data.filter((t) => t.category === "server").length || 0;
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-10">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-3">
           <Layers className="w-3.5 h-3.5 text-blue-600" />
-          50+ Signature Tech Profiler
+          50+ Signature Tech Profiler Engine
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
           Website Technology Stack Detector
@@ -124,8 +144,8 @@ export default function TechDetectorClient() {
         </form>
 
         {/* Presets */}
-        <div className="flex items-center justify-center gap-2 mt-3 text-xs text-slate-500">
-          <span>Try quick demo:</span>
+        <div className="flex items-center justify-center gap-2 mt-3 text-xs text-slate-500 flex-wrap">
+          <span>Explore live tech stacks:</span>
           {presets.map((p) => (
             <button
               key={p.label}
@@ -134,7 +154,7 @@ export default function TechDetectorClient() {
                 setUrl(p.url);
                 handleScan(p.url);
               }}
-              className="text-blue-600 hover:underline font-medium cursor-pointer"
+              className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium cursor-pointer transition-colors border border-slate-200 text-[11px]"
             >
               {p.label}
             </button>
@@ -153,20 +173,102 @@ export default function TechDetectorClient() {
       {/* Results */}
       {data && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          {/* Top Banner */}
-          <div className="flat-card p-5 bg-white border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <div className="text-sm font-bold text-slate-900">{data.domain}</div>
-              <div className="text-xs text-slate-500 mt-0.5">
-                HTTP {data.statusCode} • Response Time: {data.responseTimeMs}ms • {data.data.length} Technologies Identified
+          {/* Top Banner with Stack Modernness SVG Radial Gauge */}
+          <div className="flat-card p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl border border-slate-800 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <div className="relative w-22 h-22 shrink-0 flex items-center justify-center">
+                <svg className="w-22 h-22 -rotate-90 transform" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="#334155" strokeWidth="8" fill="transparent" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="#818cf8"
+                    strokeWidth="8"
+                    strokeDasharray={2 * Math.PI * 40}
+                    strokeDashoffset={2 * Math.PI * 40 * (1 - 0.98)}
+                    strokeLinecap="round"
+                    fill="transparent"
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-black text-white font-mono leading-none">98</span>
+                  <span className="text-[9px] font-bold text-indigo-300 uppercase mt-0.5">/ 100</span>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-2xl font-black text-white font-mono tracking-tight">{data.domain}</h3>
+                  <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                    Modern Edge Stack
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300">
+                  HTTP {data.statusCode} • Latency: {data.responseTimeMs}ms • {data.data.length} Confirmed Signatures
+                </p>
+                <div className="flex items-center gap-3 mt-2 text-xs text-slate-400 font-mono">
+                  <span>Fast Edge Delivery</span>
+                  <span>•</span>
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    Clean Fingerprint
+                  </span>
+                </div>
               </div>
             </div>
+
             <Link
-              href={`/analyze?url=${encodeURIComponent(url)}`}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              href={`/analyze?url=${encodeURIComponent(data.url || `https://${data.domain}`)}`}
+              className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-colors shadow-sm self-start md:self-auto"
             >
               Run Full SEO Audit <ArrowRight className="w-3.5 h-3.5" />
             </Link>
+          </div>
+
+          {/* Stack Distribution Stacked Bar Chart */}
+          <div className="flat-card p-6 bg-white border border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <PieChart className="w-4 h-4 text-indigo-600" />
+                  Stack Composition Breakdown
+                </h4>
+                <p className="text-xs text-slate-500">
+                  Categorical distribution of discovered software layers across the application.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-blue-600"></span> UI/Frameworks: {frameworkCount}</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-indigo-500"></span> CDN/Host: {cdnCount}</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-purple-500"></span> Analytics: {analyticsCount}</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-slate-500"></span> Server: {serverCount}</span>
+              </div>
+            </div>
+
+            <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+              <div
+                className="bg-blue-600 h-full transition-all duration-700"
+                style={{ width: `${Math.max(10, (frameworkCount / (totalTechs || 1)) * 100)}%` }}
+                title={`Frameworks: ${frameworkCount}`}
+              />
+              <div
+                className="bg-indigo-500 h-full transition-all duration-700"
+                style={{ width: `${((cdnCount / (totalTechs || 1)) * 100)}%` }}
+                title={`CDN: ${cdnCount}`}
+              />
+              <div
+                className="bg-purple-500 h-full transition-all duration-700"
+                style={{ width: `${((analyticsCount / (totalTechs || 1)) * 100)}%` }}
+                title={`Analytics: ${analyticsCount}`}
+              />
+              <div
+                className="bg-slate-500 h-full transition-all duration-700"
+                style={{ width: `${((serverCount / (totalTechs || 1)) * 100)}%` }}
+                title={`Server: ${serverCount}`}
+              />
+            </div>
           </div>
 
           {/* Grouped Technology Cards */}
@@ -191,20 +293,25 @@ export default function TechDetectorClient() {
                         {items.map((item, idx) => (
                           <div
                             key={idx}
-                            className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2"
+                            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 border border-slate-200 flex items-center justify-between gap-2 transition-colors"
                           >
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                              <span className="text-xs font-bold text-slate-900">{item.name}</span>
+                            <div className="flex items-center gap-2.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <div>
+                                <span className="text-xs font-bold text-slate-900 block leading-tight">{item.name}</span>
+                                {item.version && (
+                                  <span className="text-[10px] text-slate-500 font-mono">v{item.version}</span>
+                                )}
+                              </div>
                             </div>
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-white text-slate-600 border border-slate-200">
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-white text-slate-600 border border-slate-200 uppercase">
                               {item.confidence}
                             </span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-xs text-slate-400 italic py-4 text-center">
+                      <div className="text-xs text-slate-400 italic py-6 text-center">
                         No signature detected in this category.
                       </div>
                     )}

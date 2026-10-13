@@ -144,13 +144,13 @@ export default function ToolsHubClient() {
       <div className="text-center max-w-3xl mx-auto mb-12">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-3">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          Ahrefs-Style Modular Architecture
+          The Unified SEO &amp; Website Intelligence Suite
         </div>
         <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight mb-4">
-          Free SEO &amp; Technical Web Tools
+          The Complete SEO Intelligence Suite
         </h1>
         <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
-          Standalone, focused diagnostic utilities built for developers, founders, and technical SEOs. Run instant checks with zero sign-up friction.
+          9 specialized growth and diagnostic engines engineered for sub-second crawl speed, competitive intelligence, Core Web Vitals benchmarking, and AI Search visibility.
         </p>
 
         {/* Search bar */}
@@ -172,7 +172,7 @@ export default function ToolsHubClient() {
               activeCategory === "all" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
-            All Tools ({tools.length})
+            All Engines ({tools.length})
           </button>
           <button
             onClick={() => setActiveCategory("ai")}
@@ -249,7 +249,7 @@ export default function ToolsHubClient() {
               <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span className="font-mono text-slate-400 text-[11px]">{tool.metric}</span>
                 <span className="font-semibold text-blue-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                  Launch Tool <ArrowRight className="w-3.5 h-3.5" />
+                  Launch SEO Engine <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </Link>

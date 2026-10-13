@@ -16,20 +16,21 @@ import {
 } from "lucide-react";
 
 export default function SerpPreviewClient() {
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState("https://stripe.com");
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [canonical, setCanonical] = useState("");
-  const [domain, setDomain] = useState("");
-  const [favicon, setFavicon] = useState("");
+  const [title, setTitle] = useState("Stripe | Financial Infrastructure for the Internet");
+  const [description, setDescription] = useState("Stripe is a suite of APIs powering online payment processing and commerce solutions for internet businesses of every size.");
+  const [canonical, setCanonical] = useState("https://stripe.com/");
+  const [domain, setDomain] = useState("stripe.com");
+  const [favicon, setFavicon] = useState("https://stripe.com/favicon.ico");
   const [error, setError] = useState<string | null>(null);
 
   const presets = [
     { label: "Stripe", url: "https://stripe.com" },
     { label: "Linear", url: "https://linear.app" },
     { label: "Vercel", url: "https://vercel.com" },
+    { label: "GitHub", url: "https://github.com" },
   ];
 
   const handleScan = async (targetToScan = url) => {
@@ -154,6 +155,23 @@ export default function SerpPreviewClient() {
             <span className="text-[11px] text-slate-400">Edits update preview in real-time</span>
           </div>
 
+          {/* Visibility Scorecard */}
+          <div className="p-4 rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white flex items-center justify-between gap-4 border border-slate-800">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">SERP Visibility Index</span>
+              <div className="text-sm font-bold text-white mt-0.5">
+                {!isTitleOver && !isDescOver ? "100% Optimal Rendering" : "Pixel Truncation Risk"}
+              </div>
+            </div>
+            <div className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${
+              !isTitleOver && !isDescOver 
+                ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30" 
+                : "bg-amber-500/20 text-amber-300 border-amber-400/30"
+            }`}>
+              {!isTitleOver && !isDescOver ? "A+ Clickable" : "Review Length"}
+            </div>
+          </div>
+
           <div>
             <div className="flex justify-between items-center text-xs font-semibold text-slate-700 mb-1">
               <span>Title Tag</span>
@@ -168,6 +186,14 @@ export default function SerpPreviewClient() {
               placeholder="Page title tag..."
               className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
+            <div className="mt-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-300 ${
+                  isTitleOver ? "bg-rose-500" : titlePixelWidth > titleMaxPixels * 0.85 ? "bg-emerald-500" : "bg-blue-500"
+                }`}
+                style={{ width: `${Math.min(100, (titlePixelWidth / titleMaxPixels) * 100)}%` }}
+              />
+            </div>
           </div>
 
           <div>
@@ -184,6 +210,14 @@ export default function SerpPreviewClient() {
               placeholder="Meta description content..."
               className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
+            <div className="mt-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-300 ${
+                  isDescOver ? "bg-rose-500" : descPixelWidth > descMaxPixels * 0.8 ? "bg-emerald-500" : "bg-blue-500"
+                }`}
+                style={{ width: `${Math.min(100, (descPixelWidth / descMaxPixels) * 100)}%` }}
+              />
+            </div>
           </div>
 
           <div>

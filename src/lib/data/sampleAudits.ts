@@ -1,0 +1,365 @@
+import { ScrapedPageData } from "@/lib/modules/seo/fetcher";
+import { SeoAuditReport } from "@/lib/modules/seo/scorer";
+import { DetectedTechnology } from "@/lib/modules/tech/detector";
+import { PageSpeedReport } from "@/lib/modules/performance/pagespeed";
+import { TrafficEstimationReport } from "@/lib/modules/traffic/estimator";
+import { AiDiagnosticReport } from "@/lib/modules/ai/service";
+import { KeywordAnalysisReport } from "@/lib/modules/keywords/extractor";
+import { LinkDiscoveryReport } from "@/lib/modules/crawler/linkScanner";
+import { DeepRobotsSitemapReport } from "@/lib/modules/crawler/robotsSitemap";
+
+export interface FullAuditData {
+  success: boolean;
+  id?: string;
+  timestamp: string;
+  page: ScrapedPageData;
+  audit: SeoAuditReport;
+  technologies: DetectedTechnology[];
+  performance: PageSpeedReport;
+  traffic: TrafficEstimationReport;
+  ai: AiDiagnosticReport;
+  keywords?: KeywordAnalysisReport;
+  links?: LinkDiscoveryReport;
+  crawlers?: DeepRobotsSitemapReport;
+}
+
+export const STRIPE_SAMPLE_AUDIT: FullAuditData = {
+  success: true,
+  id: "sample-stripe-enterprise",
+  timestamp: new Date().toISOString(),
+  page: {
+    requestedUrl: "https://stripe.com",
+    finalUrl: "https://stripe.com/",
+    domain: "stripe.com",
+    httpStatus: 200,
+    responseTimeMs: 84,
+    isHttps: true,
+    contentType: "text/html; charset=utf-8",
+    contentLengthBytes: 94820,
+    serverHeader: "cloudflare",
+    xPoweredBy: null,
+    rawHtml: "<html>...</html>",
+    headers: {
+      "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+      "content-security-policy": "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';",
+      "x-frame-options": "DENY",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(self)",
+    },
+    title: "Stripe | Financial Infrastructure for the Internet",
+    titleLength: 48,
+    metaDescription: "Stripe is a suite of APIs powering online payment processing and commerce solutions for internet businesses of every size.",
+    metaDescriptionLength: 123,
+    canonicalUrl: "https://stripe.com/",
+    robotsMeta: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    language: "en-US",
+    charset: "utf-8",
+    viewport: "width=device-width, initial-scale=1",
+    favicon: "https://stripe.com/favicon.ico",
+    openGraph: {
+      title: "Stripe | Financial Infrastructure for the Internet",
+      description: "Powering payments and commerce across millions of organizations worldwide.",
+      image: "https://images.stripeassets.com/fzn2n1nzq965/7kWn.../stripe-og.png",
+      url: "https://stripe.com/",
+      type: "website",
+    },
+    twitterCard: {
+      card: "summary_large_image",
+      title: "Stripe | Financial Infrastructure for the Internet",
+      description: "APIs for internet commerce and banking-as-a-service.",
+      image: "https://images.stripeassets.com/fzn2n1nzq965/7kWn.../stripe-og.png",
+    },
+    headings: {
+      h1Count: 1,
+      h1Items: ["Financial infrastructure for the internet"],
+      h2Count: 6,
+      h2Samples: [
+        "A fully integrated suite of financial and payment products",
+        "The backbone for global internet commerce",
+        "Designed for developers, engineered for scale",
+        "Global payment processing with 135+ currencies",
+        "Embedded banking and treasury infrastructure",
+        "Ready to build the future of payments?",
+      ],
+      h3Count: 14,
+      h4Count: 8,
+      h5Count: 0,
+      h6Count: 0,
+      totalHeadings: 29,
+    },
+    images: {
+      totalImages: 38,
+      withAlt: 38,
+      missingAlt: 0,
+      missingAltSamples: [],
+    },
+    links: {
+      totalLinks: 246,
+      internalLinks: 218,
+      externalLinks: 28,
+      nofollowLinks: 6,
+    },
+    structuredData: {
+      detected: true,
+      count: 4,
+      types: ["Organization", "WebSite", "BreadcrumbList", "SoftwareApplication"],
+    },
+    securityHeaders: {
+      hsts: true,
+      csp: true,
+      xFrameOptions: "DENY",
+      xContentTypeOptions: true,
+      referrerPolicy: "strict-origin-when-cross-origin",
+      permissionsPolicy: true,
+    },
+    hasRobotsTxt: true,
+    hasSitemapXml: true,
+    wordCount: 3840,
+  },
+  audit: {
+    overallScore: 98,
+    grade: "A+",
+    summary: "Stripe demonstrates elite enterprise-grade SEO architecture, perfect H1-H6 semantic nesting, strict HSTS/CSP security enforcement, and sub-100ms response latency.",
+    categories: {
+      metadata: { name: "Metadata & Indexability", score: 25, maxScore: 25, percentage: 100 },
+      content: { name: "Content & Semantics", score: 25, maxScore: 25, percentage: 100 },
+      indexability: { name: "Crawling & Sitemap", score: 24, maxScore: 25, percentage: 96 },
+      security: { name: "Security & Transport", score: 24, maxScore: 25, percentage: 96 },
+    },
+    passedCount: 22,
+    warningCount: 1,
+    errorCount: 0,
+    diagnostics: [
+      {
+        id: "meta-title-present",
+        category: "metadata",
+        title: "Title Tag Present & Optimal",
+        status: "passed",
+        pointsEarned: 10,
+        maxPoints: 10,
+        evidence: 'Found: "Stripe | Financial Infrastructure for the Internet" (48 chars, 456px rendered)',
+        impact: "Critical for search snippets, CTR performance, and keyword relevance in Google SERP.",
+      },
+      {
+        id: "meta-desc-present",
+        category: "metadata",
+        title: "Meta Description Present & Within Limits",
+        status: "passed",
+        pointsEarned: 10,
+        maxPoints: 10,
+        evidence: 'Found: "Stripe is a suite of APIs powering online payment processing..." (123 chars)',
+        impact: "Drives organic CTR by accurately explaining value proposition in Google results.",
+      },
+      {
+        id: "h1-single",
+        category: "content",
+        title: "Single Descriptive H1 Tag",
+        status: "passed",
+        pointsEarned: 10,
+        maxPoints: 10,
+        evidence: 'Found exactly 1 H1: "Financial infrastructure for the internet"',
+        impact: "Provides authoritative semantic context for the primary topic entity.",
+      },
+      {
+        id: "security-hsts",
+        category: "security",
+        title: "HSTS Header Enforced with Preload",
+        status: "passed",
+        pointsEarned: 10,
+        maxPoints: 10,
+        evidence: "max-age=63072000; includeSubDomains; preload",
+        impact: "Guarantees browsers enforce HTTPS exclusively, mitigating SSL downgrade attacks.",
+      },
+      {
+        id: "security-csp",
+        category: "security",
+        title: "Strict Content-Security-Policy (CSP)",
+        status: "passed",
+        pointsEarned: 10,
+        maxPoints: 10,
+        evidence: "Valid CSP directives restricting script execution, preventing inline XSS exploits.",
+        impact: "Hardens the page against third-party injection and untrusted script execution.",
+      },
+      {
+        id: "alt-text-coverage",
+        category: "content",
+        title: "100% Image Alt Attribute Coverage",
+        status: "passed",
+        pointsEarned: 8,
+        maxPoints: 8,
+        evidence: "38 of 38 discovered images include descriptive alt tags.",
+        impact: "Ensures accessibility compliance and enables image search indexing in Google Images.",
+      },
+      {
+        id: "canonical-set",
+        category: "metadata",
+        title: "Self-Referencing Canonical Tag Verified",
+        status: "passed",
+        pointsEarned: 5,
+        maxPoints: 5,
+        evidence: 'Canonical points to "https://stripe.com/" matching final inspected destination.',
+        impact: "Prevents duplicate content dilution and concentrates PageRank authority.",
+      },
+      {
+        id: "structured-data-schema",
+        category: "metadata",
+        title: "Rich JSON-LD Schema Microdata",
+        status: "passed",
+        pointsEarned: 10,
+        maxPoints: 10,
+        evidence: "Detected 4 valid schemas: Organization, WebSite, BreadcrumbList, SoftwareApplication.",
+        impact: "Enables Google Knowledge Graph integration and rich search card displays.",
+      },
+    ],
+  },
+  technologies: [
+    { name: "Next.js", category: "Frontend Framework", confidence: "High", version: "14.2", evidence: "Detected via __NEXT_DATA__ script tag and nextjs header signatures", website: "https://nextjs.org" },
+    { name: "React", category: "JavaScript Library", confidence: "High", version: "18.3", evidence: "React fiber roots and component hooks identified in client runtime bundle", website: "https://react.dev" },
+    { name: "Cloudflare", category: "CDN & Infrastructure", confidence: "High", version: null, evidence: "cf-ray headers, cf-cache-status, and global edge reverse proxy", website: "https://cloudflare.com" },
+    { name: "Tailwind CSS", category: "CSS Framework", confidence: "High", version: null, evidence: "Tailwind utility class footprints and compiled CSS custom properties", website: "https://tailwindcss.com" },
+    { name: "HTTP/3 & QUIC", category: "Web Server", confidence: "High", version: null, evidence: "alt-svc h3-29 negotiation header with 0-RTT handshake support", website: "https://quicwg.org" },
+    { name: "Google Analytics 4", category: "Analytics & Telemetry", confidence: "High", version: null, evidence: "gtag('config', 'G-...') event listener and measurement ID", website: "https://analytics.google.com" },
+  ],
+  performance: {
+    isAvailable: true,
+    isFallback: false,
+    strategy: "desktop",
+    scores: {
+      performance: 98,
+      accessibility: 100,
+      bestPractices: 100,
+      seo: 100,
+    },
+    vitals: {
+      fcp: { name: "First Contentful Paint", value: "0.6s", numericValue: 600, rating: "good", description: "First visual DOM element rendered" },
+      lcp: { name: "Largest Contentful Paint", value: "1.1s", numericValue: 1100, rating: "good", description: "Main content element fully visible" },
+      cls: { name: "Cumulative Layout Shift", value: "0.01", numericValue: 0.01, rating: "good", description: "Visual layout stability score" },
+      tbt: { name: "Total Blocking Time", value: "35ms", numericValue: 35, rating: "good", description: "Main thread script task blocking time" },
+      speedIndex: { name: "Speed Index", value: "0.9s", numericValue: 900, rating: "good", description: "Rate of perceived visual loading" },
+    },
+    opportunities: [
+      { id: "font-display", title: "Preload Critical Brand Font Subsets", description: "Preloading initial WOFF2 font subsets saves ~25ms on cold first-time loads.", savings: "25ms" },
+      { id: "image-avif", title: "Serve AVIF for Secondary Marketing Assets", description: "Converting hero WebP assets to next-generation AVIF yields an additional 12% byte reduction.", savings: "18 KB" },
+    ],
+  },
+  traffic: {
+    monthlyVisitsMin: 32500000,
+    monthlyVisitsMax: 38200000,
+    monthlyVisitsMidpoint: 35350000,
+    formattedRange: "32.5M – 38.2M / mo",
+    confidence: "High",
+    confidenceScore: 96,
+    confidenceReason: "Enterprise domain authority (PR 9.4/10), verified Common Crawl backlink volume, and tier-1 branded search indexation.",
+    organicSearchShare: 62,
+    channels: [
+      { name: "Organic Search", percentage: 62, estimatedVisits: 21917000, formattedVisits: "21.9M" },
+      { name: "Direct Navigation", percentage: 26, estimatedVisits: 9191000, formattedVisits: "9.2M" },
+      { name: "Referral & Ecosystem", percentage: 8, estimatedVisits: 2828000, formattedVisits: "2.8M" },
+      { name: "Social & Community", percentage: 4, estimatedVisits: 1414000, formattedVisits: "1.4M" },
+    ],
+    ctrModel: {
+      top3Share: "68.4%",
+      top10Share: "89.2%",
+      modelNotes: "Captures the #1 ranking for high-intent queries including 'online payment gateway', 'developer billing api', and 'stripe checkout'.",
+    },
+    signalsUsed: [
+      { name: "Open PageRank", value: "9.4 / 10", impact: "Positive" },
+      { name: "Core Web Vitals Pass", value: "100% Pass", impact: "Positive" },
+      { name: "Internal Link Density", value: "218 Internal Links", impact: "Positive" },
+      { name: "Content Length", value: "3,840 Words", impact: "Positive" },
+    ],
+    limitations: [
+      "Private API subdomains (api.stripe.com) and authenticated dashboard traffic (dashboard.stripe.com) are excluded from public root traffic models.",
+    ],
+    tldTier: "Tier 1 Global Top Level Domain (.com)",
+    openPageRank: {
+      domain: "stripe.com",
+      status: "success",
+      pageRankDecimal: 9.4,
+      pageRankInteger: 9,
+      rankFormatted: "Tier 1 Enterprise Authority",
+      globalRank: 142,
+      isLive: true,
+      tier: "Tier 1: Global Mega Authority",
+    },
+  },
+  ai: {
+    isAiGenerated: true,
+    provider: "Google Gemini",
+    executiveSummary: "Stripe exhibits exemplary enterprise technical architecture with deterministic 98/100 SEO health. Heading hierarchy is clean, semantic structure is logical, and security headers are fully enforced.",
+    keyStrengths: [
+      "Rigid H1-H6 semantic outline hierarchy without any skipped levels.",
+      "High-security posture: HSTS with preload, robust CSP, and nosniff protection.",
+      "Flawless Core Web Vitals telemetry with 0.6s FCP and 0.01 CLS.",
+      "Comprehensive JSON-LD Organization and SoftwareApplication entities.",
+    ],
+    criticalGaps: [
+      "Minor: Secondary blog sub-paths can utilize additional breadcrumb markup.",
+      "Optimization: AVIF format migration for legacy marketing hero assets.",
+    ],
+    prioritizedFixes: [
+      {
+        id: "fix-breadcrumbs",
+        title: "Extend BreadcrumbList JSON-LD to Documentation Deep Links",
+        priority: "Low",
+        difficulty: "Easy",
+        category: "Structured Data",
+        evidence: "Root homepage has breadcrumb schema, but deeper integration guides can inherit hierarchical rich path snippets.",
+        expectedImpact: "Enhances click-through rate in Google SERP by rendering navigational path breadcrumbs.",
+        actionableStep: "Inject hierarchical BreadcrumbList JSON-LD objects across all documentation section templates.",
+        codeSnippet: `{\n  "@context": "https://schema.org",\n  "@type": "BreadcrumbList",\n  "itemListElement": [{\n    "@type": "ListItem",\n    "position": 1,\n    "name": "Documentation",\n    "item": "https://stripe.com/docs"\n  },{\n    "@type": "ListItem",\n    "position": 2,\n    "name": "Payments API",\n    "item": "https://stripe.com/docs/payments"\n  }]\n}`,
+      },
+    ],
+    developerAdvice: "Maintain current zero-CLS layout stability standards during upcoming A/B marketing experiment deployments.",
+  },
+  keywords: {
+    totalWords: 3840,
+    uniqueWords: 1420,
+    lexicalDiversity: 0.37,
+    readingTimeMinutes: 19,
+    topSingleKeywords: [
+      { phrase: "payments", count: 48, density: 1.25, inTitle: true, inH1: false },
+      { phrase: "financial", count: 32, density: 0.83, inTitle: true, inH1: true },
+      { phrase: "infrastructure", count: 28, density: 0.73, inTitle: true, inH1: true },
+      { phrase: "commerce", count: 24, density: 0.63, inTitle: true, inH1: false },
+      { phrase: "api", count: 22, density: 0.57, inTitle: false, inH1: false },
+      { phrase: "global", count: 18, density: 0.47, inTitle: false, inH1: false },
+    ],
+    topTwoWordPhrases: [
+      { phrase: "financial infrastructure", count: 18, density: 0.47, inTitle: true, inH1: true },
+      { phrase: "payment processing", count: 14, density: 0.36, inTitle: false, inH1: false },
+      { phrase: "internet commerce", count: 12, density: 0.31, inTitle: false, inH1: false },
+    ],
+    topThreeWordPhrases: [
+      { phrase: "financial infrastructure for the internet", count: 8, density: 0.21, inTitle: true, inH1: true },
+      { phrase: "global payment processing", count: 6, density: 0.16, inTitle: false, inH1: false },
+    ],
+    warnings: [],
+  },
+  links: {
+    totalLinks: 246,
+    internalLinksCount: 218,
+    externalLinksCount: 28,
+    uniqueExternalDomains: ["github.com", "twitter.com", "linkedin.com", "youtube.com", "status.stripe.com"],
+    nofollowCount: 6,
+    sponsoredCount: 0,
+    emptyAnchorCount: 0,
+    linkEquityRatio: {
+      internalPercent: 89,
+      externalPercent: 11,
+    },
+    internalLinksSample: [
+      { href: "/payments", anchorText: "Payments & Online Checkout" },
+      { href: "/billing", anchorText: "Subscription Billing Engine" },
+      { href: "/connect", anchorText: "Multi-Party Marketplace Payouts" },
+      { href: "/docs", anchorText: "Developer Documentation & API Reference" },
+      { href: "/pricing", anchorText: "Transparent Fee Structure & Pricing" },
+    ],
+    externalLinksSample: [
+      { href: "https://github.com/stripe", anchorText: "Stripe Open Source on GitHub", targetDomain: "github.com", nofollow: true },
+      { href: "https://twitter.com/stripe", anchorText: "Official Twitter Updates", targetDomain: "twitter.com", nofollow: true },
+    ],
+    warnings: [],
+  },
+};
