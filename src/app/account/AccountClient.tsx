@@ -51,18 +51,27 @@ export default function AccountClient() {
             Manage your subscription, daily scan quotas, FastMCP tokens, and team seats.
           </p>
           <div className="pt-2 flex flex-col gap-2">
-            <Link
-              href="/login"
-              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors"
+            <button
+              onClick={() => loginWithDemo("pro")}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer"
             >
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-colors"
-            >
-              Create Account
-            </Link>
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+              <span>Explore Demo Profile (Instant Preview)</span>
+            </button>
+            <div className="flex gap-2">
+              <Link
+                href="/login"
+                className="w-1/2 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-colors text-center"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                className="w-1/2 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors text-center"
+              >
+                Create Account
+              </Link>
+            </div>
           </div>
         </div>
       </div>

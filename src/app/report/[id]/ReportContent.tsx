@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import WhiteLabelPdfModal from "@/components/WhiteLabelPdfModal";
 import { exportFindingsCsv } from "@/lib/utils/csvExport";
+import { STRIPE_SAMPLE_AUDIT } from "@/lib/data/sampleAudits";
 
 interface ReportContentProps {
   id: string;
@@ -219,30 +220,58 @@ export default function ReportContent({ id }: ReportContentProps) {
     );
   }
 
+  const handleLoadDemoReport = () => {
+    setError(null);
+    setReportType("scan");
+    setScanData({
+      id: "sample-stripe-enterprise",
+      domain: STRIPE_SAMPLE_AUDIT.page.domain,
+      targetUrl: STRIPE_SAMPLE_AUDIT.page.requestedUrl,
+      seoScore: STRIPE_SAMPLE_AUDIT.audit.overallScore,
+      grade: STRIPE_SAMPLE_AUDIT.audit.grade,
+      responseTimeMs: STRIPE_SAMPLE_AUDIT.page.responseTimeMs,
+      perfScore: STRIPE_SAMPLE_AUDIT.performance.scores.performance,
+      techCount: STRIPE_SAMPLE_AUDIT.technologies.length,
+      trafficRange: STRIPE_SAMPLE_AUDIT.traffic.formattedRange,
+      createdAt: STRIPE_SAMPLE_AUDIT.timestamp,
+      fullReportJson: STRIPE_SAMPLE_AUDIT as any,
+    });
+  };
+
   if (error || (!scanData && !comparisonData)) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="bg-white border border-slate-200 rounded-xl p-8 max-w-md w-full text-center shadow-sm space-y-4">
-          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200">
-            <AlertTriangle className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto border border-blue-200">
+            <Globe className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Report Not Found</h2>
+          <h2 className="text-xl font-bold text-slate-900">Audit Snapshot Not Found</h2>
           <p className="text-sm text-slate-600">
-            {error || "The requested audit report ID does not exist in the database."}
+            {error || "The requested audit report ID does not exist in the database or has expired."}
           </p>
-          <div className="pt-2 flex justify-center gap-3">
-            <Link
-              href="/dashboard"
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold rounded-lg transition-colors"
+
+          <div className="pt-2 flex flex-col gap-2">
+            <button
+              onClick={handleLoadDemoReport}
+              className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
-              Go to Dashboard
-            </Link>
-            <Link
-              href="/analyze"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
-            >
-              Run New Audit
-            </Link>
+              <Sparkles className="w-4 h-4 text-yellow-300" />
+              Preview Enterprise Reference Report (Stripe.com)
+            </button>
+            <div className="flex gap-2">
+              <Link
+                href="/dashboard"
+                className="w-1/2 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors text-center"
+              >
+                Go to Dashboard
+              </Link>
+              <Link
+                href="/analyze"
+                className="w-1/2 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors text-center"
+              >
+                Run New Audit
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -368,14 +397,46 @@ export default function ReportContent({ id }: ReportContentProps) {
           <div className="space-y-6">
             {/* Top Score Summary Banner */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                <div className="text-xs font-semibold uppercase text-slate-500">Overall SEO Score</div>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-3xl font-extrabold text-slate-900">{scanData.seoScore}</span>
-                  <span className="text-sm text-slate-500">/ 100</span>
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
+                <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
+                  <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="26" stroke="#f1f5f9" strokeWidth="5" fill="none" />
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="26"
+                      stroke={scanData.seoScore >= 80 ? "#10b981" : scanData.seoScore >= 60 ? "#f59e0b" : "#ef4444"}
+                      strokeWidth="5"
+                      strokeDasharray={163.36}
+                      strokeDashoffset={163.36 - (163.36 * scanData.seoScore) / 100}
+                      strokeLinecap="round"
+                      fill="none"
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-base font-black text-slate-900 leading-none">{scanData.seoScore}</span>
+                    <span className="text-[9px] font-bold text-slate-400">/100</span>
+                  </div>
                 </div>
-                <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-blue-700">
-                  Grade: {scanData.grade}
+                <div>
+                  <div className="text-xs font-semibold uppercase text-slate-500">Overall SEO Score</div>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <span
+                      className={`px-2 py-0.5 rounded text-xs font-black ${
+                        scanData.seoScore >= 80
+                          ? "bg-emerald-100 text-emerald-800"
+                          : scanData.seoScore >= 60
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-rose-100 text-rose-800"
+                      }`}
+                    >
+                      Grade: {scanData.grade}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-[11px] text-slate-500 font-mono">
+                    {scanData.seoScore >= 80 ? "Audit Passed" : "Needs Review"}
+                  </div>
                 </div>
               </div>
 
@@ -385,7 +446,7 @@ export default function ReportContent({ id }: ReportContentProps) {
                   {scanData.responseTimeMs}
                   <span className="text-sm font-sans font-normal text-slate-500 ml-1">ms</span>
                 </div>
-                <div className="mt-1 text-xs text-slate-500">Time to first HTML byte</div>
+                <div className="mt-1 text-xs text-slate-500">Time to first HTML byte (TTFB)</div>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
@@ -410,9 +471,19 @@ export default function ReportContent({ id }: ReportContentProps) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {Object.entries(scanData.fullReportJson.audit.categoryScores).map(
                     ([cat, score]) => (
-                      <div key={cat} className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-center">
-                        <div className="text-xs font-semibold uppercase text-slate-500 capitalize">{cat}</div>
-                        <div className="text-xl font-extrabold text-slate-900 mt-1">{score}/25</div>
+                      <div key={cat} className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold uppercase text-slate-500 capitalize">{cat}</span>
+                          <span className="text-xs font-bold text-slate-900">{score}/25</span>
+                        </div>
+                        <div className="mt-2 w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              score >= 20 ? "bg-emerald-500" : score >= 15 ? "bg-blue-500" : "bg-amber-500"
+                            }`}
+                            style={{ width: `${(score / 25) * 100}%` }}
+                          />
+                        </div>
                       </div>
                     )
                   )}
