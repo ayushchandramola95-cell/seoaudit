@@ -20,7 +20,9 @@ import {
   ArrowRight,
   ExternalLink,
   MessageSquare,
-  FileText
+  FileText,
+  HelpCircle,
+  X
 } from "lucide-react";
 
 interface SlideData {
@@ -35,6 +37,30 @@ interface SlideData {
 export default function PresentationClient() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showNotes, setShowNotes] = useState(false);
+  const [showVivaModal, setShowVivaModal] = useState(false);
+
+  const vivaQuestions = [
+    {
+      q: "1. Why did you choose Cheerio over Headless Chrome (Puppeteer / Playwright)?",
+      a: "Headless Chrome spins up a full Chromium instance consuming 1–2 GB RAM per crawl and taking 4–8 seconds. Cheerio is an ultra-fast in-memory DOM parser written in pure JavaScript that parses HTML in under 100ms using less than 20MB RAM, allowing high-throughput concurrent audits without crashing servers."
+    },
+    {
+      q: "2. How does your platform protect against Server-Side Request Forgery (SSRF)?",
+      a: "In src/lib/security/ssrf.ts, we execute a pre-flight DNS lookup to resolve the host IP before opening any network socket. We drop requests targeting RFC 1918 private subnets (10.x, 172.16-31.x, 192.168.x), loopbacks (127.0.0.1, ::1), and cloud metadata endpoints (169.254.169.254), enforcing an 8-second socket timeout."
+    },
+    {
+      q: "3. Does the Google Gemini AI model generate or calculate the SEO scores?",
+      a: "No. Deterministic TypeScript code computes all scores, headers, and Core Web Vitals. Gemini AI is strictly an analytical reasoning layer that inspects the verified findings to synthesize executive summaries and generate copyable developer code fixes without hallucinating raw numbers."
+    },
+    {
+      q: "4. What is the mathematical formulation of the 0–100 SEO Score?",
+      a: "The score is divided into four equal 25-point categories: Metadata (25 pts), Content & Structure (25 pts), Indexability (25 pts), and Security & Protocol (25 pts). Each category evaluates binary and weighted compliance rules with explicit deductions."
+    },
+    {
+      q: "5. How does permanent report sharing work without re-scraping the target website?",
+      a: "When an audit is executed, the entire payload is saved in Google Cloud SQL PostgreSQL and assigned a unique UUID. The route /report/[id] queries PostgreSQL directly by ID, ensuring immutable historical snapshots that do not trigger repeated network crawls."
+    }
+  ];
 
   const slides: SlideData[] = [
     {
@@ -73,49 +99,49 @@ export default function PresentationClient() {
       id: 2,
       tag: "Problem Statement & Motivation",
       title: "Why Does the Web Need SeoSeite?",
-      subtitle: "Commercial platforms (Ahrefs, Semrush, Similarweb) create prohibitive barriers for developers, freelancers, and growing businesses.",
-      speakerNotes: "We identified three major flaws in modern SEO software: exorbitant subscription pricing, black-box data fabrication, and heavy headless browsers that crash servers. SeoSeite directly solves all three.",
+      subtitle: "Current web audit ecosystems suffer from closed access, opaque algorithms, and massive server resource exhaustion.",
+      speakerNotes: "We identified three major flaws in modern SEO software: closed paywalled access, black-box data fabrication, and heavy headless browsers that crash servers. SeoSeite directly solves all three.",
       content: (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="bg-slate-900/80 border-t-4 border-rose-500 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="text-xs font-bold text-rose-400 uppercase tracking-wider mb-2">Issue 01</div>
-              <h3 className="text-lg font-bold text-white mb-2">Exorbitant Pricing</h3>
+              <div className="text-xs font-bold text-rose-400 uppercase tracking-wider mb-2">Flaw 01</div>
+              <h3 className="text-lg font-bold text-white mb-2">Closed Paywalls</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Commercial tools charge $100–$499/month, putting professional website intelligence out of reach for students, solo builders, and SMEs.
+                Standard web inspection and technical diagnostics are locked behind closed commercial paywalls, denying developers and researchers direct access to their own website telemetry.
               </p>
             </div>
-            <div className="text-2xl font-black font-mono text-rose-400 mt-4">$1,200+/yr</div>
+            <div className="text-xl font-black font-mono text-rose-400 mt-4">Closed Ecosystems</div>
           </div>
 
           <div className="bg-slate-900/80 border-t-4 border-amber-500 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">Issue 02</div>
+              <div className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">Flaw 02</div>
               <h3 className="text-lg font-bold text-white mb-2">Opaque &amp; Fabricated Data</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Proprietary ratings hallucinate exact visitor numbers and domain authority without disclosing confidence bounds or mathematical methodology.
               </p>
             </div>
-            <div className="text-2xl font-black font-mono text-amber-400 mt-4">Black Box</div>
+            <div className="text-xl font-black font-mono text-amber-400 mt-4">Black Box Math</div>
           </div>
 
           <div className="bg-slate-900/80 border-t-4 border-indigo-500 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Issue 03</div>
+              <div className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Flaw 03</div>
               <h3 className="text-lg font-bold text-white mb-2">Server Resource Bloat</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Traditional crawlers launch headless Chromium (Puppeteer/Playwright) consuming 1–2 GB RAM per crawl, causing severe latency and memory exhaustion.
               </p>
             </div>
-            <div className="text-2xl font-black font-mono text-indigo-400 mt-4">2 GB RAM</div>
+            <div className="text-xl font-black font-mono text-indigo-400 mt-4">2 GB RAM Bloat</div>
           </div>
         </div>
       ),
     },
     {
       id: 3,
-      tag: "Solution & Core Principles",
-      title: "The SeoSeite Solution & Core Value",
+      tag: "Solution & Engineering Philosophy",
+      title: "The SeoSeite Solution & Core Values",
       subtitle: "A high-performance SaaS platform delivering honest, verifiable website diagnostics across five analytical pillars.",
       speakerNotes: "Our primary engineering rule: Zero Fabricated Metrics. Numbers are computed with deterministic math and verified APIs, while Gemini AI is strictly used as an analytical reasoning layer to suggest developer code fixes.",
       content: (
@@ -164,7 +190,7 @@ export default function PresentationClient() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 font-bold">✓</span>
-                <span>Automated Heuristic Rule Synthesizer activates if API quotas expire.</span>
+                <span>Automated Heuristic Rule Synthesizer activates if external APIs time out.</span>
               </li>
             </ul>
           </div>
@@ -376,7 +402,7 @@ for (const ip of ips) {
       tag: "DevOps & Production Metrics",
       title: "Google Cloud Run & Production Metrics",
       subtitle: "Serverless containerization delivering enterprise scalability with zero idle maintenance cost.",
-      speakerNotes: "Our production container is just 140MB, runs on Google Cloud Run with sub-second cold starts, scales to zero when idle costing $0.00, and passes all 46 Next.js route builds with zero TypeScript errors.",
+      speakerNotes: "Our production container is just 140MB, runs on Google Cloud Run with sub-second cold starts, scales to zero when idle with zero idle compute waste, and passes all 46 Next.js route builds with zero TypeScript errors.",
       content: (
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -391,9 +417,9 @@ for (const ip of ips) {
               <div className="text-[11px] text-slate-500">Node 20 Alpine Standalone</div>
             </div>
             <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl text-center">
-              <div className="text-3xl font-black font-mono text-emerald-400">$0.00</div>
-              <div className="text-xs font-bold text-white mt-1">Idle Operational Cost</div>
-              <div className="text-[11px] text-slate-500">Scales to zero instances</div>
+              <div className="text-3xl font-black font-mono text-emerald-400">0 Instances</div>
+              <div className="text-xs font-bold text-white mt-1">Scale-to-Zero Footprint</div>
+              <div className="text-[11px] text-slate-500">Stateless Serverless Pods</div>
             </div>
             <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl text-center">
               <div className="text-3xl font-black font-mono text-amber-400">46 / 46</div>
@@ -412,55 +438,60 @@ for (const ip of ips) {
     },
     {
       id: 9,
-      tag: "Deliverables & Scope",
-      title: "Comprehensive Features Delivered",
-      subtitle: "All 10 project development phases completed, tested, and pushed to production.",
-      speakerNotes: "We successfully executed all 10 project phases, delivering a complete commercial SaaS experience with subscription tiers, shareable report snapshots, white-label exports, and full academic dissertation docs.",
+      tag: "Comparative Engineering Matrix",
+      title: "SeoSeite vs Traditional Web Crawlers",
+      subtitle: "A direct systems engineering comparison highlighting efficiency, security, and algorithmic transparency.",
+      speakerNotes: "This comparative matrix demonstrates why our architectural choices matter: we cut memory consumption from 2 gigabytes down to under 20 megabytes, achieved sub-100ms parse speeds, and instituted strict SSRF DNS security.",
       content: (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-2.5">
-            <h3 className="text-base font-bold text-white">Core Technical Features</h3>
-            <ul className="text-xs text-slate-300 space-y-2">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Full-Stack SSR Platform:</strong> Next.js 16 App Router, React 19, TypeScript.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Deterministic 0–100 Scorer:</strong> Metadata, Content, Indexing, and Security.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Competitor Benchmarking:</strong> Head-to-head compare engine with delta metrics.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>AI Developer Synthesizer:</strong> Grounded recommendations with copyable code fixes.</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-2.5">
-            <h3 className="text-base font-bold text-white">Enterprise SaaS Deliverables</h3>
-            <ul className="text-xs text-slate-300 space-y-2">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Operational Dashboard (/dashboard):</strong> Audit history &amp; pre-warmed benchmarks.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Permanent Snapshots (/report/[id]):</strong> Immutable share links for client audits.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>White-Label Client PDF Engine:</strong> Crisp print stylesheets for agency reports.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Tiered SaaS Billing:</strong> Free, Starter, Pro, and Enterprise quotas with 1-click demos.</span>
-              </li>
-            </ul>
-          </div>
+        <div className="overflow-x-auto bg-slate-900/80 border border-slate-800 rounded-2xl">
+          <table className="w-full text-left text-xs text-slate-300">
+            <thead className="bg-slate-800/80 text-[11px] font-bold uppercase text-slate-400 border-b border-slate-700">
+              <tr>
+                <th className="p-3.5">Engineering Dimension</th>
+                <th className="p-3.5 text-blue-400 font-extrabold">SeoSeite (This Project)</th>
+                <th className="p-3.5 text-slate-400">Headless Chrome Scrapers</th>
+                <th className="p-3.5 text-slate-400">Commercial Audit Tools</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800 font-sans">
+              <tr>
+                <td className="p-3.5 font-bold text-white">Crawl Engine</td>
+                <td className="p-3.5 text-emerald-400 font-semibold">Cheerio In-Memory DOM</td>
+                <td className="p-3.5 text-slate-400">Chromium (Puppeteer)</td>
+                <td className="p-3.5 text-slate-400">Proprietary Cluster</td>
+              </tr>
+              <tr>
+                <td className="p-3.5 font-bold text-white">RAM Consumption</td>
+                <td className="p-3.5 text-emerald-400 font-semibold">&lt; 20 MB / process</td>
+                <td className="p-3.5 text-rose-400">1,500 – 2,000 MB</td>
+                <td className="p-3.5 text-slate-400">High Server Footprint</td>
+              </tr>
+              <tr>
+                <td className="p-3.5 font-bold text-white">Parse Latency</td>
+                <td className="p-3.5 text-emerald-400 font-semibold">Sub-100 ms average</td>
+                <td className="p-3.5 text-rose-400">4,000 – 8,000 ms</td>
+                <td className="p-3.5 text-slate-400">Queued / Asynchronous</td>
+              </tr>
+              <tr>
+                <td className="p-3.5 font-bold text-white">Scoring Method</td>
+                <td className="p-3.5 text-emerald-400 font-semibold">Deterministic 0–100 Formula</td>
+                <td className="p-3.5 text-slate-400">Lighthouse Only</td>
+                <td className="p-3.5 text-amber-400">Black-Box Proprietary</td>
+              </tr>
+              <tr>
+                <td className="p-3.5 font-bold text-white">SSRF Security</td>
+                <td className="p-3.5 text-emerald-400 font-semibold">Pre-Flight DNS IP Shield</td>
+                <td className="p-3.5 text-rose-400">Usually Unfiltered</td>
+                <td className="p-3.5 text-slate-400">Internal Whitelist</td>
+              </tr>
+              <tr>
+                <td className="p-3.5 font-bold text-white">Agent Integration</td>
+                <td className="p-3.5 text-emerald-400 font-semibold">Model Context Protocol (MCP)</td>
+                <td className="p-3.5 text-slate-400">None</td>
+                <td className="p-3.5 text-slate-400">Proprietary REST API Only</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       ),
     },
@@ -468,7 +499,7 @@ for (const ip of ips) {
       id: 10,
       tag: "Conclusion & Defense",
       title: "Summary & Project Demonstration",
-      subtitle: "SeoSeite bridges the gap between high-cost commercial SEO platforms and honest, developer-centric website intelligence.",
+      subtitle: "SeoSeite establishes an honest, high-performance, and verifiable website intelligence platform.",
       speakerNotes: "Thank you for your time and attention. I am now pleased to demonstrate the live platform and welcome your questions.",
       content: (
         <div className="space-y-6">
@@ -560,7 +591,7 @@ for (const ip of ips) {
             <span>SeoSeite</span>
           </Link>
           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-400 border border-blue-800">
-            Presentation Deck
+            Project Presentation Deck
           </span>
         </div>
 
@@ -569,6 +600,13 @@ for (const ip of ips) {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowVivaModal(true)}
+            className="px-3 py-1.5 rounded-lg border border-purple-800/80 bg-purple-950/60 text-purple-300 hover:bg-purple-900/60 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+            <span>Viva Cheat Sheet</span>
+          </button>
           <button
             onClick={() => setShowNotes(!showNotes)}
             className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
@@ -632,10 +670,24 @@ for (const ip of ips) {
       </main>
 
       {/* Bottom Controls Bar */}
-      <footer className="border-t border-slate-800/80 px-6 py-4 flex items-center justify-between">
+      <footer className="border-t border-slate-800/80 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="font-mono text-xs font-bold text-slate-400">
           Slide <span className="text-white">{String(currentSlide + 1).padStart(2, "0")}</span> /{" "}
           <span>{String(slides.length).padStart(2, "0")}</span>
+        </div>
+
+        {/* Slide quick jump dots */}
+        <div className="flex items-center gap-1.5">
+          {slides.map((s, idx) => (
+            <button
+              key={s.id}
+              onClick={() => setCurrentSlide(idx)}
+              className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
+                idx === currentSlide ? "bg-blue-500 w-6" : "bg-slate-700 hover:bg-slate-500"
+              }`}
+              title={`Jump to Slide ${idx + 1}`}
+            />
+          ))}
         </div>
 
         <div className="flex items-center gap-2">
@@ -656,11 +708,50 @@ for (const ip of ips) {
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
-
-        <div className="text-[11px] text-slate-500 hidden sm:block">
-          Use [Space] or [Arrow Keys] to advance
-        </div>
       </footer>
+
+      {/* Viva Voce Defense Cheat Sheet Modal */}
+      {showVivaModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-purple-950 border border-purple-700 flex items-center justify-center text-purple-400">
+                  <HelpCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Viva Voce Defense Guide</h3>
+                  <p className="text-xs text-slate-400">Top 5 questions evaluators ask &amp; how to answer</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowVivaModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {vivaQuestions.map((v, i) => (
+                <div key={i} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+                  <h4 className="text-xs font-bold text-blue-400">{v.q}</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">{v.a}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 text-center">
+              <button
+                onClick={() => setShowVivaModal(false)}
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-colors"
+              >
+                Close &amp; Resume Deck
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
