@@ -1,8 +1,10 @@
 import Link from "next/link";
-import UrlAnalyzerInput from "@/components/UrlAnalyzerInput";
 import HomeInteractiveShowcase from "@/components/HomeInteractiveShowcase";
 import HeroAnimatedDashboard from "@/components/HeroAnimatedDashboard";
 import ToolsAnimatedGrid from "@/components/ToolsAnimatedGrid";
+import AskAiShowcase from "@/components/AskAiShowcase";
+import AiBentoGrid from "@/components/AiBentoGrid";
+import IntegrationTicker from "@/components/IntegrationTicker";
 import { 
   Search, 
   Layers, 
@@ -134,13 +136,25 @@ export default function Home() {
           Uncover technical health, detect 50+ technology stacks, measure real Core Web Vitals, and track AI search visibility with absolute transparency.
         </p>
 
-        {/* URL Input Form */}
-        <div className="max-w-3xl mx-auto mb-6">
-          <UrlAnalyzerInput />
+        {/* Primary Call-to-Actions (Services & Tools Showcase - Replaced Search Box) */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
+          <Link
+            href="/tools"
+            className="px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
+          >
+            <span>Explore 9 Standalone SEO Tools</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            href="/pricing"
+            className="px-7 py-3.5 rounded-xl bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold text-sm sm:text-base transition-all inline-flex items-center gap-2 cursor-pointer shadow-xs"
+          >
+            <span>Start Free ($0 Forever)</span>
+          </Link>
         </div>
 
         {/* Trust Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-medium pt-2 pb-6">
+        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-medium pt-1 pb-6">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             <span>&lt; 100ms Crawl Latency</span>
@@ -217,6 +231,15 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Integration Marquee & 24/7 Autopilot (Inspired by User Image 2 & 3) */}
+      <IntegrationTicker />
+
+      {/* "Skip the digging. Just ask." AI Assistant Console (Directly from User Image 4) */}
+      <AskAiShowcase />
+
+      {/* AI Search & Modern Visibility Suite Bento Grid (Directly from User Image 5) */}
+      <AiBentoGrid />
 
       {/* Why Engineering & Growth Teams Choose SeoSeite (3 Pillars) */}
       <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
