@@ -22,20 +22,31 @@
 
 ---
 
-## Presentation Structure Summary (10 Slides / ~6 Minutes)
+## Presentation Structure Summary (14 Slides / ~7–8 Minutes)
+
+> **Keyboard Shortcuts:**
+> - <kbd>→</kbd> / <kbd>Space</kbd> / <kbd>Enter</kbd>: Next Slide
+> - <kbd>←</kbd> / <kbd>Backspace</kbd>: Previous Slide
+> - <kbd>F</kbd>: Toggle Fullscreen Mode
+> - <kbd>H</kbd>: Hide / Show All Navigation Controls (Distraction-Free Projector Mode)
+> - <kbd>Esc</kbd>: Exit Fullscreen
 
 | Slide | Title | Engineering Focus | Duration |
 | :---: | :--- | :--- | :---: |
 | **01** | Title Slide | Project Title, Presenter, Tech Stack & Production Status | 30s |
-| **02** | Problem Statement | Closed paywalls, black-box math, headless browser RAM bloat | 40s |
-| **03** | Proposed Solution | Deterministic 0–100 score, sub-second Cheerio crawl, zero-hallucination AI | 45s |
-| **04** | Architecture & Data Flow | 6-Layer Full-Stack SSR pipeline, SSRF defense, Google Cloud Run + Cloud SQL | 45s |
-| **05** | 9 Diagnostic Engines | Technical SEO, Competitor Compare, PageSpeed, Schema, Tech Detector, AEO | 40s |
-| **06** | Security Engineering (SSRF) | Pre-flight DNS filter, blocking RFC 1918 subnets, cloud metadata (169.254.x) | 40s |
-| **07** | AI Innovation & FastMCP | Gemini structured fixes + Model Context Protocol for Cursor & Claude Desktop | 40s |
-| **08** | Cloud Performance & Metrics | <100ms latency, 140MB Docker container, scale-to-zero pods, 46/46 routes | 40s |
-| **09** | Comparative Engineering Matrix | Direct benchmark against Headless Chrome & Commercial Tools (RAM, speed, SSRF) | 45s |
-| **10** | Conclusion & Defense | Summary, Thank You, Live Demonstration & Viva Voce readiness | 25s |
+| **02** | Problem Statement | Closed paywalls, black-box math, headless browser RAM bloat | 35s |
+| **03** | Proposed Solution | Deterministic 0–100 score, sub-second Cheerio crawl, zero-hallucination AI | 35s |
+| **04** | Architecture & Data Flow | 6-Layer Full-Stack SSR pipeline, SSRF defense, Google Cloud Run + Cloud SQL | 40s |
+| **05** | 0–100 Scoring Model | Mathematical 4-quadrant formula (Metadata, Content, Indexing, Security) | 40s |
+| **06** | Security Engineering (SSRF) | Pre-flight DNS filter, blocking RFC 1918 subnets, cloud metadata (169.254.x) | 35s |
+| **07** | Traffic Estimation Model | Statistical organic CTR decay curves & domain authority confidence bands | 35s |
+| **08** | Competitor & Tech Profiler | Head-to-head dual domain battle & 50+ framework fingerprinting engine | 35s |
+| **09** | 9 Diagnostic Engines | Technical SEO, Competitor Compare, PageSpeed, Schema, Tech Detector, AEO | 35s |
+| **10** | Gemini AI Remediation | Structured JSON prompt engineering & copy-paste developer code patches | 35s |
+| **11** | Cloud Architecture & Database | PostgreSQL 16 schema, immutable UUID permalinks, scale-to-zero Cloud Run | 35s |
+| **12** | AI Innovation & FastMCP | Native Model Context Protocol (FastMCP) for Cursor IDE & Claude Desktop | 35s |
+| **13** | Comparative Engineering Matrix | Direct benchmark against Headless Chrome & Commercial Tools (RAM, speed, SSRF) | 40s |
+| **14** | Conclusion & Defense | Summary, Thank You, Live Demonstration & Viva Voce readiness | 30s |
 
 ---
 
