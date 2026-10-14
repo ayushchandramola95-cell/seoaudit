@@ -29,7 +29,8 @@ import {
   BarChart3,
   Activity,
   Sliders,
-  Scale
+  Scale,
+  Download
 } from "lucide-react";
 
 interface SlideData {
@@ -867,6 +868,14 @@ export const metadata: Metadata = {
               >
                 Launch Live Website Audit
               </Link>
+              <a
+                href="/presentation.pdf"
+                download="SeoSeite_Capstone_14_Slides.pdf"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-900/40 transition-all cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download All 14 Slides (PDF)</span>
+              </a>
               <button
                 onClick={() => setShowVivaModal(true)}
                 className="px-6 py-2.5 bg-purple-900/80 hover:bg-purple-800 text-purple-200 rounded-xl text-sm font-bold border border-purple-700 transition-colors cursor-pointer"
@@ -934,8 +943,10 @@ export const metadata: Metadata = {
         isFullscreen ? "h-screen overflow-hidden p-0" : ""
       }`}
     >
-      {/* Top Header Bar — Hidden during Fullscreen OR when Controls are explicitly hidden */}
-      {!isFullscreen && !hideControls && (
+      {/* Screen Interactive Deck View (Hidden when printing / generating PDF) */}
+      <div className="print:hidden flex flex-col justify-between min-h-screen flex-1">
+        {/* Top Header Bar — Hidden during Fullscreen OR when Controls are explicitly hidden */}
+        {!isFullscreen && !hideControls && (
         <header className="border-b border-slate-800/80 px-6 py-4 flex items-center justify-between animate-in fade-in duration-200">
           <div className="flex items-center gap-3">
             <Link href="/" className="font-black text-xl text-white tracking-tight flex items-center gap-2">
@@ -978,12 +989,22 @@ export const metadata: Metadata = {
               <MessageSquare className="w-3.5 h-3.5" />
               <span>Speaker Script</span>
             </button>
+            <a
+              href="/presentation.pdf"
+              download="SeoSeite_Capstone_14_Slides.pdf"
+              className="px-3 py-1.5 rounded-lg border border-emerald-700/80 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/80 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+              title="Direct download PDF of all 14 slides"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Download PDF</span>
+            </a>
             <button
               onClick={() => window.print()}
               className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Print or Save all 14 slides as PDF"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print / PDF</span>
+              <span>Print (14 Slides)</span>
             </button>
             <button
               onClick={toggleFullScreen}
@@ -1000,6 +1021,23 @@ export const metadata: Metadata = {
       {/* Fullscreen Floating Controls (Auto-fades, reveals on hover) */}
       {isFullscreen && !hideControls && (
         <div className="absolute top-4 right-6 z-40 flex items-center gap-2 opacity-40 hover:opacity-100 transition-opacity duration-200">
+          <a
+            href="/presentation.pdf"
+            download="SeoSeite_Capstone_14_Slides.pdf"
+            className="px-3 py-1.5 rounded-full bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-700 text-xs font-semibold text-emerald-200 flex items-center gap-1.5 backdrop-blur-md shadow-xl transition-all cursor-pointer"
+            title="Download PDF of all 14 slides"
+          >
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <span>PDF</span>
+          </a>
+          <button
+            onClick={() => window.print()}
+            className="px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 backdrop-blur-md shadow-xl transition-all cursor-pointer"
+            title="Print or Save all 14 slides as PDF"
+          >
+            <Printer className="w-3.5 h-3.5 text-slate-400" />
+            <span>Print</span>
+          </button>
           <button
             onClick={() => setHideControls(true)}
             className="px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 backdrop-blur-md shadow-xl transition-all cursor-pointer"
@@ -1141,6 +1179,23 @@ export const metadata: Metadata = {
               {isFullscreen ? <Minimize2 className="w-4 h-4 text-blue-400" /> : <Maximize2 className="w-4 h-4" />}
               <span>{isFullscreen ? "Exit [F]" : "Fullscreen [F]"}</span>
             </button>
+            <a
+              href="/presentation.pdf"
+              download="SeoSeite_Capstone_14_Slides.pdf"
+              className="px-3.5 py-2 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/80 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+              title="Download PDF of all 14 slides"
+            >
+              <Download className="w-4 h-4 text-emerald-400" />
+              <span>Download PDF</span>
+            </a>
+            <button
+              onClick={() => window.print()}
+              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Print or Save all 14 slides as PDF"
+            >
+              <Printer className="w-4 h-4 text-slate-400" />
+              <span>Print [14]</span>
+            </button>
             <button
               onClick={handlePrev}
               disabled={currentSlide === 0}
@@ -1160,6 +1215,36 @@ export const metadata: Metadata = {
           </div>
         </footer>
       )}
+      </div>
+
+      {/* Complete 14-Slide Dedicated Print & PDF Export View */}
+      <div className="hidden print:block print-deck-root bg-slate-950 text-slate-100">
+        {slides.map((s, idx) => (
+          <div key={s.id} className="print-slide-page">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider text-blue-400 bg-blue-950/70 border border-blue-800/80 mb-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                <span>{s.tag}</span>
+              </div>
+              <h1 className="text-2xl font-black text-white tracking-tight leading-tight mb-1">
+                {s.title}
+              </h1>
+              <p className="text-xs text-slate-300 max-w-4xl leading-relaxed mb-3">
+                {s.subtitle}
+              </p>
+            </div>
+
+            <div className="my-auto py-1">
+              {s.content}
+            </div>
+
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+              <span>SeoSeite (WebIntel) • Final Year BCA Capstone</span>
+              <span className="text-white font-bold">Slide {String(idx + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}</span>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Viva Voce Defense Cheat Sheet Modal */}
       {showVivaModal && (
