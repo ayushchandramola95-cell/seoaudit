@@ -100,8 +100,8 @@ export default function ToolsAnimatedGrid() {
       accent: "group-hover:border-emerald-400",
       preview: (
         <div className="p-2.5 rounded-xl bg-white border border-slate-200/90 text-left space-y-0.5">
-          <div className="text-[10px] text-slate-500 font-sans truncate">https://seoseite.com › tools</div>
-          <div className="text-xs font-bold text-blue-700 font-sans truncate">SeoSeite — Sub-Second SEO Audits</div>
+          <div className="text-[10px] text-slate-500 font-sans truncate">https://seoaudit.cloud.run › tools</div>
+          <div className="text-xs font-bold text-blue-700 font-sans truncate">SEO Audit — Sub-Second SEO Audits</div>
           <div className="text-[10px] text-slate-500 line-clamp-1">Deterministic health score across 14 engines...</div>
         </div>
       ),

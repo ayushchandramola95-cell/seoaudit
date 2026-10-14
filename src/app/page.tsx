@@ -96,16 +96,16 @@ export default function Home() {
 
   const faqs = [
     {
-      q: "What makes SeoSeite different from Ahrefs or Semrush?",
-      a: "Commercial SEO giants cost $129 to $449 every month and heavily penalize teams by charging $40–$80 for every single extra user seat. SeoSeite provides an all-in-one SEO and website intelligence platform with sub-second deterministic audits, 9 specialized growth engines, Content Gap, Brand Radar AI, and native MCP automation at an accessible price ($0 to $49/mo) with zero seat penalties.",
+      q: "What makes SEO Audit different from Ahrefs or Semrush?",
+      a: "Commercial SEO giants cost $129 to $449 every month and heavily penalize teams by charging $40–$80 for every single extra user seat. SEO Audit provides an all-in-one SEO and website intelligence platform with sub-second deterministic audits, 9 specialized growth engines, Content Gap, Brand Radar AI, and native MCP automation at an accessible price ($0 to $49/mo) with zero seat penalties.",
     },
     {
       q: "Can I use the standalone engines without an account?",
       a: "Yes! All 9 specialized engines (Broken Links, Core Web Vitals, Schema Validator, SERP Preview, Tech Detector, Open PageRank, Brand Radar, Content Gap, Batch Auditor) can be used freely without entering a credit card or creating an account.",
     },
     {
-      q: "What is the SeoSeite SEO Model Context Protocol (MCP)?",
-      a: "The Model Context Protocol (MCP) lets developers query SeoSeite conversationally inside Claude Desktop, Cursor IDE, or custom autonomous agents. Ask Claude 'Audit https://stripe.com' and it automatically calls SeoSeite's engine for verified JSON diagnostic data.",
+      q: "What is the SEO Audit SEO Model Context Protocol (MCP)?",
+      a: "The Model Context Protocol (MCP) lets developers query SEO Audit conversationally inside Claude Desktop, Cursor IDE, or custom autonomous agents. Ask Claude 'Audit https://stripe.com' and it automatically calls SEO Audit's engine for verified JSON diagnostic data.",
     },
     {
       q: "Are the SEO scores and traffic numbers trustworthy?",
@@ -290,7 +290,7 @@ export default function Home() {
       {/* Integration Marquee & 24/7 Autopilot (Inspired by User Image 2 & 3) */}
       <IntegrationTicker />
 
-      {/* Why Engineering & Growth Teams Choose SeoSeite (3 Pillars) */}
+      {/* Why Engineering & Growth Teams Choose SEO Audit (3 Pillars) */}
       <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14">
           <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
@@ -300,7 +300,7 @@ export default function Home() {
             Engineered for Speed, Clarity &amp; Transparency
           </h2>
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Legacy suites charge enterprise rates for bloated dashboards and opaque metrics. SeoSeite gives you fast, verifiable diagnostics built for today&apos;s web workflows.
+            Legacy suites charge enterprise rates for bloated dashboards and opaque metrics. SEO Audit gives you fast, verifiable diagnostics built for today&apos;s web workflows.
           </p>
         </div>
 
@@ -355,15 +355,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SeoSeite vs Traditional Tools Comparison Table */}
+      {/* SEO Audit vs Traditional Tools Comparison Table */}
       <section className="py-16 sm:py-20 bg-slate-50 border-y border-slate-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
-              Why We Built SeoSeite
+              Why We Built SEO Audit
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-3">
-              SeoSeite vs Traditional SEO Platforms
+              SEO Audit vs Traditional SEO Platforms
             </h2>
             <p className="text-sm text-slate-600">
               See why modern engineering and growth teams switch from expensive, black-box legacy suites.
@@ -376,7 +376,7 @@ export default function Home() {
                 <thead>
                   <tr className="bg-slate-100 border-b border-slate-200 text-slate-900 font-bold">
                     <th className="py-3.5 px-5">Capability / Dimension</th>
-                    <th className="py-3.5 px-5 text-blue-700 bg-blue-50/50">SeoSeite Platform</th>
+                    <th className="py-3.5 px-5 text-blue-700 bg-blue-50/50">SEO Audit Platform</th>
                     <th className="py-3.5 px-5 text-slate-600">Legacy Platforms (Ahrefs / Semrush)</th>
                   </tr>
                 </thead>
@@ -410,7 +410,7 @@ export default function Home() {
               Connect SEO Audits to Claude Desktop, Cursor &amp; CI/CD
             </h2>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
-              Modern engineering teams don&apos;t just look at dashboards—they automate them. With SeoSeite&apos;s native Model Context Protocol (MCP) server and REST API, your AI coding assistants can audit URLs and diagnose regressions conversationally.
+              Modern engineering teams don&apos;t just look at dashboards—they automate them. With SEO Audit&apos;s native Model Context Protocol (MCP) server and REST API, your AI coding assistants can audit URLs and diagnose regressions conversationally.
             </p>
 
             <div className="space-y-3.5 text-xs sm:text-sm text-slate-700">

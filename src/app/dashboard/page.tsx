@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import DashboardContent from "./DashboardContent";
 
 export const metadata: Metadata = {
-  title: "SaaS Dashboard & Cloud Status — SeoSeite Platform",
+  title: "SaaS Dashboard & Cloud Status — SEO Audit Platform",
   description: "Operational dashboard for tracking recent website audits, competitor benchmarks, and Google Cloud Run / Cloud SQL PostgreSQL runtime connections.",
 };
 

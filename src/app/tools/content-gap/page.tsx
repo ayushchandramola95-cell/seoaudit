@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import ContentGapClient from "./ContentGapClient";
 
 export const metadata: Metadata = {
-  title: "Semantic Content Gap & Keyword Matrix | SeoSeite Competitive Tools",
+  title: "Semantic Content Gap & Keyword Matrix | SEO Audit Competitive Tools",
   description:
     "Compare your webpage against any competitor to uncover missing keywords, topical heading gaps, and content length disparity. Inspired by Ahrefs Content Gap.",
   keywords: [

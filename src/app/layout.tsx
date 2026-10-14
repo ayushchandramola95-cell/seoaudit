@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SeoSeite — AI-Powered Website Intelligence & Traffic Estimation",
+  title: "SEO Audit — AI-Powered Website Intelligence & Traffic Estimation",
   description: "Analyze website performance, estimate traffic, uncover technical SEO opportunities, discover technologies, and compare competitors with actionable insights.",
 };
 

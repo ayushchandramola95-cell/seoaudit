@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Project Quick Info — SeoSeite Platform",
-  description: "Complete architectural specification, core principles, and technical roadmap for the SeoSeite Intelligence SaaS platform.",
+  title: "Project Quick Info — SEO Audit Platform",
+  description: "Complete architectural specification, core principles, and technical roadmap for the SEO Audit Intelligence SaaS platform.",
 };
 
 export default function ProjectInfoPage() {
@@ -108,7 +108,7 @@ export default function ProjectInfoPage() {
           Platform Architecture & Technical Specification
         </h1>
         <p className="text-lg text-slate-600 max-w-3xl leading-relaxed">
-          SeoSeite is an enterprise-grade website intelligence and competitive benchmarking SaaS platform. 
+          SEO Audit is an enterprise-grade website intelligence and competitive benchmarking SaaS platform. 
           It gives users verifiable, public domain diagnostics with high transparency, sub-second crawling, and grounded metrics.
         </p>
 

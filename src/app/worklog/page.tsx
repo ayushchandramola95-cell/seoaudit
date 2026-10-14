@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Development Worklog — SeoSeite Platform",
+  title: "Development Worklog — SEO Audit Platform",
   description: "Day-by-day development changelog, detailing technologies installed, features built, and architecture decisions.",
 };
 

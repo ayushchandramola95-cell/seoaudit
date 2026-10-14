@@ -3,8 +3,8 @@ import { Metadata } from "next";
 import LoginClient from "./LoginClient";
 
 export const metadata: Metadata = {
-  title: "Sign In — SeoSeite Intel Platform",
-  description: "Sign in to your SeoSeite Intel account to access technical audits, Core Web Vitals telemetry, and FastMCP tools.",
+  title: "Sign In — SEO Audit Intel Platform",
+  description: "Sign in to your SEO Audit Intel account to access technical audits, Core Web Vitals telemetry, and FastMCP tools.",
 };
 
 export default function LoginPage() {

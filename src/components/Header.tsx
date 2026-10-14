@@ -97,7 +97,7 @@ export default function Header() {
                 <Globe className="w-4 h-4" />
               </div>
               <span className="flex items-center gap-1.5 font-extrabold">
-                SeoSeite
+                SEO Audit
                 <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                   Intel
                 </span>
@@ -424,7 +424,7 @@ export default function Header() {
                               onClick={() => setProductOpen(false)}
                               className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 pt-1"
                             >
-                              <span>Connect SeoSeite MCP to AI</span>
+                              <span>Connect SEO Audit MCP to AI</span>
                               <ArrowRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -616,7 +616,7 @@ export default function Header() {
                           <li>
                             <Link href="/pricing" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                               <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                                SeoSeite vs Ahrefs &amp; Semrush
+                                SEO Audit vs Ahrefs &amp; Semrush
                               </div>
                               <p className="text-xs text-slate-500 mt-0.5 leading-snug">
                                 Transparent tier pricing with zero credit burn traps.

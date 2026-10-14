@@ -92,9 +92,9 @@ export default function PresentationClient() {
     {
       id: 1,
       tag: "Final Year Capstone Project • 2025–2026",
-      title: "SeoSeite (WebIntel)",
+      title: "SEO Audit (WebIntel)",
       subtitle: "An AI-Powered Website Intelligence, Deterministic SEO Auditing, Traffic Estimation & Competitor Benchmarking Platform",
-      speakerNotes: "Good morning respected professors and evaluators. Today I am presenting SeoSeite, an enterprise-grade website intelligence SaaS platform built with Next.js 16, TypeScript, Google Cloud Run, and Gemini AI to deliver sub-second, deterministic technical audits without fabricated numbers.",
+      speakerNotes: "Good morning respected professors and evaluators. Today I am presenting SEO Audit, an enterprise-grade website intelligence SaaS platform built with Next.js 16, TypeScript, Google Cloud Run, and Gemini AI to deliver sub-second, deterministic technical audits without fabricated numbers.",
       content: (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -154,7 +154,7 @@ export default function PresentationClient() {
       tag: "Problem Statement & Industry Gaps",
       title: "The Triple Breakdown in Modern Web Auditing",
       subtitle: "Current SEO software and diagnostic ecosystems suffer from closed access, opaque algorithms, and massive server resource exhaustion.",
-      speakerNotes: "We identified three major flaws in modern SEO software: closed paywalled access, black-box data fabrication, and heavy headless browsers that crash servers. SeoSeite directly solves all three.",
+      speakerNotes: "We identified three major flaws in modern SEO software: closed paywalled access, black-box data fabrication, and heavy headless browsers that crash servers. SEO Audit directly solves all three.",
       content: (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-slate-900/90 border-t-4 border-rose-500 border border-slate-800 p-7 rounded-2xl flex flex-col justify-between shadow-xl">
@@ -562,7 +562,7 @@ for (const ip of ips) {
       tag: "Product Capabilities & Micro-Tools",
       title: "9 Specialized Diagnostic Engines",
       subtitle: "A unified suite engineered for technical SEO consultants, webmasters, agencies, and autonomous AI agents.",
-      speakerNotes: "Beyond the full audit, SeoSeite includes 9 focused utility engines: side-by-side competitor benchmarking, PageSpeed Lab, Schema Validator, Tech Detector, 404 Broken Link Crawler, and Brand Radar AEO.",
+      speakerNotes: "Beyond the full audit, SEO Audit includes 9 focused utility engines: side-by-side competitor benchmarking, PageSpeed Lab, Schema Validator, Tech Detector, 404 Broken Link Crawler, and Brand Radar AEO.",
       content: (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-lg">
@@ -718,7 +718,7 @@ export const metadata: Metadata = {
       id: 12,
       tag: "AI Agent Interoperability & MCP Standard",
       title: "Model Context Protocol (FastMCP) for AI Agents",
-      subtitle: "Connecting Claude Desktop, Cursor IDE, and autonomous agents directly to SeoSeite via JSON-RPC 2.0.",
+      subtitle: "Connecting Claude Desktop, Cursor IDE, and autonomous agents directly to SEO Audit via JSON-RPC 2.0.",
       speakerNotes: "We also implemented an enterprise Model Context Protocol gateway. Developers using Cursor or Claude Desktop can directly ask their AI to audit websites and detect tech stacks using our live tools.",
       content: (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -754,7 +754,7 @@ export const metadata: Metadata = {
 }`}
             </pre>
             <p className="text-xs text-slate-400 pt-2">
-              Allows developers to type <em>&quot;Audit linear.app with SeoSeite&quot;</em> inside Cursor IDE or Claude.
+              Allows developers to type <em>&quot;Audit linear.app with SEO Audit&quot;</em> inside Cursor IDE or Claude.
             </p>
           </div>
         </div>
@@ -765,7 +765,7 @@ export const metadata: Metadata = {
     {
       id: 13,
       tag: "Comparative Engineering Matrix",
-      title: "SeoSeite vs Traditional Web Crawlers",
+      title: "SEO Audit vs Traditional Web Crawlers",
       subtitle: "A direct systems engineering comparison highlighting efficiency, security, and algorithmic transparency.",
       speakerNotes: "This comparative matrix demonstrates why our architectural choices matter: we cut memory consumption from 2 gigabytes down to under 20 megabytes, achieved sub-100ms parse speeds, and instituted strict SSRF DNS security.",
       content: (
@@ -774,7 +774,7 @@ export const metadata: Metadata = {
             <thead className="bg-slate-800/80 text-xs font-bold uppercase text-slate-400 border-b border-slate-700">
               <tr>
                 <th className="p-4">Engineering Dimension</th>
-                <th className="p-4 text-blue-400 font-extrabold">SeoSeite (This Project)</th>
+                <th className="p-4 text-blue-400 font-extrabold">SEO Audit (This Project)</th>
                 <th className="p-4 text-slate-400">Headless Chrome Scrapers</th>
                 <th className="p-4 text-slate-400">Commercial Audit Tools</th>
               </tr>
@@ -833,7 +833,7 @@ export const metadata: Metadata = {
       id: 14,
       tag: "Conclusion & Viva Voce Defense",
       title: "Project Summary & Live Demonstration",
-      subtitle: "SeoSeite establishes an honest, high-performance, and verifiable website intelligence platform.",
+      subtitle: "SEO Audit establishes an honest, high-performance, and verifiable website intelligence platform.",
       speakerNotes: "Thank you for your time and attention. I am now pleased to demonstrate the live platform and welcome your questions.",
       content: (
         <div className="space-y-6">
@@ -870,7 +870,7 @@ export const metadata: Metadata = {
               </Link>
               <a
                 href="/presentation.pdf"
-                download="SeoSeite_Capstone_14_Slides.pdf"
+                download="SEO_Audit_Capstone_14_Slides.pdf"
                 className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-900/40 transition-all cursor-pointer"
               >
                 <Download className="w-4 h-4" />
@@ -950,8 +950,8 @@ export const metadata: Metadata = {
         <header className="border-b border-slate-800/80 px-6 py-4 flex items-center justify-between animate-in fade-in duration-200">
           <div className="flex items-center gap-3">
             <Link href="/" className="font-black text-xl text-white tracking-tight flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm font-black">S</span>
-              <span>SeoSeite</span>
+              <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-xs font-black">SEO</span>
+              <span>SEO Audit</span>
             </Link>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-950 text-blue-400 border border-blue-800">
               Project Presentation Deck (14 Slides)
@@ -991,7 +991,7 @@ export const metadata: Metadata = {
             </button>
             <a
               href="/presentation.pdf"
-              download="SeoSeite_Capstone_14_Slides.pdf"
+              download="SEO_Audit_Capstone_14_Slides.pdf"
               className="px-3 py-1.5 rounded-lg border border-emerald-700/80 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/80 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
               title="Direct download PDF of all 14 slides"
             >
@@ -1023,7 +1023,7 @@ export const metadata: Metadata = {
         <div className="absolute top-4 right-6 z-40 flex items-center gap-2 opacity-40 hover:opacity-100 transition-opacity duration-200">
           <a
             href="/presentation.pdf"
-            download="SeoSeite_Capstone_14_Slides.pdf"
+            download="SEO_Audit_Capstone_14_Slides.pdf"
             className="px-3 py-1.5 rounded-full bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-700 text-xs font-semibold text-emerald-200 flex items-center gap-1.5 backdrop-blur-md shadow-xl transition-all cursor-pointer"
             title="Download PDF of all 14 slides"
           >
@@ -1181,7 +1181,7 @@ export const metadata: Metadata = {
             </button>
             <a
               href="/presentation.pdf"
-              download="SeoSeite_Capstone_14_Slides.pdf"
+              download="SEO_Audit_Capstone_14_Slides.pdf"
               className="px-3.5 py-2 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/80 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
               title="Download PDF of all 14 slides"
             >
@@ -1239,7 +1239,7 @@ export const metadata: Metadata = {
             </div>
 
             <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-              <span>SeoSeite (WebIntel) • Final Year BCA Capstone</span>
+              <span>SEO Audit (WebIntel) • Final Year BCA Capstone</span>
               <span className="text-white font-bold">Slide {String(idx + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}</span>
             </div>
           </div>

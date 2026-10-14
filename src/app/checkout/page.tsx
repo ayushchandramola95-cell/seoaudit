@@ -3,8 +3,8 @@ import { Metadata } from "next";
 import CheckoutClient from "./CheckoutClient";
 
 export const metadata: Metadata = {
-  title: "Secure Checkout & Plan Activation — SeoSeite Intel Platform",
-  description: "Complete your subscription payment to activate your SeoSeite Starter, Pro, or Agency plan.",
+  title: "Secure Checkout & Plan Activation — SEO Audit Intel Platform",
+  description: "Complete your subscription payment to activate your SEO Audit Starter, Pro, or Agency plan.",
 };
 
 export default function CheckoutPage() {

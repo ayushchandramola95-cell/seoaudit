@@ -84,7 +84,7 @@ export default function AskAiShowcase() {
             </h2>
 
             <p className="text-blue-100 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
-              Ask SeoSeite is our built-in AI assistant powered by Google Gemini and our native Model Context Protocol (MCP). It analyzes your data, runs instant API queries, and diagnoses site health without forcing you to dig through complex reports.
+              Ask SEO Audit is our built-in AI assistant powered by Google Gemini and our native Model Context Protocol (MCP). It analyzes your data, runs instant API queries, and diagnoses site health without forcing you to dig through complex reports.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 mb-10">
@@ -153,7 +153,7 @@ export default function AskAiShowcase() {
                   <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white">
                     <Bot className="w-3.5 h-3.5" />
                   </div>
-                  <span className="font-extrabold text-sm text-slate-900">Ask SeoSeite AI</span>
+                  <span className="font-extrabold text-sm text-slate-900">Ask SEO Audit AI</span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-700">
                     Gemini 2.5 Flash + MCP
                   </span>

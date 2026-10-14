@@ -9,7 +9,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   return {
-    title: `Permanent Audit Snapshot ${id} — SeoSeite Platform`,
+    title: `Permanent Audit Snapshot ${id} — SEO Audit Platform`,
     description: `Verified website intelligence, performance, and SEO diagnostic report snapshot for ID ${id}.`,
   };
 }

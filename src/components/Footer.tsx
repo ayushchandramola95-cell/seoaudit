@@ -20,7 +20,7 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div className="space-y-3 max-w-2xl">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight uppercase leading-tight">
-                GET STARTED WITH SEOSEITE TODAY
+                GET STARTED WITH SEO AUDIT TODAY
               </h2>
               <p className="text-sm sm:text-base text-slate-400 font-normal leading-relaxed">
                 Deterministic technical audits, Core Web Vitals, and AI search visibility in sub-second time. Zero credit burn traps.
@@ -71,7 +71,7 @@ export default function Footer() {
                 <Globe className="w-4 h-4" />
               </div>
               <span className="flex items-center gap-1.5 font-extrabold">
-                SeoSeite
+                SEO Audit
                 <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
                   Intel
                 </span>
@@ -331,15 +331,15 @@ export default function Footer() {
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-slate-400">
               <Link href="/pricing" className="hover:text-white transition-colors">
-                SeoSeite vs Ahrefs (Save $100+/mo &amp; No Seat Penalties)
+                SEO Audit vs Ahrefs (Save $100+/mo &amp; No Seat Penalties)
               </Link>
               <span className="text-slate-700">•</span>
               <Link href="/pricing" className="hover:text-white transition-colors">
-                SeoSeite vs Semrush
+                SEO Audit vs Semrush
               </Link>
               <span className="text-slate-700">•</span>
               <Link href="/pricing" className="hover:text-white transition-colors">
-                SeoSeite vs BuiltWith (50+ Free Signatures)
+                SEO Audit vs BuiltWith (50+ Free Signatures)
               </Link>
             </div>
           </div>
@@ -347,7 +347,7 @@ export default function Footer() {
 
         {/* Bottom Copyright Row */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© 2026 SeoSeite Intel Platform. Grounded metrics, zero hallucinations. Next.js 16 + TypeScript.</p>
+          <p>© 2026 SEO Audit Intel Platform. Grounded metrics, zero hallucinations. Next.js 16 + TypeScript.</p>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <Link href="/project-info" className="hover:text-slate-300 transition-colors">
               Platform Spec

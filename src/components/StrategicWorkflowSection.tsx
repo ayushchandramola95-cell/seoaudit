@@ -54,7 +54,7 @@ export default function StrategicWorkflowSection() {
       title: "Audit Technical Health in Sub-Seconds",
       subtitle: "Eliminate indexing blockers before they hurt your rankings",
       description:
-        "Unlike legacy crawlers that take minutes to parse headless JavaScript, SeoSeite's Cheerio AST engine inspects your HTML structure, HTTP headers, Core Web Vitals, and 404 dead links in under 100 milliseconds.",
+        "Unlike legacy crawlers that take minutes to parse headless JavaScript, SEO Audit's Cheerio AST engine inspects your HTML structure, HTTP headers, Core Web Vitals, and 404 dead links in under 100 milliseconds.",
       badge: "Sub-Second Crawls",
       icon: ShieldCheck,
       color: "emerald",
@@ -120,7 +120,7 @@ export default function StrategicWorkflowSection() {
       title: "Dominate Generative AI Search & LLM Citations",
       subtitle: "Track your brand in ChatGPT, Perplexity, Claude & Google AI Overviews",
       description:
-        "Organic search isn't just blue links anymore. SeoSeite's Brand Radar AI monitors how generative AI engines recommend your brand when customers ask buying prompts, measuring your Share of Voice across leading LLMs.",
+        "Organic search isn't just blue links anymore. SEO Audit's Brand Radar AI monitors how generative AI engines recommend your brand when customers ask buying prompts, measuring your Share of Voice across leading LLMs.",
       badge: "AEO Intelligence",
       icon: Radar,
       color: "blue",
@@ -153,7 +153,7 @@ export default function StrategicWorkflowSection() {
       title: "Put Your SEO on 24/7 Autopilot & Native MCP",
       subtitle: "Automate health monitoring and bring SEO directly into Cursor & Claude",
       description:
-        "Never get caught off guard by broken redirects or code deploys that degrade your rankings. SeoSeite crawls your domains weekly and sends instant Slack/Discord webhook alerts if health drops. Plus, query audits directly inside Cursor IDE and Claude via native MCP.",
+        "Never get caught off guard by broken redirects or code deploys that degrade your rankings. SEO Audit crawls your domains weekly and sends instant Slack/Discord webhook alerts if health drops. Plus, query audits directly inside Cursor IDE and Claude via native MCP.",
       badge: "Agentic MCP & Alerts",
       icon: Workflow,
       color: "amber",
@@ -198,7 +198,7 @@ export default function StrategicWorkflowSection() {
             <span>The Complete Growth Operating System</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 text-white">
-            How Modern Teams Use SeoSeite to <br className="hidden sm:inline" />
+            How Modern Teams Use SEO Audit to <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
               Outrank Competitors &amp; Win Search
             </span>

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import CompareContent from "./CompareContent";
 
 export const metadata = {
-  title: "Competitor Website Comparison — SeoSeite Platform",
+  title: "Competitor Website Comparison — SEO Audit Platform",
   description: "Side-by-side technical SEO, Core Web Vitals, technology stack, and traffic comparison between two websites.",
 };
 

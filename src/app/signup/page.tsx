@@ -3,8 +3,8 @@ import { Metadata } from "next";
 import SignupClient from "./SignupClient";
 
 export const metadata: Metadata = {
-  title: "Sign Up & Select Plan — SeoSeite Intel Platform",
-  description: "Create your SeoSeite account and choose from Free Webmaster, Starter, Pro Analyst, or Agency tiers.",
+  title: "Sign Up & Select Plan — SEO Audit Intel Platform",
+  description: "Create your SEO Audit account and choose from Free Webmaster, Starter, Pro Analyst, or Agency tiers.",
 };
 
 export default function SignupPage() {

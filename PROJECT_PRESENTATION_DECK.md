@@ -1,4 +1,4 @@
-# SeoSeite (WebIntel) — Final Project Presentation Deck
+# SEO Audit (WebIntel) — Final Project Presentation Deck
 **Academic Capstone / Enterprise Systems Defense**  
 **Presenter:** Ayush Chandramola | **Degree:** Final Year BCA (2025–2026)  
 **Technology Stack:** Next.js 16, React 19, TypeScript, Tailwind CSS, Cheerio, PostgreSQL 16 (Google Cloud SQL), Google Cloud Run, Google Gemini AI, FastMCP  
@@ -53,29 +53,29 @@
 ## Slide-by-Slide Detailed Script & Content
 
 ### Slide 1: Title Slide
-- **Headline:** SeoSeite (WebIntel)
+- **Headline:** SEO Audit (WebIntel)
 - **Subtitle:** An AI-Powered Website Intelligence, Deterministic SEO Auditing, Traffic Estimation & Competitor Benchmarking Platform
 - **Presenter:** Ayush Chandramola | Final Year BCA Candidate (2025–2026)
 - **Core Stack:** Next.js 16 + React 19, TypeScript, Tailwind CSS v4, Cheerio, PostgreSQL 16, Google Cloud Run
 - **Live Deployment:** `https://seoaudit-93977081206.us-central1.run.app`
 - **🗣️ Speaker Script:**
-  > *"Good morning respected professors and evaluators. Today I am presenting SeoSeite, an enterprise-grade website intelligence platform built with Next.js 16, TypeScript, Google Cloud Run, and Gemini AI to deliver sub-second, deterministic technical audits without fabricated numbers."*
+  > *"Good morning respected professors and evaluators. Today I am presenting SEO Audit, an enterprise-grade website intelligence platform built with Next.js 16, TypeScript, Google Cloud Run, and Gemini AI to deliver sub-second, deterministic technical audits without fabricated numbers."*
 
 ---
 
 ### Slide 2: Problem Statement & Motivation
-- **Headline:** Why Does the Web Need SeoSeite?
+- **Headline:** Why Does the Web Need SEO Audit?
 - **3 Systemic Flaws in Modern Web Auditing:**
   1. **Closed Ecosystems & Paywalls:** Standard web inspection, header analysis, and crawl telemetry are locked inside closed commercial platforms, denying developers and researchers direct access to their own diagnostics.
   2. **Opaque & Fabricated Data:** Proprietary tools use black-box ratings that hallucinate exact visitor numbers and domain authority without disclosing confidence bounds or mathematical methodology.
   3. **Server Resource Bloat:** Traditional crawlers launch headless Chromium (Puppeteer/Playwright) instances consuming 1–2 GB RAM per crawl, causing severe latency and server crashes under concurrent load.
 - **🗣️ Speaker Script:**
-  > *"We identified three major flaws in modern SEO software: closed paywalled ecosystems, black-box data fabrication, and heavy headless browsers that crash servers. SeoSeite directly solves all three."*
+  > *"We identified three major flaws in modern SEO software: closed paywalled ecosystems, black-box data fabrication, and heavy headless browsers that crash servers. SEO Audit directly solves all three."*
 
 ---
 
 ### Slide 3: Proposed Solution & Core Values
-- **Headline:** The SeoSeite Solution & Core Values
+- **Headline:** The SEO Audit Solution & Core Values
 - **Key Technical Guarantees:**
   - **Sub-Second Crawl Latency (<100ms):** Pure JavaScript Cheerio parser extracts raw HTML DOM trees in milliseconds without browser overhead.
   - **Deterministic 0–100 SEO Scoring:** Transparent mathematical formula split into 4 equal 25-point categories (Metadata, Content, Indexing, Security).
@@ -114,7 +114,7 @@
   8. **Content Gap Matrix:** Uncovers missing keywords and topical heading disparity against competitors.
   9. **Multi-URL Batch Auditor:** Audits up to 15 website URLs simultaneously in parallel.
 - **🗣️ Speaker Script:**
-  > *"Beyond the full audit, SeoSeite includes 9 focused utility engines: side-by-side competitor benchmarking, Core Web Vitals Lab, Schema Validator, Tech Detector, 404 Broken Link Crawler, and Brand Radar AEO."*
+  > *"Beyond the full audit, SEO Audit includes 9 focused utility engines: side-by-side competitor benchmarking, Core Web Vitals Lab, Schema Validator, Tech Detector, 404 Broken Link Crawler, and Brand Radar AEO."*
 
 ---
 
@@ -160,10 +160,10 @@
 ---
 
 ### Slide 9: Comparative Engineering Matrix
-- **Headline:** SeoSeite vs Traditional Web Crawlers
+- **Headline:** SEO Audit vs Traditional Web Crawlers
 - **Systems Comparison Table:**
 
-| Engineering Dimension | SeoSeite (This Project) | Headless Chrome Scrapers | Commercial Audit Tools |
+| Engineering Dimension | SEO Audit (This Project) | Headless Chrome Scrapers | Commercial Audit Tools |
 | :--- | :--- | :--- | :--- |
 | **Crawl Engine** | **Cheerio In-Memory DOM** | Chromium (Puppeteer/Playwright) | Proprietary Cluster |
 | **RAM Usage** | **< 20 MB / process** | 1,500 – 2,000 MB | High Server Footprint |

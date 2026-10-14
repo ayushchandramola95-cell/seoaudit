@@ -189,7 +189,7 @@ export default function HomeInteractiveShowcase() {
                 </div>
 
                 <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
-                  <span className="text-blue-400 font-bold">SeoSeite Studio Engine v2.4</span>
+                  <span className="text-blue-400 font-bold">SEO Audit Studio Engine v2.4</span>
                   <span className="text-slate-600 hidden sm:inline">•</span>
                   <span className="text-slate-400 hidden sm:inline">Live Diagnostic Workbench</span>
                 </div>
@@ -510,7 +510,7 @@ export default function HomeInteractiveShowcase() {
                         Model Context Protocol (JSON-RPC 2.0)
                       </div>
                       <h3 className="text-xl sm:text-2xl font-black text-white">
-                        Native SeoSeite SEO MCP Server
+                        Native SEO Audit SEO MCP Server
                       </h3>
                     </div>
                     <Link
@@ -523,7 +523,7 @@ export default function HomeInteractiveShowcase() {
                   </div>
 
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Connect SeoSeite directly to <strong>Claude Desktop</strong>, <strong>Cursor IDE</strong>, or autonomous agent workflows. Ask Claude: <code className="bg-slate-900 border border-slate-800 text-emerald-300 px-1.5 py-0.5 rounded">&quot;Audit https://stripe.com and find slow Web Vitals&quot;</code> and receive structured, deterministic JSON.
+                    Connect SEO Audit directly to <strong>Claude Desktop</strong>, <strong>Cursor IDE</strong>, or autonomous agent workflows. Ask Claude: <code className="bg-slate-900 border border-slate-800 text-emerald-300 px-1.5 py-0.5 rounded">&quot;Audit https://stripe.com and find slow Web Vitals&quot;</code> and receive structured, deterministic JSON.
                   </p>
 
                   <pre className="p-4 rounded-2xl bg-slate-900 text-slate-300 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800">

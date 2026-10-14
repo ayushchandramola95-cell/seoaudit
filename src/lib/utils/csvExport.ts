@@ -40,7 +40,7 @@ export function exportFindingsCsv(
   }>
 ): void {
   const rows: (string | number | boolean)[][] = [
-    ["SeoSeite Technical Audit Findings Report"],
+    ["SEO Audit Technical Audit Findings Report"],
     ["Domain", domain],
     ["Overall Score", `${overallScore}/100`],
     ["Letter Grade", grade],
@@ -71,7 +71,7 @@ export function exportKeywordsCsv(
   phrases: Array<{ phrase: string; count: number; density: number }>
 ): void {
   const rows: (string | number | boolean)[][] = [
-    ["SeoSeite Keyword Density & Linguistic Analysis"],
+    ["SEO Audit Keyword Density & Linguistic Analysis"],
     ["Domain", domain],
     ["Export Date", new Date().toISOString()],
     [],
@@ -96,7 +96,7 @@ export function exportTechnologiesCsv(
   technologies: Array<{ name: string; category: string; confidence: number; version?: string; website?: string }>
 ): void {
   const rows: (string | number | boolean)[][] = [
-    ["SeoSeite Technology Stack Fingerprint"],
+    ["SEO Audit Technology Stack Fingerprint"],
     ["Domain", domain],
     ["Export Date", new Date().toISOString()],
     [],
@@ -121,7 +121,7 @@ export function exportKeywordGapCsv(
   }
 ): void {
   const rows: (string | number | boolean)[][] = [
-    ["SeoSeite Competitor Keyword Content Gap Matrix"],
+    ["SEO Audit Competitor Keyword Content Gap Matrix"],
     ["Domain A", siteA],
     ["Domain B", siteB],
     ["Export Date", new Date().toISOString()],

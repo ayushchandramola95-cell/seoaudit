@@ -23,7 +23,7 @@ export default function WhiteLabelPdfModal({
   const { tier, canAccess, triggerUpgradeModal } = usePlan();
   const hasWhiteLabelAccess = canAccess("allowWhiteLabelPDF");
 
-  const [agencyName, setAgencyName] = useState("SeoSeite Intelligence Partner");
+  const [agencyName, setAgencyName] = useState("SEO Audit Intelligence Partner");
   const [clientName, setClientName] = useState(domain);
   const [consultantName, setConsultantName] = useState("Lead Technical SEO Analyst");
   const [executiveNotes, setExecutiveNotes] = useState(

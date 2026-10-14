@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import TechDetectorClient from "./TechDetectorClient";
 
 export const metadata: Metadata = {
-  title: "Website Technology Stack Detector - CMS & Framework Profiler | SeoSeite",
+  title: "Website Technology Stack Detector - CMS & Framework Profiler | SEO Audit",
   description:
     "Detect what CMS, framework, CDN, hosting, analytics, and advertising scripts any website is running in under 100 milliseconds.",
 };
