@@ -13,7 +13,9 @@ import {
   AlertCircle,
   FileText,
   User,
+  Info,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 interface EmailReportModalProps {
   isOpen: boolean;
@@ -36,8 +38,9 @@ export default function EmailReportModal({
   reportUrl,
   topFixes = [],
 }: EmailReportModalProps) {
-  const [recipientEmail, setRecipientEmail] = useState("");
-  const [recipientName, setRecipientName] = useState("");
+  const { user } = useAuth();
+  const [recipientEmail, setRecipientEmail] = useState(user?.email || "");
+  const [recipientName, setRecipientName] = useState(user?.name || "");
   const [customNote, setCustomNote] = useState(
     `Here is the latest technical SEO & Core Web Vitals executive audit snapshot for ${domain}.`
   );
@@ -346,23 +349,43 @@ export default function EmailReportModal({
             </div>
 
             {/* Recipient inputs */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="font-semibold text-slate-700 block mb-1">
-                  Recipient Email <span className="text-rose-500">*</span>
-                </label>
-                <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-2 focus-within:border-blue-600 bg-white">
-                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <input
-                    type="email"
-                    required
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
-                    placeholder="client@company.com"
-                    className="w-full text-xs text-slate-900 focus:outline-none"
-                  />
+            <div className="space-y-3">
+              {user?.email && (
+                <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-blue-50/70 border border-blue-100 text-blue-800">
+                  <div className="flex items-center gap-1.5 font-medium">
+                    <User className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Signed in as <strong>{user.email}</strong></span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRecipientEmail(user.email);
+                      setRecipientName(user.name);
+                    }}
+                    className="text-[11px] font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                  >
+                    Send to My Email
+                  </button>
                 </div>
-              </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">
+                    Recipient Email <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-2 focus-within:border-blue-600 bg-white">
+                    <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <input
+                      type="email"
+                      required
+                      value={recipientEmail}
+                      onChange={(e) => setRecipientEmail(e.target.value)}
+                      placeholder="client@company.com"
+                      className="w-full text-xs text-slate-900 focus:outline-none"
+                    />
+                  </div>
+                </div>
 
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Recipient / Client Name</label>
@@ -377,6 +400,7 @@ export default function EmailReportModal({
                   />
                 </div>
               </div>
+            </div>
             </div>
 
             {/* Custom note */}

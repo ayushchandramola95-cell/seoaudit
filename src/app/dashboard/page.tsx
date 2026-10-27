@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import DashboardContent from "./DashboardContent";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 export const metadata: Metadata = {
   title: "SaaS Dashboard & Cloud Status — SEO Audit Platform",
@@ -19,7 +20,12 @@ export default function DashboardPage() {
         </div>
       }
     >
-      <DashboardContent />
+      <AuthGuard
+        fallbackTitle="Sign In to Access Dashboard"
+        fallbackMessage="View your personal audit history, live monitoring alerts, cloud database status, and monitored watchlists."
+      >
+        <DashboardContent />
+      </AuthGuard>
     </Suspense>
   );
 }

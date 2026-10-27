@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import CompareContent from "./CompareContent";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 export const metadata = {
   title: "Competitor Website Comparison — SEO Audit Platform",
@@ -15,7 +16,12 @@ export default function ComparePage() {
         </div>
       }
     >
-      <CompareContent />
+      <AuthGuard
+        fallbackTitle="Sign In for Competitor Benchmarks"
+        fallbackMessage="Compare two websites side-by-side, uncover semantic content gaps, and analyze competitor tech stacks with a free account."
+      >
+        <CompareContent />
+      </AuthGuard>
     </Suspense>
   );
 }

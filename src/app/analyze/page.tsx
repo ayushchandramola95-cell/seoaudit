@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import AnalyzeContent from "./AnalyzeContent";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 export const metadata = {
   title: "Website Analyzer — SeoSeite Platform",
@@ -15,7 +16,12 @@ export default function AnalyzePage() {
         </div>
       }
     >
-      <AnalyzeContent />
+      <AuthGuard
+        fallbackTitle="Sign In to Analyze Websites"
+        fallbackMessage="Full 14-engine SEO audits, Core Web Vitals diagnostics, and AI recommendations are available to registered members."
+      >
+        <AnalyzeContent />
+      </AuthGuard>
     </Suspense>
   );
 }

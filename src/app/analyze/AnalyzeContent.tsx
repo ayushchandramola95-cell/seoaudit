@@ -64,6 +64,7 @@ import SchemaCodeGenerator from "@/components/SchemaCodeGenerator";
 import LinkCrawlerMatrix from "@/components/LinkCrawlerMatrix";
 import { exportFindingsCsv, exportKeywordsCsv, exportTechnologiesCsv } from "@/lib/utils/csvExport";
 import { usePlan } from "@/lib/auth/PlanContext";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { formatTierName } from "@/lib/auth/tierLimits";
 import { STRIPE_SAMPLE_AUDIT } from "@/lib/data/sampleAudits";
 
@@ -88,6 +89,7 @@ interface ApiResponse {
 export default function AnalyzeContent() {
   const searchParams = useSearchParams();
   const targetUrl = searchParams.get("url");
+  const { user } = useAuth();
   const { tier, remainingScans, limits, recordScan, triggerUpgradeModal, canAccess } = usePlan();
 
   const [loading, setLoading] = useState(false);
@@ -177,7 +179,10 @@ export default function AnalyzeContent() {
     setIsDemoMode(false);
 
     try {
-      const res = await fetch(`/api/analyze?url=${encodeURIComponent(urlToFetch)}`);
+      const userParams = user?.id
+        ? `&userId=${encodeURIComponent(user.id)}&userEmail=${encodeURIComponent(user.email)}`
+        : "";
+      const res = await fetch(`/api/analyze?url=${encodeURIComponent(urlToFetch)}${userParams}`);
       const result: ApiResponse = await res.json();
 
       if (!res.ok || !result.success) {

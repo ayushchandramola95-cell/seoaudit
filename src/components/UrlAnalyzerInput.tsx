@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ArrowRight, ShieldCheck, AlertCircle, Globe, GitCompare, Zap, Radar } from "lucide-react";
+import { Search, ArrowRight, ShieldCheck, AlertCircle, Globe, GitCompare, Zap, Radar, Lock } from "lucide-react";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 type LaunchMode = "audit" | "compare" | "speed" | "radar";
 
@@ -13,6 +14,7 @@ interface UrlAnalyzerInputProps {
 
 export default function UrlAnalyzerInput({ compact = false, onQuickAnalyze }: UrlAnalyzerInputProps = {}) {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [url, setUrl] = useState("");
   const [mode, setMode] = useState<LaunchMode>("audit");
   const [error, setError] = useState("");
@@ -65,19 +67,27 @@ export default function UrlAnalyzerInput({ compact = false, onQuickAnalyze }: Ur
       }
 
       setError("");
+      
+      let targetDestination = `/analyze?url=${encodeURIComponent(formatted)}`;
+      if (mode === "compare") {
+        targetDestination = `/compare?siteA=${encodeURIComponent(formatted)}&siteB=${encodeURIComponent("https://stripe.com")}`;
+      } else if (mode === "speed") {
+        targetDestination = `/tools/speed-lab?url=${encodeURIComponent(formatted)}`;
+      } else if (mode === "radar") {
+        targetDestination = `/tools/brand-radar?brand=${encodeURIComponent(parsed.hostname)}`;
+      }
+
+      if (!isAuthenticated) {
+        router.push(`/login?redirect=${encodeURIComponent(targetDestination)}`);
+        return;
+      }
+
       if (onQuickAnalyze && mode === "audit") {
         onQuickAnalyze(formatted);
         return;
       }
-      if (mode === "compare") {
-        router.push(`/compare?siteA=${encodeURIComponent(formatted)}&siteB=${encodeURIComponent("https://stripe.com")}`);
-      } else if (mode === "speed") {
-        router.push(`/tools/speed-lab?url=${encodeURIComponent(formatted)}`);
-      } else if (mode === "radar") {
-        router.push(`/tools/brand-radar?brand=${encodeURIComponent(parsed.hostname)}`);
-      } else {
-        router.push(`/analyze?url=${encodeURIComponent(formatted)}`);
-      }
+
+      router.push(targetDestination);
     } catch {
       setError("Please enter a valid website address.");
     }

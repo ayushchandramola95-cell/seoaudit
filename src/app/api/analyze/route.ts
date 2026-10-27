@@ -15,6 +15,8 @@ import { saveScanRecord } from "@/lib/db/client";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const targetUrl = searchParams.get("url");
+  const userId = searchParams.get("userId") || request.headers.get("x-user-id") || null;
+  const userEmail = searchParams.get("userEmail") || request.headers.get("x-user-email") || null;
 
   if (!targetUrl || targetUrl.trim().length === 0) {
     return NextResponse.json(
@@ -98,6 +100,8 @@ export async function GET(request: NextRequest) {
 
     // Persist scan record for Dashboard & History
     const savedRecord = await saveScanRecord({
+      userId,
+      userEmail,
       domain: pageData.domain,
       targetUrl: pageData.finalUrl,
       seoScore: auditReport.overallScore,

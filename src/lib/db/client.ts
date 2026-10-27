@@ -2,6 +2,8 @@ import { Pool } from "pg";
 
 export interface SavedScanRecord {
   id: string;
+  userId?: string | null;
+  userEmail?: string | null;
   domain: string;
   targetUrl: string;
   seoScore: number;
@@ -38,6 +40,8 @@ async function ensureSchema(db: Pool) {
     await db.query(`
       CREATE TABLE IF NOT EXISTS website_scans (
         id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(128),
+        user_email VARCHAR(255),
         domain VARCHAR(255) NOT NULL,
         target_url TEXT NOT NULL,
         seo_score INTEGER NOT NULL,
@@ -49,6 +53,9 @@ async function ensureSchema(db: Pool) {
         full_report_json JSONB NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+      ALTER TABLE website_scans ADD COLUMN IF NOT EXISTS user_id VARCHAR(128);
+      ALTER TABLE website_scans ADD COLUMN IF NOT EXISTS user_email VARCHAR(255);
+      CREATE INDEX IF NOT EXISTS idx_website_scans_user_id ON website_scans(user_id);
       CREATE INDEX IF NOT EXISTS idx_website_scans_domain ON website_scans(domain);
       CREATE INDEX IF NOT EXISTS idx_website_scans_created_at ON website_scans(created_at DESC);
 
@@ -131,6 +138,8 @@ export function getDatabaseStatus() {
  * Persists an analyzed website audit report.
  */
 export async function saveScanRecord(params: {
+  userId?: string | null;
+  userEmail?: string | null;
   domain: string;
   targetUrl: string;
   seoScore: number;
@@ -146,6 +155,8 @@ export async function saveScanRecord(params: {
 
   const record: SavedScanRecord = {
     id,
+    userId: params.userId || null,
+    userEmail: params.userEmail || null,
     domain: params.domain,
     targetUrl: params.targetUrl,
     seoScore: params.seoScore,
@@ -167,10 +178,12 @@ export async function saveScanRecord(params: {
     try {
       await db.query(
         `INSERT INTO website_scans 
-         (id, domain, target_url, seo_score, grade, response_time_ms, perf_score, tech_count, traffic_range, full_report_json, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+         (id, user_id, user_email, domain, target_url, seo_score, grade, response_time_ms, perf_score, tech_count, traffic_range, full_report_json, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
         [
           id,
+          params.userId || null,
+          params.userEmail || null,
           params.domain,
           params.targetUrl,
           params.seoScore,
@@ -192,22 +205,36 @@ export async function saveScanRecord(params: {
 }
 
 /**
- * Retrieves recent audits.
+ * Retrieves recent audits, optionally filtered by user ID or user email.
  */
-export async function getRecentScans(limit = 15): Promise<SavedScanRecord[]> {
+export async function getRecentScans(
+  limit = 15,
+  userId?: string | null,
+  userEmail?: string | null
+): Promise<SavedScanRecord[]> {
   const db = getDbPool();
   if (db) {
     try {
-      const res = await db.query(
-        `SELECT id, domain, target_url as "targetUrl", seo_score as "seoScore", grade, 
-                response_time_ms as "responseTimeMs", perf_score as "perfScore", 
-                tech_count as "techCount", traffic_range as "trafficRange", 
-                created_at as "createdAt", full_report_json as "fullReportJson"
-         FROM website_scans 
-         ORDER BY created_at DESC 
-         LIMIT $1`,
-        [limit]
-      );
+      let query = `
+        SELECT id, user_id as "userId", user_email as "userEmail", domain, target_url as "targetUrl", 
+               seo_score as "seoScore", grade, response_time_ms as "responseTimeMs", perf_score as "perfScore", 
+               tech_count as "techCount", traffic_range as "trafficRange", 
+               created_at as "createdAt", full_report_json as "fullReportJson"
+        FROM website_scans
+      `;
+      const values: unknown[] = [];
+
+      if (userId || userEmail) {
+        query += ` WHERE (user_id = $1 OR ($2::text IS NOT NULL AND LOWER(user_email) = LOWER($2)))`;
+        values.push(userId || null, userEmail || null);
+        values.push(limit);
+        query += ` ORDER BY created_at DESC LIMIT $3`;
+      } else {
+        values.push(limit);
+        query += ` ORDER BY created_at DESC LIMIT $1`;
+      }
+
+      const res = await db.query(query, values);
       if (res.rows && res.rows.length > 0) {
         return res.rows.map((r) => ({
           ...r,
@@ -219,7 +246,16 @@ export async function getRecentScans(limit = 15): Promise<SavedScanRecord[]> {
     }
   }
 
-  return inMemoryScans.slice(0, limit);
+  let filtered = inMemoryScans;
+  if (userId || userEmail) {
+    filtered = inMemoryScans.filter(
+      (s) =>
+        (userId && s.userId === userId) ||
+        (userEmail && s.userEmail?.toLowerCase() === userEmail.toLowerCase())
+    );
+  }
+
+  return filtered.slice(0, limit);
 }
 
 /**
@@ -314,7 +350,7 @@ export async function getScanById(id: string): Promise<SavedScanRecord | null> {
   if (db) {
     try {
       const res = await db.query(
-        `SELECT id, domain, target_url as "targetUrl", seo_score as "seoScore", grade, 
+        `SELECT id, user_id as "userId", user_email as "userEmail", domain, target_url as "targetUrl", seo_score as "seoScore", grade, 
                 response_time_ms as "responseTimeMs", perf_score as "perfScore", 
                 tech_count as "techCount", traffic_range as "trafficRange", 
                 created_at as "createdAt", full_report_json as "fullReportJson"
