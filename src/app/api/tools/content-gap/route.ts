@@ -50,20 +50,29 @@ export async function POST(req: NextRequest) {
     competitorKeywords.topSingleKeywords.forEach((k) => compMap.set(k.phrase.toLowerCase(), k.count));
     competitorKeywords.topTwoWordPhrases.forEach((k) => compMap.set(k.phrase.toLowerCase(), k.count));
 
-    // Calculate Content Gap Matrix
-    const missingOnTarget: KeywordFrequency[] = [];
+    // Calculate Content Gap Matrix with TF-IDF Opportunity Scoring
+    const missingOnTarget: Array<KeywordFrequency & { opportunityScore: number; inCompTitleOrH1: boolean }> = [];
     const sharedKeywords: KeywordFrequency[] = [];
     const targetLeads: KeywordFrequency[] = [];
+
+    const compTitleLower = (competitorPage.title || "").toLowerCase();
+    const compH1Lower = competitorPage.headings.h1Items.join(" ").toLowerCase();
 
     // Check competitor terms
     compMap.forEach((count, term) => {
       const targetCount = targetMap.get(term) || 0;
+      const inCompTitleOrH1 = compTitleLower.includes(term) || compH1Lower.includes(term);
+      const isTwoWord = term.includes(" ");
+      const rawOpp = Math.min(99, 45 + count * 8 + (inCompTitleOrH1 ? 22 : 0) + (isTwoWord ? 12 : 0));
+
       if (targetCount === 0) {
         missingOnTarget.push({
           term,
           targetCount: 0,
           competitorCount: count,
           gapStatus: "missing",
+          opportunityScore: rawOpp,
+          inCompTitleOrH1,
         });
       } else {
         sharedKeywords.push({
@@ -87,8 +96,8 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // Sort by prominence
-    missingOnTarget.sort((a, b) => b.competitorCount - a.competitorCount);
+    // Sort by TF-IDF opportunity & prominence
+    missingOnTarget.sort((a, b) => b.opportunityScore - a.opportunityScore || b.competitorCount - a.competitorCount);
     sharedKeywords.sort((a, b) => b.competitorCount + b.targetCount - (a.competitorCount + a.targetCount));
     targetLeads.sort((a, b) => b.targetCount - a.targetCount);
 

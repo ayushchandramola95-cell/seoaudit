@@ -2,6 +2,7 @@
  * Recursive Link Health & Broken Link (404) Crawler Engine v2
  * Audits discovered links for HTTP status, redirect hops, anchor text quality, and crawl latency.
  */
+import { validateUrlForSsrf } from "@/lib/security/ssrf";
 
 export interface LinkAuditItem {
   url: string;
@@ -88,6 +89,9 @@ export async function auditLinksHealth(
     const timeout = setTimeout(() => controller.abort(), 4000);
 
     try {
+      // Enforce Zero-Trust SSRF validation before dispatching outbound link check
+      await validateUrlForSsrf(link.url);
+
       // First try HEAD request for efficiency
       let res = await fetch(link.url, {
         method: "HEAD",

@@ -143,7 +143,7 @@ export default function AiBentoGrid() {
               </div>
 
               {/* 95 Score Circle Dial */}
-              <div className="relative w-18 h-18 flex items-center justify-center">
+              <div className="relative w-20 h-20 shrink-0 flex items-center justify-center">
                 <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 80 80">
                   <circle cx="40" cy="40" r="32" stroke="#1e293b" strokeWidth="6" fill="transparent" />
                   <circle

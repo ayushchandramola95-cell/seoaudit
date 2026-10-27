@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { 
   Link2, 
@@ -20,9 +21,12 @@ import {
 } from "lucide-react";
 
 export default function ToolsAnimatedGrid() {
+  const [activeFilter, setActiveFilter] = useState<"all" | "technical" | "speed" | "ai">("all");
+
   const tools = [
     {
       title: "Broken Link & 404 Checker",
+      group: "technical" as const,
       category: "Site Health & Crawl",
       desc: "Deep-crawls internal and external hyperlinks, identifying dead 404 links, redirect loops, and broken anchor tags.",
       href: "/tools/broken-links",
@@ -206,9 +210,56 @@ export default function ToolsAnimatedGrid() {
     },
   ];
 
+  const filteredTools =
+    activeFilter === "all"
+      ? tools
+      : tools.filter((t) => {
+          if (activeFilter === "technical") {
+            return ["/tools/broken-links", "/tools/schema-validator", "/tools/serp-preview"].includes(t.href);
+          }
+          if (activeFilter === "speed") {
+            return ["/tools/speed-lab", "/tools/tech-detector", "/tools/authority-checker"].includes(t.href);
+          }
+          return ["/tools/brand-radar", "/tools/content-gap", "/tools/batch-audit"].includes(t.href);
+        });
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {tools.map((tool, idx) => {
+    <div className="space-y-8">
+      {/* Interactive Category Filter Bar */}
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {[
+          { id: "all", label: "All 9 Engines", count: 9 },
+          { id: "technical", label: "Crawl, Schema & SERP", count: 3 },
+          { id: "speed", label: "Core Web Vitals & Stack", count: 3 },
+          { id: "ai", label: "AI Radar, Content Gap & Bulk", count: 3 },
+        ].map((tab) => {
+          const isActive = activeFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveFilter(tab.id as typeof activeFilter)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                isActive
+                  ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                  : "bg-white text-slate-600 hover:text-slate-900 border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                  isActive ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredTools.map((tool, idx) => {
         const Icon = tool.icon;
         return (
           <Link
@@ -254,6 +305,7 @@ export default function ToolsAnimatedGrid() {
           </Link>
         );
       })}
+      </div>
     </div>
   );
 }

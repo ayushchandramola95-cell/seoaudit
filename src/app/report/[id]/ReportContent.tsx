@@ -25,8 +25,10 @@ import {
   FileText,
   BookOpen,
   Download,
+  Mail,
 } from "lucide-react";
 import WhiteLabelPdfModal from "@/components/WhiteLabelPdfModal";
+import EmailReportModal from "@/components/EmailReportModal";
 import { exportFindingsCsv } from "@/lib/utils/csvExport";
 import { STRIPE_SAMPLE_AUDIT } from "@/lib/data/sampleAudits";
 
@@ -170,6 +172,7 @@ export default function ReportContent({ id }: ReportContentProps) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isWhiteLabelOpen, setIsWhiteLabelOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchReport() {
@@ -330,6 +333,14 @@ export default function ReportContent({ id }: ReportContentProps) {
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Link Copied!" : "Copy Share Link"}
+            </button>
+
+            <button
+              onClick={() => setIsEmailModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-colors cursor-pointer"
+            >
+              <Mail className="w-3.5 h-3.5 text-indigo-600" />
+              Email Report
             </button>
 
             <button
@@ -770,25 +781,55 @@ export default function ReportContent({ id }: ReportContentProps) {
         )}
 
         {(scanData || comparisonData) && (
-          <WhiteLabelPdfModal
-            isOpen={isWhiteLabelOpen}
-            onClose={() => setIsWhiteLabelOpen(false)}
-            domain={
-              scanData
-                ? scanData.domain
-                : comparisonData
-                ? `${comparisonData.siteADomain} vs ${comparisonData.siteBDomain}`
-                : "Domain"
-            }
-            score={
-              scanData
-                ? scanData.seoScore
-                : comparisonData
-                ? Math.round((comparisonData.siteAScore + comparisonData.siteBScore) / 2)
-                : 85
-            }
-            grade={scanData ? scanData.grade : "A"}
-          />
+          <>
+            <WhiteLabelPdfModal
+              isOpen={isWhiteLabelOpen}
+              onClose={() => setIsWhiteLabelOpen(false)}
+              domain={
+                scanData
+                  ? scanData.domain
+                  : comparisonData
+                  ? `${comparisonData.siteADomain} vs ${comparisonData.siteBDomain}`
+                  : "Domain"
+              }
+              score={
+                scanData
+                  ? scanData.seoScore
+                  : comparisonData
+                  ? Math.round((comparisonData.siteAScore + comparisonData.siteBScore) / 2)
+                  : 85
+              }
+              grade={scanData ? scanData.grade : "A"}
+            />
+            <EmailReportModal
+              isOpen={isEmailModalOpen}
+              onClose={() => setIsEmailModalOpen(false)}
+              domain={
+                scanData
+                  ? scanData.domain
+                  : comparisonData
+                  ? `${comparisonData.siteADomain} vs ${comparisonData.siteBDomain}`
+                  : "Domain"
+              }
+              score={
+                scanData
+                  ? scanData.seoScore
+                  : comparisonData
+                  ? Math.round((comparisonData.siteAScore + comparisonData.siteBScore) / 2)
+                  : 85
+              }
+              grade={scanData ? scanData.grade : "A"}
+              summary={
+                scanData
+                  ? scanData.fullReportJson.ai?.executiveSummary
+                  : comparisonData?.fullReportJson.aiComparativeSummary?.overview
+              }
+              topFixes={scanData?.fullReportJson.ai?.prioritizedActionItems?.map((item) => ({
+                title: item.title,
+                priority: item.priority,
+              }))}
+            />
+          </>
         )}
       </div>
     </div>

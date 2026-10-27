@@ -99,49 +99,92 @@ export default function LinkCrawlerMatrix({ targetUrl, initialLinks = [] }: Link
           </div>
         )}
 
-        {/* Aggregate Stats Cards */}
+        {/* Aggregate Stats Cards + Visual Status Distribution Bar */}
         {report && (
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-4">
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase block">Link Health</span>
-              <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">
-                {report.summary.linkHealthScore}%
-              </span>
-              <span className="text-[10px] text-slate-500">Based on status codes</span>
+          <div className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase block">Link Health</span>
+                <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">
+                  {report.summary.linkHealthScore}%
+                </span>
+                <span className="text-[10px] text-slate-500">Based on status codes</span>
+              </div>
+
+              <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-lg">
+                <span className="text-[11px] font-semibold text-emerald-800 uppercase block">Healthy (200)</span>
+                <span className="text-xl font-extrabold text-emerald-700 font-mono mt-0.5 block">
+                  {report.summary.healthyCount}
+                </span>
+                <span className="text-[10px] text-emerald-600">Active endpoints</span>
+              </div>
+
+              <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-lg">
+                <span className="text-[11px] font-semibold text-amber-800 uppercase block">Redirects (3xx)</span>
+                <span className="text-xl font-extrabold text-amber-700 font-mono mt-0.5 block">
+                  {report.summary.redirectCount}
+                </span>
+                <span className="text-[10px] text-amber-600">301 / 302 hops</span>
+              </div>
+
+              <div className="p-3 bg-rose-50/60 border border-rose-200 rounded-lg">
+                <span className="text-[11px] font-semibold text-rose-800 uppercase block">Dead Links (404)</span>
+                <span className="text-xl font-extrabold text-rose-700 font-mono mt-0.5 block">
+                  {report.summary.brokenCount}
+                </span>
+                <span className="text-[10px] text-rose-600">Broken or refused</span>
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg col-span-2 sm:col-span-1">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase block">Checked URLs</span>
+                <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">
+                  {report.summary.totalChecked}
+                </span>
+                <span className="text-[10px] text-slate-500">
+                  {report.summary.internalCount} int / {report.summary.externalCount} ext
+                </span>
+              </div>
             </div>
 
-            <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-lg">
-              <span className="text-[11px] font-semibold text-emerald-800 uppercase block">Healthy (200)</span>
-              <span className="text-xl font-extrabold text-emerald-700 font-mono mt-0.5 block">
-                {report.summary.healthyCount}
-              </span>
-              <span className="text-[10px] text-emerald-600">Active endpoints</span>
-            </div>
-
-            <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-lg">
-              <span className="text-[11px] font-semibold text-amber-800 uppercase block">Redirects (3xx)</span>
-              <span className="text-xl font-extrabold text-amber-700 font-mono mt-0.5 block">
-                {report.summary.redirectCount}
-              </span>
-              <span className="text-[10px] text-amber-600">301 / 302 hops</span>
-            </div>
-
-            <div className="p-3 bg-rose-50/60 border border-rose-200 rounded-lg">
-              <span className="text-[11px] font-semibold text-rose-800 uppercase block">Dead Links (404)</span>
-              <span className="text-xl font-extrabold text-rose-700 font-mono mt-0.5 block">
-                {report.summary.brokenCount}
-              </span>
-              <span className="text-[10px] text-rose-600">Broken or refused</span>
-            </div>
-
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg col-span-2 sm:col-span-1">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase block">Checked URLs</span>
-              <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">
-                {report.summary.totalChecked}
-              </span>
-              <span className="text-[10px] text-slate-500">
-                {report.summary.internalCount} int / {report.summary.externalCount} ext
-              </span>
+            {/* Segmented HTTP Status Distribution Chart Bar */}
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
+                <span>HTTP Status Distribution Breakdown</span>
+                <div className="flex items-center gap-3 font-mono text-[10px]">
+                  <span className="flex items-center gap-1 text-emerald-700">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    2xx ({Math.round((report.summary.healthyCount / Math.max(1, report.summary.totalChecked)) * 100)}%)
+                  </span>
+                  <span className="flex items-center gap-1 text-amber-700">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    3xx ({Math.round((report.summary.redirectCount / Math.max(1, report.summary.totalChecked)) * 100)}%)
+                  </span>
+                  <span className="flex items-center gap-1 text-rose-700">
+                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    4xx/5xx ({Math.round((report.summary.brokenCount / Math.max(1, report.summary.totalChecked)) * 100)}%)
+                  </span>
+                </div>
+              </div>
+              <div className="w-full h-3 rounded-full bg-slate-200 overflow-hidden flex">
+                {report.summary.healthyCount > 0 && (
+                  <div
+                    className="h-full bg-emerald-500 transition-all duration-700"
+                    style={{ width: `${(report.summary.healthyCount / Math.max(1, report.summary.totalChecked)) * 100}%` }}
+                  />
+                )}
+                {report.summary.redirectCount > 0 && (
+                  <div
+                    className="h-full bg-amber-400 transition-all duration-700"
+                    style={{ width: `${(report.summary.redirectCount / Math.max(1, report.summary.totalChecked)) * 100}%` }}
+                  />
+                )}
+                {report.summary.brokenCount > 0 && (
+                  <div
+                    className="h-full bg-rose-500 transition-all duration-700"
+                    style={{ width: `${(report.summary.brokenCount / Math.max(1, report.summary.totalChecked)) * 100}%` }}
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -223,7 +266,7 @@ export default function LinkCrawlerMatrix({ targetUrl, initialLinks = [] }: Link
                       </div>
                       <div className="text-[11px] text-slate-500 mt-0.5 truncate flex items-center gap-1">
                         <span className="font-medium text-slate-600">Anchor:</span>
-                        <span className="italic truncate">&quot;{item.anchorText}&quot;</span>
+                        <span className="italic truncate pr-1">&ldquo;{item.anchorText}&rdquo;</span>
                       </div>
                       {item.redirectUrl && (
                         <div className="text-[11px] text-amber-700 mt-1 flex items-center gap-1 truncate font-mono">
@@ -264,8 +307,22 @@ export default function LinkCrawlerMatrix({ targetUrl, initialLinks = [] }: Link
                       </span>
                     </td>
 
-                    <td className="py-3 px-6 text-right font-mono text-slate-500 text-[11px]">
-                      {item.timingMs}ms
+                    <td className="py-3 px-6 text-right font-mono text-slate-600 text-[11px] min-w-[130px]">
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="w-14 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              item.timingMs < 350
+                                ? "bg-emerald-500"
+                                : item.timingMs < 750
+                                ? "bg-amber-400"
+                                : "bg-rose-500"
+                            }`}
+                            style={{ width: `${Math.min(100, Math.max(12, (item.timingMs / 1200) * 100))}%` }}
+                          />
+                        </div>
+                        <span className="w-12 text-right font-semibold">{item.timingMs}ms</span>
+                      </div>
                     </td>
                   </tr>
                 ))}

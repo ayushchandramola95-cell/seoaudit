@@ -526,7 +526,7 @@ export default function HomeInteractiveShowcase() {
                     Connect SEO Audit directly to <strong>Claude Desktop</strong>, <strong>Cursor IDE</strong>, or autonomous agent workflows. Ask Claude: <code className="bg-slate-900 border border-slate-800 text-emerald-300 px-1.5 py-0.5 rounded">&quot;Audit https://stripe.com and find slow Web Vitals&quot;</code> and receive structured, deterministic JSON.
                   </p>
 
-                  <pre className="p-4 rounded-2xl bg-slate-900 text-slate-300 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800">
+                  <pre className="p-4 rounded-2xl bg-slate-900 text-slate-300 font-mono text-xs whitespace-pre-wrap break-words leading-relaxed border border-slate-800">
 {`# 1. Add to Claude Desktop or Cursor IDE (~/.cursor/mcp.json)
 {
   "mcpServers": {

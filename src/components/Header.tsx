@@ -87,16 +87,16 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/90">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 gap-3">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-6 lg:gap-8">
-            <Link href="/" className="flex items-center gap-2.5 font-bold text-xl text-slate-900 tracking-tight shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-none">
+          <div className="flex items-center gap-4 xl:gap-6 min-w-0">
+            <Link href="/" className="flex items-center gap-2.5 font-bold text-lg sm:text-xl text-slate-900 tracking-tight shrink-0 whitespace-nowrap">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs shrink-0">
                 <Globe className="w-4 h-4" />
               </div>
-              <span className="flex items-center gap-1.5 font-extrabold">
+              <span className="flex items-center gap-1.5 font-extrabold whitespace-nowrap">
                 SEO Audit
                 <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                   Intel
@@ -105,7 +105,7 @@ export default function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 shrink-0">
               {/* Product Mega Menu (Clickable Only) */}
               <div ref={productRef} className="static">
                 <button
@@ -114,7 +114,7 @@ export default function Header() {
                     setProductOpen((prev) => !prev);
                     setResourcesOpen(false);
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1 px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                     productOpen || pathname.startsWith("/analyze")
                       ? "bg-slate-100 text-slate-900"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -492,7 +492,7 @@ export default function Header() {
                     setResourcesOpen((prev) => !prev);
                     setProductOpen(false);
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1 px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                     resourcesOpen || pathname === "/capstone" || pathname === "/project-info"
                       ? "bg-slate-100 text-slate-900"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -692,7 +692,7 @@ export default function Header() {
               {/* Direct Navigation Links */}
               <Link
                 href="/tools"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors whitespace-nowrap ${
                   pathname?.startsWith("/tools")
                     ? "bg-slate-100 text-slate-900"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -703,7 +703,7 @@ export default function Header() {
 
               <Link
                 href="/compare"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors whitespace-nowrap ${
                   pathname === "/compare"
                     ? "bg-slate-100 text-slate-900"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -714,7 +714,7 @@ export default function Header() {
 
               <Link
                 href="/dashboard"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors whitespace-nowrap ${
                   pathname === "/dashboard"
                     ? "bg-slate-100 text-slate-900"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -725,7 +725,7 @@ export default function Header() {
 
               <Link
                 href="/pricing"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors whitespace-nowrap ${
                   pathname === "/pricing"
                     ? "bg-slate-100 text-slate-900"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -737,18 +737,51 @@ export default function Header() {
           </div>
 
           {/* Right Action buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Plan Tier Simulator (Cleaner, more stylish) */}
-            <div className="relative" ref={tierRef}>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Global Ctrl+K Command Palette Trigger */}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("seoseite:open-command-palette"))}
+              className="hidden sm:inline-flex items-center gap-2 h-9 px-2.5 text-xs font-medium rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200/90 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              title="Quick Search & Command Palette (Ctrl+K)"
+            >
+              <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="hidden xl:inline">Search</span>
+              <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-semibold bg-white text-slate-600 rounded border border-slate-200 shadow-2xs">
+                ⌘K
+              </kbd>
+            </button>
+
+            {/* Plan Tier Simulator (Compact single-line pill) */}
+            <div className="relative shrink-0" ref={tierRef}>
               <button
+                type="button"
                 onClick={() => setTierMenuOpen(!tierMenuOpen)}
-                className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors border border-slate-200/90 cursor-pointer"
+                className="hidden md:inline-flex items-center gap-1.5 h-9 px-2.5 text-xs font-semibold rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-800 transition-colors border border-slate-200/90 cursor-pointer whitespace-nowrap shrink-0"
                 title="Switch active testing tier"
               >
-                <Sliders className="w-3.5 h-3.5 text-blue-600" />
-                <span>Tier:</span>
-                <span className="capitalize font-bold text-blue-700">{formatTierName(tier)}</span>
-                <ChevronDown className="w-3 h-3 text-slate-500" />
+                <span
+                  className={`w-2 h-2 rounded-full shrink-0 ${
+                    tier === "enterprise"
+                      ? "bg-purple-600"
+                      : tier === "pro"
+                      ? "bg-blue-600"
+                      : tier === "starter"
+                      ? "bg-emerald-500"
+                      : "bg-slate-400"
+                  }`}
+                />
+                <span className="text-slate-400 font-medium hidden 2xl:inline">Plan:</span>
+                <span className="font-bold text-blue-700">
+                  {tier === "free"
+                    ? "Free"
+                    : tier === "starter"
+                    ? "Starter"
+                    : tier === "pro"
+                    ? "Pro"
+                    : "Agency"}
+                </span>
+                <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
               </button>
 
               {tierMenuOpen && (
@@ -786,28 +819,30 @@ export default function Header() {
               )}
             </div>
 
-            {/* Authentication States (Like Ahrefs & Semrush) */}
+            <div className="hidden md:block h-5 w-px bg-slate-200 mx-0.5 shrink-0" />
+
+            {/* Authentication States */}
             {!isAuthenticated ? (
-              <>
+              <div className="hidden md:flex items-center gap-1.5 shrink-0">
                 <Link
                   href="/login"
-                  className="hidden md:inline-flex items-center px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="inline-flex items-center h-9 px-2.5 text-[13px] font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shrink-0"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/pricing"
-                  className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs sm:text-sm font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm"
+                  className="hidden xl:inline-flex items-center justify-center h-9 px-3 text-xs font-bold rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all whitespace-nowrap shrink-0"
                 >
                   Sign Up
                 </Link>
-              </>
+              </div>
             ) : (
-              <div className="relative" ref={userMenuRef}>
+              <div className="relative shrink-0" ref={userMenuRef}>
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 p-1 pl-1.5 rounded-full border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-2 p-1 pl-1.5 rounded-full border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer whitespace-nowrap shrink-0"
                   aria-expanded={userMenuOpen}
                 >
                   <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center">
@@ -890,15 +925,18 @@ export default function Header() {
             {/* Quick Analyze Site Button */}
             <Link
               href="/analyze"
-              className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors"
+              className="hidden sm:inline-flex items-center justify-center gap-1.5 h-9 px-3.5 text-xs font-bold rounded-lg bg-slate-900 hover:bg-blue-600 text-white transition-colors shadow-xs whitespace-nowrap shrink-0"
             >
-              Analyze
+              <span>Analyze</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
 
             {/* Mobile Hamburger Toggle */}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 shrink-0"
+              aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -908,7 +946,7 @@ export default function Header() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white p-4 space-y-4">
+        <div className="lg:hidden border-t border-slate-200 bg-white p-4 space-y-4">
           {/* User Status Bar in Mobile */}
           {isAuthenticated ? (
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">

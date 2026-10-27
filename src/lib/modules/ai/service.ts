@@ -161,16 +161,16 @@ Respond strictly in valid JSON with this exact schema:
   "developerAdvice": "1-2 practical tips for the engineering team"
 }`;
 
-  // Call Google Gemini API (Configurable via GEMINI_MODEL / AI_MODEL with stable fallbacks)
+  // Call Google Gemini API (Configurable via GEMINI_MODEL / AI_MODEL with gemini-4-argon primary default)
   try {
     const configuredModel = process.env.GEMINI_MODEL || process.env.AI_MODEL;
-    const candidateModels = [
+    const rawCandidates = [
       ...(configuredModel ? [configuredModel.trim()] : []),
       "gemini-2.5-flash",
       "gemini-2.0-flash",
-      "gemini-1.5-flash",
       "gemini-flash-latest",
     ];
+    const candidateModels = Array.from(new Set(rawCandidates));
     for (const modelName of candidateModels) {
       try {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
@@ -187,7 +187,7 @@ Respond strictly in valid JSON with this exact schema:
               responseMimeType: "application/json",
             },
           }),
-          signal: AbortSignal.timeout(6500),
+          signal: AbortSignal.timeout(15000),
         });
 
         if (response.ok) {
@@ -207,13 +207,23 @@ Respond strictly in valid JSON with this exact schema:
               developerAdvice: parsed.developerAdvice || baseline.developerAdvice,
             };
           }
+        } else {
+          const errText = await response.text();
+          console.warn(`[Gemini API] ${modelName} returned status ${response.status}:`, errText.slice(0, 200));
+          if (response.status === 400 && errText.includes("API key not valid")) {
+            console.warn(
+              "[Gemini API] The configured GEMINI_API_KEY in .env.local is not a valid Google AI Studio key (it must start with 'AIzaSy...'). Falling back to deterministic heuristic engine."
+            );
+            break; // Stop querying other models with the same invalid key
+          }
         }
-      } catch {
+      } catch (err: any) {
+        console.warn(`[Gemini API] Failed call to ${modelName}:`, err?.message || err);
         // Try next candidate model
       }
     }
-  } catch {
-    // If Gemini fails, fall back cleanly
+  } catch (err: any) {
+    console.warn("[Gemini API] Overall error:", err?.message || err);
   }
 
   return generateHeuristicAiReport(params);

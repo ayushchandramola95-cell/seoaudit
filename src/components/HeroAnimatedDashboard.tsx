@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   ShieldCheck, 
@@ -79,14 +79,46 @@ const SAMPLES: Record<string, SampleSiteAudit> = {
     globalRank: "Top 0.001%",
     passRatio: "20 / 22 checks passing",
   },
+  "vercel.com": {
+    domain: "vercel.com",
+    url: "https://vercel.com",
+    score: 97,
+    grade: "Grade A+",
+    crawlTime: "61ms",
+    lcp: "0.8s",
+    cls: "0.00",
+    inp: "28ms",
+    tech: ["Next.js", "React", "Turbopack", "Vercel Edge"],
+    linksChecked: 78,
+    openPageRank: "9.1 / 10",
+    globalRank: "Top 0.005%",
+    passRatio: "22 / 22 checks passing",
+  },
 };
 
 export default function HeroAnimatedDashboard() {
   const [activeSiteKey, setActiveSiteKey] = useState<string>("linear.app");
+  const [isPaused, setIsPaused] = useState(false);
   const data = SAMPLES[activeSiteKey];
 
+  useEffect(() => {
+    if (isPaused) return;
+    const keys = Object.keys(SAMPLES);
+    const timer = setInterval(() => {
+      setActiveSiteKey((prev) => {
+        const idx = keys.indexOf(prev);
+        return keys[(idx + 1) % keys.length];
+      });
+    }, 4200);
+    return () => clearInterval(timer);
+  }, [isPaused]);
+
   return (
-    <div className="relative w-full max-w-5xl mx-auto mt-10">
+    <div
+      className="relative w-full max-w-5xl mx-auto mt-10"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       {/* Background Soft Glow Aura */}
       <div className="absolute -inset-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition duration-1000 -z-10" />
 

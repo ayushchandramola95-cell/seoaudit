@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   Sparkles, 
   ArrowRight, 
@@ -59,8 +60,25 @@ const EXAMPLES: AiPromptExample[] = [
 ];
 
 export default function AskAiShowcase() {
+  const router = useRouter();
   const [activeIdx, setActiveIdx] = useState(0);
+  const [customPrompt, setCustomPrompt] = useState("");
   const activeExample = EXAMPLES[activeIdx];
+
+  const handleCustomSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = customPrompt.trim();
+    if (!q) {
+      setActiveIdx((prev) => (prev + 1) % EXAMPLES.length);
+      return;
+    }
+    const domainMatch = q.match(/([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}/);
+    if (domainMatch) {
+      router.push(`/analyze?url=${encodeURIComponent(domainMatch[0])}&tab=ai`);
+    } else {
+      router.push(`/analyze?tab=ai`);
+    }
+  };
 
   return (
     <section className="py-20 bg-gradient-to-b from-blue-600 via-blue-700 to-indigo-900 text-white relative overflow-hidden">
@@ -213,24 +231,33 @@ export default function AskAiShowcase() {
                 </div>
               </div>
 
-              {/* Fake Chat Input Bar */}
-              <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center gap-3">
+              {/* Interactive Chat Input Bar */}
+              <form
+                onSubmit={handleCustomSubmit}
+                className="p-4 bg-slate-50 border-t border-slate-200 flex items-center gap-3"
+              >
                 <button
                   type="button"
-                  className="w-8 h-8 rounded-lg bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600 transition-colors"
+                  onClick={() => setActiveIdx((prev) => (prev + 1) % EXAMPLES.length)}
+                  title="Cycle sample prompt"
+                  className="w-8 h-8 rounded-lg bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600 transition-colors cursor-pointer shrink-0"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
-                <div className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-2 text-xs text-slate-400">
-                  Ask anything about your SEO health, competitor gaps, or tech stack...
-                </div>
+                <input
+                  type="text"
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="Ask about any domain (e.g. 'Audit stripe.com AI visibility')..."
+                  className="flex-1 bg-white border border-slate-300 focus:border-blue-600 rounded-xl px-4 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                />
                 <button
-                  type="button"
-                  className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-colors shrink-0"
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-colors shrink-0 cursor-pointer"
                 >
-                  Send
+                  Ask AI
                 </button>
-              </div>
+              </form>
             </div>
           </div>
 

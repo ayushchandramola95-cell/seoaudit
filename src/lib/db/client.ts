@@ -67,11 +67,22 @@ async function ensureSchema(db: Pool) {
     `);
     schemaInitialized = true;
   } catch (err) {
-    console.warn("[CloudSQL] Auto-schema initialization warning:", err);
+    markDatabaseUnavailable(err);
   }
 }
 
+let dbDisabledUntil = 0;
+
+export function markDatabaseUnavailable(reason: unknown) {
+  dbDisabledUntil = Date.now() + 60000; // 60s cooldown before retrying
+  const msg = reason instanceof Error ? reason.message : String(reason);
+  console.warn(`[CloudSQL] Remote database unreachable (${msg}). Using fast in-memory fallback for 60s.`);
+}
+
 export function getDbPool(): Pool | null {
+  if (Date.now() < dbDisabledUntil) {
+    return null;
+  }
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) return null;
 
@@ -80,9 +91,12 @@ export function getDbPool(): Pool | null {
     pool = new Pool({
       connectionString: dbUrl,
       ssl: isLocalhost ? false : { rejectUnauthorized: false },
-      max: 10,
+      max: 5,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: 1500, // Fast 1.5s timeout so dev requests never hang
+    });
+    pool.on("error", (err) => {
+      markDatabaseUnavailable(err);
     });
     ensureSchema(pool);
   }
@@ -170,7 +184,7 @@ export async function saveScanRecord(params: {
         ]
       );
     } catch (err) {
-      console.warn("[CloudSQL] Failed to persist scan to PostgreSQL, using memory cache:", err);
+      markDatabaseUnavailable(err);
     }
   }
 
@@ -356,3 +370,75 @@ export async function getComparisonById(id: string): Promise<SavedComparisonReco
   const memoryMatch = inMemoryComparisons.find((c) => c.id === id);
   return memoryMatch || null;
 }
+
+export interface DomainHistoryPoint {
+  id: string;
+  domain: string;
+  seoScore: number;
+  grade: string;
+  perfScore: number | null;
+  responseTimeMs: number;
+  createdAt: string;
+}
+
+/**
+ * Retrieves chronological scan history for a specific domain (oldest -> newest) for trend sparklines.
+ */
+export async function getDomainScanHistory(
+  domain: string,
+  limit = 12
+): Promise<DomainHistoryPoint[]> {
+  const cleanDomain = domain
+    .trim()
+    .toLowerCase()
+    .replace(/^(https?:\/\/)?(www\.)?/, "")
+    .replace(/\/.*$/, "");
+
+  const db = getDbPool();
+  if (db) {
+    try {
+      const res = await db.query(
+        `SELECT id, domain, seo_score as "seoScore", grade, perf_score as "perfScore",
+                response_time_ms as "responseTimeMs", created_at as "createdAt"
+         FROM website_scans
+         WHERE LOWER(domain) = $1
+         ORDER BY created_at DESC
+         LIMIT $2`,
+        [cleanDomain, limit]
+      );
+      if (res.rows && res.rows.length > 0) {
+        return res.rows
+          .map((r) => ({
+            id: r.id,
+            domain: r.domain,
+            seoScore: Number(r.seoScore),
+            grade: r.grade,
+            perfScore: r.perfScore !== null && r.perfScore !== undefined ? Number(r.perfScore) : null,
+            responseTimeMs: Number(r.responseTimeMs || 0),
+            createdAt:
+              typeof r.createdAt === "object"
+                ? r.createdAt.toISOString()
+                : String(r.createdAt),
+          }))
+          .reverse();
+      }
+    } catch (err) {
+      markDatabaseUnavailable(err);
+    }
+  }
+
+  return inMemoryScans
+    .filter((s) => s.domain.toLowerCase() === cleanDomain)
+    .slice(0, limit)
+    .map((s) => ({
+      id: s.id,
+      domain: s.domain,
+      seoScore: s.seoScore,
+      grade: s.grade,
+      perfScore: s.perfScore ?? null,
+      responseTimeMs: s.responseTimeMs,
+      createdAt: s.createdAt,
+    }))
+    .reverse();
+}
+

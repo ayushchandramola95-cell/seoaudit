@@ -1,12 +1,15 @@
 import Link from "next/link";
+import UrlAnalyzerInput from "@/components/UrlAnalyzerInput";
 import HomeInteractiveShowcase from "@/components/HomeInteractiveShowcase";
 import HeroAnimatedDashboard from "@/components/HeroAnimatedDashboard";
 import ToolsAnimatedGrid from "@/components/ToolsAnimatedGrid";
+import LiveScoreSimulator from "@/components/LiveScoreSimulator";
 import AskAiShowcase from "@/components/AskAiShowcase";
 import AiBentoGrid from "@/components/AiBentoGrid";
 import IntegrationTicker from "@/components/IntegrationTicker";
 import McpTerminalCard from "@/components/McpTerminalCard";
 import StrategicWorkflowSection from "@/components/StrategicWorkflowSection";
+import HomeFaqAccordion from "@/components/HomeFaqAccordion";
 import { 
   Search, 
   Layers, 
@@ -119,63 +122,35 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="pt-16 sm:pt-24 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative">
-        {/* Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-8 shadow-xs">
-          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          All-in-One SEO Platform • Sub-Second Crawls • AI Search Visibility • Zero Hallucinations
-        </div>
-
-        {/* Hero Title */}
-        <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-5xl mx-auto leading-tight sm:leading-tight mb-6">
-          The Modern AI SEO &amp; Website Intelligence <br className="hidden sm:inline" />
-          <span className="text-blue-600">Platform for High-Growth Teams.</span>
-        </h1>
-
-        <p className="text-base sm:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
-          Audit technical health in sub-seconds, outrank competitors with semantic content gaps, benchmark Core Web Vitals, and dominate brand visibility across AI search engines — with 100% deterministic transparency.
-        </p>
-
-        {/* Primary Call-to-Actions (Ahrefs/Semrush High-Impact Conversion) */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-          <Link
-            href="/signup"
-            className="px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
-          >
-            <span>Start Free Website Audit</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <a
-            href="#workbench"
-            className="px-8 py-3.5 rounded-xl bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold text-sm sm:text-base transition-all inline-flex items-center gap-2 cursor-pointer shadow-xs"
-          >
-            <span>Explore Platform Workbench</span>
-          </a>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-medium pt-1 pb-6">
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>&lt; 100ms Crawl Latency</span>
+      {/* Hero Section with Radial Grid Backdrop, Multi-Mode Live Domain Input & Auto-Cycling Console */}
+      <section className="relative overflow-hidden pt-12 sm:pt-16 pb-16 px-4 sm:px-6 lg:px-8 text-center border-b border-slate-200 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px]">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-50/60 via-white/85 to-white pointer-events-none" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Pill Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-blue-200 text-blue-700 text-xs font-bold mb-6 shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <span>All-in-One SEO Platform • Sub-Second Crawls • AI Search Visibility • Zero Hallucinations</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>No Credit Card Required</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Native Claude &amp; Cursor MCP</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Zero-Trust SSRF Defense</span>
-          </div>
-        </div>
 
-        {/* Interactive Hero Console & Floating Micro-Widgets */}
-        <div className="relative mt-4">
+          {/* Hero Title */}
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-5xl mx-auto leading-tight sm:leading-tight mb-5">
+            The Modern AI SEO &amp; Website Intelligence <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Platform for High-Growth Teams.
+            </span>
+          </h1>
+
+          <p className="text-base sm:text-xl text-slate-600 max-w-3xl mx-auto mb-8 leading-relaxed">
+            Audit technical health in sub-seconds, outrank competitors with semantic content gaps, benchmark Core Web Vitals, and dominate brand visibility across AI search engines — with 100% deterministic transparency.
+          </p>
+
+          {/* Interactive Multi-Mode Live URL Analyzer Input */}
+          <div className="mb-8">
+            <UrlAnalyzerInput />
+          </div>
+
+          {/* Interactive Hero Console & Floating Micro-Widgets */}
+          <div className="relative mt-4">
           {/* Floating Widget Left (Semrush / SE Ranking style) */}
           <div className="hidden xl:flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-xl absolute -left-8 top-16 z-20 animate-float text-left max-w-[210px]">
             <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
@@ -202,6 +177,7 @@ export default function Home() {
 
           {/* Main Hero Interactive Audit Console */}
           <HeroAnimatedDashboard />
+        </div>
         </div>
       </section>
 
@@ -250,24 +226,15 @@ export default function Home() {
         <HomeInteractiveShowcase />
       </section>
 
-      {/* The 4-Step Strategic SEO Growth Operating System (Modeled after Ahrefs & Semrush) */}
-      <StrategicWorkflowSection />
-
-      {/* "Skip the digging. Just ask." AI Assistant Console (Directly from User Image 4) */}
-      <AskAiShowcase />
-
-      {/* AI Search & Modern Visibility Suite Bento Grid (Directly from User Image 5) */}
-      <AiBentoGrid />
-
-      {/* The Complete SEO Suite: 9 Specialized Growth & Technical Engines */}
+      {/* The Complete SEO Suite: 9 Specialized Growth & Technical Engines (With Category Filter Tabs) */}
       <section className="py-16 sm:py-20 bg-slate-50/70 border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
               <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-1">
-                Complete SEO Suite
+                Complete Modular SEO Suite
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 9 Specialized Growth &amp; Technical Engines
               </h2>
               <p className="text-sm text-slate-600 mt-1 max-w-2xl">
@@ -276,7 +243,7 @@ export default function Home() {
             </div>
             <Link
               href="/tools"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-white px-3.5 py-2.5 rounded-lg border border-slate-200 shadow-sm transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-xs transition-colors shrink-0"
             >
               Explore All 9 SEO Engines
               <ArrowRight className="w-3.5 h-3.5" />
@@ -287,75 +254,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Integration Marquee & 24/7 Autopilot (Inspired by User Image 2 & 3) */}
+      {/* Interactive Before & After SEO Remediation Simulator (Light) */}
+      <LiveScoreSimulator />
+
+      {/* AI Search & Modern Visibility Suite Bento Grid (Dark) */}
+      <AiBentoGrid />
+
+      {/* Integration Marquee & 24/7 Autopilot (Light) */}
       <IntegrationTicker />
 
-      {/* Why Engineering & Growth Teams Choose SEO Audit (3 Pillars) */}
-      <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">
-            The Modern Architecture
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-            Engineered for Speed, Clarity &amp; Transparency
-          </h2>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Legacy suites charge enterprise rates for bloated dashboards and opaque metrics. SEO Audit gives you fast, verifiable diagnostics built for today&apos;s web workflows.
-          </p>
-        </div>
+      {/* The 4-Step Strategic SEO Growth Operating System (Dark) */}
+      <StrategicWorkflowSection />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="interactive-card p-7 bg-white rounded-2xl border border-slate-200/90 flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 mb-5">
-                <Gauge className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Deterministic Scoring</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Zero fabricated traffic curves or mystery algorithms. Every health grade is mathematically calculated from live DOM elements, HTTP security headers, and Core Web Vitals.
-              </p>
-            </div>
-            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center text-xs font-bold text-blue-600">
-              <span>Rule-Based Integrity</span>
-              <Check className="w-3.5 h-3.5 ml-1 text-emerald-600" />
-            </div>
-          </div>
-
-          <div className="interactive-card p-7 bg-white rounded-2xl border border-slate-200/90 flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 mb-5">
-                <Radar className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Brand Radar AI Visibility</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Track how generative AI engines like ChatGPT, Claude, Perplexity, and Google Gemini cite and recommend your brand when customers query buying prompts.
-              </p>
-            </div>
-            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center text-xs font-bold text-purple-600">
-              <span>AEO Share of Voice</span>
-              <Check className="w-3.5 h-3.5 ml-1 text-emerald-600" />
-            </div>
-          </div>
-
-          <div className="interactive-card p-7 bg-white rounded-2xl border border-slate-200/90 flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-5">
-                <Terminal className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Native Agentic MCP Server</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Run live audits directly inside Claude Desktop and Cursor IDE using our native Model Context Protocol server. Automate SEO checks directly into your dev loop.
-              </p>
-            </div>
-            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center text-xs font-bold text-emerald-600">
-              <span>Claude &amp; Cursor Ready</span>
-              <Check className="w-3.5 h-3.5 ml-1 text-emerald-600" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SEO Audit vs Traditional Tools Comparison Table */}
+      {/* SEO Audit vs Traditional Tools Comparison Table (Light) */}
       <section className="py-16 sm:py-20 bg-slate-50 border-y border-slate-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -397,6 +308,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* "Skip the digging. Just ask." AI Assistant Console (Blue/Indigo Gradient) */}
+      <AskAiShowcase />
 
       {/* Developer Platform & MCP Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -450,78 +364,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Frequently Asked Questions */}
-      <section className="py-16 bg-slate-50 border-t border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-sm text-slate-600">
-              Everything you need to know about our platform architecture, engines, and pricing.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, idx) => (
-              <div key={idx} className="flat-card p-5 sm:p-6 bg-white border border-slate-200 rounded-xl">
-                <h3 className="text-base font-bold text-slate-900 mb-2 flex items-start gap-2">
-                  <HelpCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                  {faq.q}
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed pl-7">
-                  {faq.a}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* High-Impact Bottom Conversion Banner (Semrush / Ahrefs Style) */}
-      <section className="py-20 bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-950 text-white relative overflow-hidden text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <span className="text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-blue-200 inline-block mb-4">
-            Start Growing Today
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight mb-4 leading-tight">
-            Ready to Supercharge Your Website&apos;s Visibility &amp; Technical Health?
-          </h2>
-          <p className="text-base sm:text-lg text-blue-100 max-w-2xl mx-auto mb-8 leading-relaxed">
-            Get instant deterministic insights, uncover competitor keyword gaps, benchmark Core Web Vitals, and automate your SEO workflow today.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/signup"
-              className="px-8 py-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-black text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
-            >
-              <span>Start Free Audit Today</span>
-              <ArrowRight className="w-4 h-4 text-blue-600" />
-            </Link>
-            <Link
-              href="/pricing"
-              className="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-sm sm:text-base transition-all inline-flex items-center gap-2 cursor-pointer"
-            >
-              <span>Explore Pricing &amp; Plans</span>
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-blue-200 mt-8">
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-400" /> Free Forever Plan
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-400" /> No Credit Card Required
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-400" /> Unlimited Teammates ($0 Seat Fee)
-            </span>
-          </div>
-        </div>
-      </section>
+      {/* Interactive Frequently Asked Questions Accordion */}
+      <HomeFaqAccordion />
     </div>
   );
 }

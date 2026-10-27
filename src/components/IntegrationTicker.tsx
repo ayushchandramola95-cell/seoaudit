@@ -44,7 +44,7 @@ export default function IntegrationTicker() {
         </p>
       </div>
 
-      {/* Flowing Marquee Ticker Row 1 */}
+      {/* Single Clean Flowing Marquee Ticker */}
       <div className="flex overflow-hidden select-none gap-4 py-2 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div className="flex shrink-0 gap-4 animate-marquee items-center">
           {pills.concat(pills).map((item, idx) => {
@@ -52,9 +52,11 @@ export default function IntegrationTicker() {
             return (
               <div
                 key={idx}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-2xs hover:border-slate-300 transition-all text-xs font-bold text-slate-700 whitespace-nowrap"
+                className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-white border border-slate-200/90 shadow-2xs hover:border-blue-300 transition-all text-xs font-bold text-slate-800 whitespace-nowrap"
               >
-                <Icon className="w-4 h-4 text-blue-600 shrink-0" />
+                <span className={`w-6 h-6 rounded-full border flex items-center justify-center ${item.color}`}>
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                </span>
                 <span>{item.label}</span>
               </div>
             );
@@ -77,7 +79,7 @@ export default function IntegrationTicker() {
             </p>
           </div>
           <Link
-            href="/monitor"
+            href="/dashboard"
             className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-xs sm:text-sm text-white shrink-0 inline-flex items-center gap-2 transition-colors shadow-md"
           >
             <span>Set Up 24/7 Monitor</span>

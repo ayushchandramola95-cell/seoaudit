@@ -41,6 +41,8 @@ import {
   Link2,
   Compass,
   Bot,
+  Mail,
+  ArrowUp,
 } from "lucide-react";
 import { ScrapedPageData } from "@/lib/modules/seo/fetcher";
 import { SeoAuditReport } from "@/lib/modules/seo/scorer";
@@ -52,6 +54,11 @@ import { KeywordAnalysisReport } from "@/lib/modules/keywords/extractor";
 import { LinkDiscoveryReport } from "@/lib/modules/crawler/linkScanner";
 import { DeepRobotsSitemapReport } from "@/lib/modules/crawler/robotsSitemap";
 import WhiteLabelPdfModal from "@/components/WhiteLabelPdfModal";
+import EmailReportModal from "@/components/EmailReportModal";
+import ScoreTrendSparkline from "@/components/ScoreTrendSparkline";
+import AnalyzeExecutiveHeader from "@/components/analyze/AnalyzeExecutiveHeader";
+import AnalyzePriorityIssues from "@/components/analyze/AnalyzePriorityIssues";
+import AnalyzeVisualCharts from "@/components/analyze/AnalyzeVisualCharts";
 import SerpSocialPreview from "@/components/SerpSocialPreview";
 import SchemaCodeGenerator from "@/components/SchemaCodeGenerator";
 import LinkCrawlerMatrix from "@/components/LinkCrawlerMatrix";
@@ -94,10 +101,33 @@ export default function AnalyzeContent() {
   >("diagnostics");
   const [serpView, setSerpView] = useState<"desktop" | "mobile" | "twitter" | "facebook">("desktop");
   const [filterStatus, setFilterStatus] = useState<"all" | "passed" | "warning" | "error">("all");
+  const [diagnosticSearch, setDiagnosticSearch] = useState("");
   const [techCategoryFilter, setTechCategoryFilter] = useState<string>("all");
   const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [isWhiteLabelOpen, setIsWhiteLabelOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [showStickyNav, setShowStickyNav] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage((current) => (current === message ? null : current));
+    }, 2400);
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 280) {
+        setShowStickyNav(true);
+      } else {
+        setShowStickyNav(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleCopyShareLink = () => {
     if (data?.id) {
@@ -107,6 +137,7 @@ export default function AnalyzeContent() {
       navigator.clipboard.writeText(window.location.href);
     }
     setCopiedShareLink(true);
+    showToast("Report link copied to clipboard!");
     setTimeout(() => setCopiedShareLink(false), 2000);
   };
 
@@ -120,6 +151,7 @@ export default function AnalyzeContent() {
     a.download = `audit-${data.page.domain}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast(`Audit JSON downloaded for ${data.page.domain}`);
   };
 
   const fetchAnalysis = async (urlToFetch: string) => {
@@ -190,17 +222,27 @@ export default function AnalyzeContent() {
     a.download = `seoseite-audit-${data.page.domain || "report"}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast(`Audit JSON exported for ${data.page.domain || "site"}`);
   };
 
   const handleCopyCode = (id: string, code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedSnippetId(id);
+    showToast("Code snippet copied to clipboard!");
     setTimeout(() => setCopiedSnippetId(null), 2000);
   };
 
   const filteredDiagnostics = data?.audit.diagnostics.filter((item) => {
-    if (filterStatus === "all") return true;
-    return item.status === filterStatus;
+    const matchesStatus = filterStatus === "all" || item.status === filterStatus;
+    if (!matchesStatus) return false;
+    if (!diagnosticSearch.trim()) return true;
+    const q = diagnosticSearch.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      item.evidence.toLowerCase().includes(q) ||
+      (item.recommendation && item.recommendation.toLowerCase().includes(q))
+    );
   });
 
   const availableTechCategories = data?.technologies
@@ -214,8 +256,103 @@ export default function AnalyzeContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Sticky Floating Sub-Navigation Bar (Docks right below the 64px header) */}
+      {showStickyNav && data && (
+        <aside aria-label="Quick Navigation Bar" className="fixed top-16 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-md py-2.5 px-4 transition-all duration-200 no-print">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            {/* Left: Target Domain & Score Pill */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="font-mono font-bold text-xs sm:text-sm text-slate-900 truncate">
+                {data.page.domain}
+              </span>
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 text-white text-[11px] font-bold font-mono shrink-0">
+                <span>{data.audit.overallScore}/100</span>
+                <span className="text-emerald-400">({data.audit.grade})</span>
+              </div>
+            </div>
+
+            {/* Middle: 4 Quick Suite Buttons */}
+            <div className="hidden md:flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setActiveTab("diagnostics")}
+                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                  ["diagnostics", "structure", "headers", "media"].includes(activeTab)
+                    ? "bg-white text-blue-700 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Technical SEO
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("performance")}
+                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                  ["performance", "traffic", "tech"].includes(activeTab)
+                    ? "bg-white text-emerald-700 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Speed &amp; Stack
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("ai")}
+                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                  ["ai", "geo", "keywords", "social", "schema"].includes(activeTab)
+                    ? "bg-white text-indigo-700 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Search &amp; Content
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("deadlinks")}
+                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                  ["deadlinks", "links"].includes(activeTab)
+                    ? "bg-white text-purple-700 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Links Crawler
+              </button>
+            </div>
+
+            {/* Right: Quick Actions & Scroll to Top */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsEmailModalOpen(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors cursor-pointer"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Email</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsWhiteLabelOpen(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">PDF</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                title="Scroll back to top"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
+              >
+                <ArrowUp className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Top</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+
       {/* Top action row */}
-      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap no-print">
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
@@ -269,79 +406,90 @@ export default function AnalyzeContent() {
         {data && (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => targetUrl && fetchAnalysis(targetUrl)}
+              type="button"
+              onClick={() => fetchAnalysis(targetUrl || data.page.finalUrl)}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-              Re-scan
-            </button>
-            <button
-              onClick={handleExportJson}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Export JSON
+              Re-scan Current Target
             </button>
           </div>
         )}
       </div>
 
-      {/* Demo Benchmark Banner & Quick Presets */}
-      {isDemoMode && data && !loading && (
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-md border border-blue-800/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-blue-400" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold tracking-wide uppercase px-2 py-0.5 rounded bg-blue-500/30 text-blue-200 border border-blue-400/30">
-                  Pre-Warmed Enterprise Benchmark
-                </span>
-                <span className="text-xs text-slate-300 font-mono">14 Engines Active</span>
+      {/* Unified Top Control & Live Domain Audit Bar */}
+      <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-4 no-print">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            {isDemoMode && data && !loading ? (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Sample Benchmark Snapshot: {data.page.domain}</span>
               </div>
-              <p className="text-xs text-slate-300 mt-1">
-                Currently exploring verified live audit for <strong className="text-white font-mono">{data.page.domain}</strong>. Test all tabs below or audit any custom URL:
-              </p>
-            </div>
+            ) : (
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                Live HTTP Crawl Active
+              </span>
+            )}
+            <span className="text-xs text-slate-500 hidden sm:inline">
+              Switch target or enter any custom domain below:
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-slate-400 font-medium hidden sm:inline">Try live target:</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs text-slate-400 font-semibold mr-1">Instant targets:</span>
             <button
               type="button"
               onClick={() => {
                 setData(STRIPE_SAMPLE_AUDIT as ApiResponse);
                 setIsDemoMode(true);
               }}
-              className="px-3 py-1.5 rounded-lg bg-blue-600/80 hover:bg-blue-600 text-white text-xs font-semibold border border-blue-400/40 transition-colors cursor-pointer"
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border transition-colors cursor-pointer ${
+                data?.page.domain === "stripe.com"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
+              }`}
             >
-              Stripe.com
+              stripe.com
             </button>
             <button
               type="button"
               onClick={() => fetchAnalysis("https://vercel.com")}
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border transition-colors cursor-pointer ${
+                data?.page.domain === "vercel.com"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
+              }`}
             >
-              Vercel.com
+              vercel.com
             </button>
             <button
               type="button"
               onClick={() => fetchAnalysis("https://github.com")}
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border transition-colors cursor-pointer ${
+                data?.page.domain === "github.com"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
+              }`}
             >
-              GitHub.com
+              github.com
+            </button>
+            <button
+              type="button"
+              onClick={() => fetchAnalysis("https://linear.app")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border transition-colors cursor-pointer ${
+                data?.page.domain === "linear.app"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white hover:bg-slate-100 text-slate-700 border-slate-200"
+              }`}
+            >
+              linear.app
             </button>
           </div>
         </div>
-      )}
 
-      {/* URL search bar header */}
-      <div className="border-b border-slate-200 pb-6 mb-6">
-        <div className="max-w-2xl mx-auto">
-          <UrlAnalyzerInput />
-        </div>
+        <UrlAnalyzerInput compact onQuickAnalyze={(u) => fetchAnalysis(u)} />
       </div>
 
       {/* Loading state */}
@@ -400,201 +548,43 @@ export default function AnalyzeContent() {
       {/* Success data view */}
       {data && !loading && (
         <div className="space-y-8">
-          {/* Domain & Vital Specs Header */}
-          <div className="flat-card p-6 bg-white">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5 mb-5">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  <span>Inspected Domain</span>
-                  <span>•</span>
-                  <span className="text-emerald-700 font-medium flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Verified Public Target
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono tracking-tight">
-                    {data.page.domain}
-                  </h1>
-                  <a
-                    href={data.page.finalUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline font-mono"
-                  >
-                    {data.page.finalUrl}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
+          <AnalyzeExecutiveHeader
+            page={data.page}
+            audit={data.audit}
+            technologies={data.technologies}
+            traffic={data.traffic}
+            ai={data.ai}
+            isDemoMode={isDemoMode}
+            timestamp={data.timestamp}
+            copiedShareLink={copiedShareLink}
+            onCopyShareLink={handleCopyShareLink}
+            onOpenEmailModal={() => setIsEmailModalOpen(true)}
+            onOpenWhiteLabelModal={() => setIsWhiteLabelOpen(true)}
+            onDownloadJson={handleDownloadJson}
+            onSelectTab={(tab) => setActiveTab(tab)}
+            onFilterCategory={(catKey) => {
+              setFilterStatus("all");
+              setDiagnosticSearch(catKey);
+            }}
+          />
 
-              {/* Action Buttons: Share, Print PDF, Export JSON */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={handleCopyShareLink}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
-                >
-                  {copiedShareLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-slate-600" />}
-                  {copiedShareLink ? "Link Copied!" : "Share Report"}
-                </button>
-                <button
-                  onClick={() => setIsWhiteLabelOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  White-Label Client PDF
-                </button>
-                <button
-                  onClick={handleDownloadJson}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5 text-slate-600" />
-                  Export JSON
-                </button>
-                <button
-                  onClick={() => {
-                    exportFindingsCsv(
-                      data.page.domain,
-                      data.audit.overallScore,
-                      data.audit.grade,
-                      data.audit.diagnostics.map((d) => ({
-                        id: d.id,
-                        category: d.category,
-                        label: d.title,
-                        status: d.status,
-                        score: d.pointsEarned,
-                        maxScore: d.maxPoints,
-                        message: d.evidence,
-                        details: d.recommendation || d.impact,
-                      }))
-                    );
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5 text-emerald-600" />
-                  Export CSV
-                </button>
-              </div>
-            </div>
+          <AnalyzePriorityIssues
+            audit={data.audit}
+            ai={data.ai}
+            onInspectDiagnostics={(status) => {
+              setActiveTab("diagnostics");
+              setFilterStatus(status);
+              setDiagnosticSearch("");
+            }}
+            onOpenAiFixes={() => setActiveTab("ai")}
+          />
 
-            {/* Quick Status pills */}
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-                <div className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-medium flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span>{data.page.responseTimeMs} ms</span>
-                </div>
-                <div className="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold flex items-center gap-1.5">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  <span>Est. Visits: {data.traffic.formattedRange.split(" /")[0]}</span>
-                </div>
-                <div className="px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-200 text-purple-700 font-semibold flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>{data.technologies.length} Techs</span>
-                </div>
-                <div className="px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold flex items-center gap-1.5">
-                  <Brain className="w-3.5 h-3.5" />
-                  <span>{data.ai.prioritizedFixes.length} AI Fixes</span>
-                </div>
-                <div className={`px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1.5 ${
-                  data.page.isHttps 
-                    ? "bg-blue-50 text-blue-800 border-blue-200" 
-                    : "bg-rose-50 text-rose-800 border-rose-200"
-                }`}>
-                  <Lock className="w-3 h-3" />
-                  <span>{data.page.isHttps ? "HTTPS Valid" : "Insecure HTTP"}</span>
-                </div>
-              </div>
-
-            {/* Score & Category breakdown banner */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              {/* Overall Score Animated Radial Gauge */}
-              <div className="lg:col-span-5 p-5 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl shadow-sm flex items-center gap-5 border border-slate-800">
-                <div className="relative w-24 h-24 shrink-0 flex items-center justify-center">
-                  <svg className="w-24 h-24 -rotate-90 transform" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="#334155"
-                      strokeWidth="8"
-                      fill="transparent"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="url(#overallScoreGradient)"
-                      strokeWidth="8"
-                      strokeDasharray={2 * Math.PI * 40}
-                      strokeDashoffset={2 * Math.PI * 40 * (1 - (data.audit.overallScore / 100))}
-                      strokeLinecap="round"
-                      fill="transparent"
-                      className="transition-all duration-1000 ease-out"
-                    />
-                    <defs>
-                      <linearGradient id="overallScoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#38bdf8" />
-                        <stop offset="100%" stopColor="#10b981" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-black text-white tracking-tight leading-none">
-                      {data.audit.overallScore}
-                    </span>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">/ 100</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span className="text-sm font-bold text-white">Deterministic SEO Score</span>
-                    <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      Grade {data.audit.grade}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
-                    {data.audit.summary}
-                  </p>
-                </div>
-              </div>
-
-              {/* 4 Category Meters */}
-              <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {Object.entries(data.audit.categories).map(([key, cat]) => (
-                  <div key={key} className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
-                    <div>
-                      <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate mb-1">
-                        {cat.name}
-                      </div>
-                      <div className="flex items-baseline justify-between mb-2">
-                        <span className="text-xl font-black text-slate-900 font-mono">{cat.score}</span>
-                        <span className="text-xs font-semibold text-slate-400 font-mono">/{cat.maxScore}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
-                        <span>Coverage</span>
-                        <span className={cat.percentage >= 80 ? "text-emerald-600" : cat.percentage >= 50 ? "text-amber-600" : "text-rose-600"}>
-                          {cat.percentage}%
-                        </span>
-                      </div>
-                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${
-                            cat.percentage >= 80 
-                              ? "bg-gradient-to-r from-emerald-500 to-teal-400" 
-                              : cat.percentage >= 50 
-                              ? "bg-gradient-to-r from-amber-500 to-yellow-400" 
-                              : "bg-gradient-to-r from-rose-500 to-red-400"
-                          }`}
-                          style={{ width: `${cat.percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <AnalyzeVisualCharts
+            page={data.page}
+            audit={data.audit}
+            performance={data.performance}
+            onSelectTab={(tab) => setActiveTab(tab)}
+          />
 
           {/* Suite & Feature Navigation System */}
           {(() => {
@@ -783,30 +773,50 @@ export default function AnalyzeContent() {
           {/* TAB 1: SEO DIAGNOSTICS */}
           {activeTab === "diagnostics" && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-slate-500">Filter checks:</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-semibold text-slate-500 mr-1">Status:</span>
                   {[
-                    { id: "all", label: "All Checks", count: data.audit.diagnostics.length },
+                    { id: "all", label: "All Checks", count: data.audit.diagnostics.length, color: "text-slate-700" },
                     { id: "passed", label: "Passed", count: data.audit.passedCount, color: "text-emerald-700" },
                     { id: "warning", label: "Warnings", count: data.audit.warningCount, color: "text-amber-700" },
                     { id: "error", label: "Errors", count: data.audit.errorCount, color: "text-rose-700" },
-                  ].map((filter) => (
-                    <button
-                      key={filter.id}
-                      onClick={() => setFilterStatus(filter.id as typeof filterStatus)}
-                      className={`px-2.5 py-1 text-xs rounded-md font-medium border transition-colors cursor-pointer ${
-                        filterStatus === filter.id
-                          ? "bg-slate-900 text-white border-slate-900"
-                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <span className={filter.color}>{filter.label}</span> ({filter.count})
-                    </button>
-                  ))}
+                  ].map((filter) => {
+                    const isSelected = filterStatus === filter.id;
+                    return (
+                      <button
+                        key={filter.id}
+                        type="button"
+                        onClick={() => setFilterStatus(filter.id as typeof filterStatus)}
+                        className={`px-3 py-1.5 text-xs rounded-lg font-bold border transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-slate-900 text-white border-slate-900"
+                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        <span className={isSelected ? "text-white" : filter.color}>{filter.label}</span>{" "}
+                        <span className={isSelected ? "text-slate-300 font-mono" : "text-slate-400 font-mono"}>
+                          ({filter.count})
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-                <div className="text-xs text-slate-500">
-                  Showing {filteredDiagnostics?.length} of {data.audit.diagnostics.length} rules
+
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1 sm:w-56">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={diagnosticSearch}
+                      onChange={(e) => setDiagnosticSearch(e.target.value)}
+                      placeholder="Filter rules (e.g. canonical, h1)..."
+                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <div className="text-xs text-slate-500 font-mono whitespace-nowrap hidden md:block">
+                    {filteredDiagnostics?.length}/{data.audit.diagnostics.length} rules
+                  </div>
                 </div>
               </div>
 
@@ -2658,13 +2668,42 @@ export default function AnalyzeContent() {
       )}
 
       {data && (
-        <WhiteLabelPdfModal
-          isOpen={isWhiteLabelOpen}
-          onClose={() => setIsWhiteLabelOpen(false)}
-          domain={data.page.domain}
-          score={data.audit.overallScore}
-          grade={data.audit.grade}
-        />
+        <>
+          <WhiteLabelPdfModal
+            isOpen={isWhiteLabelOpen}
+            onClose={() => setIsWhiteLabelOpen(false)}
+            domain={data.page.domain}
+            score={data.audit.overallScore}
+            grade={data.audit.grade}
+          />
+          <EmailReportModal
+            isOpen={isEmailModalOpen}
+            onClose={() => setIsEmailModalOpen(false)}
+            domain={data.page.domain}
+            score={data.audit.overallScore}
+            grade={data.audit.grade}
+            summary={data.ai?.executiveSummary || data.audit.summary}
+            reportUrl={
+              data.id && typeof window !== "undefined"
+                ? `${window.location.origin}/report/${data.id}`
+                : undefined
+            }
+            topFixes={data.ai?.prioritizedFixes?.map((f) => ({
+              title: f.title,
+              priority: f.priority,
+            }))}
+          />
+        </>
+      )}
+
+      {/* Animated Action & Copy Toast Notification */}
+      {toastMessage && (
+        <aside aria-label="Status Notification" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-900/95 text-white text-xs font-semibold shadow-xl border border-slate-700 backdrop-blur-md flex items-center gap-2.5 toast-slide-up pointer-events-none no-print">
+          <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <Check className="w-3.5 h-3.5" />
+          </div>
+          <span>{toastMessage}</span>
+        </aside>
       )}
     </div>
   );

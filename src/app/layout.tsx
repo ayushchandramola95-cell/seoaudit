@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CommandPalette from "@/components/CommandPalette";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { PlanProvider } from "@/lib/auth/PlanContext";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
           <AuthProvider>
             <PlanProvider>
               <Header />
+              <CommandPalette />
               <main className="flex-1">{children}</main>
               <Footer />
             </PlanProvider>

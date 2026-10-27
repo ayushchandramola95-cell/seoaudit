@@ -73,7 +73,7 @@ export default function McpTerminalCard() {
 
         {/* Syntax Highlighted Code Body */}
         <div className="p-6 bg-slate-950/95 space-y-4">
-          <pre className="text-slate-200 leading-relaxed overflow-x-auto text-xs font-mono">
+          <pre className="text-slate-200 leading-relaxed whitespace-pre-wrap break-words text-xs font-mono">
             <code>
               <span className="text-slate-500">{"{\n"}</span>
               <span className="text-blue-400 font-bold">{'  "mcpServers"'}</span>

@@ -174,12 +174,13 @@ export async function POST(req: NextRequest) {
     }
     // 2. If Gemini API Key is available directly
     else if (geminiKey && geminiKey.trim() !== "") {
-      providerName = "Google Gemini API (Official)";
+      const activeModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+      providerName = `Google Gemini (${activeModel})`;
       try {
         checks = await Promise.all(
           cleanPrompts.map(async (promptText: string) => {
             const response = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+              `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${geminiKey}`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
