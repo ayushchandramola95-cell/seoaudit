@@ -296,9 +296,34 @@ export default function EmailReportModal({
         ) : (
           <form onSubmit={handleSendEmail} className="p-6 space-y-4 text-xs">
             {error && (
-              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2">
+                <div className="flex items-center gap-2 font-bold text-xs">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Email Provider Status</span>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  {error}
+                </p>
+                <div className="pt-1 flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleOpenGmail}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs transition-colors cursor-pointer"
+                  >
+                    <Mail className="w-3 h-3 text-rose-500" />
+                    <span>Send via Gmail (Web)</span>
+                    <ExternalLink className="w-3 h-3 text-rose-500" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenOutlook}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 shadow-2xs transition-colors cursor-pointer"
+                  >
+                    <Mail className="w-3 h-3 text-sky-500" />
+                    <span>Send via Outlook (Web)</span>
+                    <ExternalLink className="w-3 h-3 text-sky-500" />
+                  </button>
+                </div>
               </div>
             )}
 
