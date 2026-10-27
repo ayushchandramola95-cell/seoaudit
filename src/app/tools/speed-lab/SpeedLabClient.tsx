@@ -15,30 +15,38 @@ import {
   CheckCircle,
   AlertTriangle,
   XCircle,
-  HelpCircle,
   Clock,
-  ArrowUpRight,
   Activity,
   Layers,
-  ChevronRight,
   Play,
   Share2,
   Copy,
   Check,
   Download,
   Printer,
-  Sliders,
   SlidersHorizontal,
-  Info,
-  ExternalLink,
-  Flame,
+  X,
+  Server,
+  Eye,
+  Image as ImageIcon,
+  MousePointerClick,
   FileCode2,
-  Cpu,
+  ChevronDown,
+  ChevronUp,
+  HardDrive,
+  Globe,
+  ShieldCheck,
   RefreshCw,
-  X
+  Lock,
+  Tag,
+  Radio,
+  Cpu,
+  Wifi,
+  ExternalLink,
 } from "lucide-react";
 
 interface VitalsData {
+  strategy?: "mobile" | "desktop";
   scores: {
     performance: number;
     accessibility?: number;
@@ -53,7 +61,39 @@ interface VitalsData {
     ttfb: { value: number; unit: string; rating: "good" | "needs-improvement" | "poor" };
     speedIndex?: { value: number; unit: string; rating: "good" | "needs-improvement" | "poor" };
   };
-  opportunities: Array<{ title: string; description: string; savingsMs?: number }>;
+  assetsSummary?: {
+    htmlBytes: number;
+    htmlKb: number;
+    scriptCount: number;
+    stylesheetCount: number;
+    imageCount: number;
+    fontCount?: number;
+    estimatedTotalKb: number;
+    distribution?: {
+      htmlPct: number;
+      jsPct: number;
+      cssPct: number;
+      imagesPct: number;
+    };
+  };
+  infrastructure?: {
+    server: string;
+    compression: string;
+    cacheControl: string;
+    isHttps: boolean;
+  };
+  thirdPartySummary?: Array<{
+    name: string;
+    domain: string;
+    category: string;
+  }>;
+  opportunities: Array<{
+    title: string;
+    description: string;
+    savingsMs?: number;
+    codeSnippet?: string;
+    difficulty?: "quick_win" | "moderate" | "architecture";
+  }>;
   isLiveApi: boolean;
   sourceMode?: "preset_benchmark" | "verified_psi_api" | "live_html_heuristic";
   testedAt?: string;
@@ -65,14 +105,51 @@ const DEMO_PRESETS: Record<string, VitalsData> = {
     metrics: {
       lcp: { value: 0.9, unit: "s", rating: "good" },
       fid: { value: 32, unit: "ms", rating: "good" },
-      cls: { value: 0.00, unit: "", rating: "good" },
+      cls: { value: 0.0, unit: "", rating: "good" },
       fcp: { value: 0.7, unit: "s", rating: "good" },
       ttfb: { value: 48, unit: "ms", rating: "good" },
       speedIndex: { value: 1.1, unit: "s", rating: "good" },
     },
+    assetsSummary: {
+      htmlBytes: 42100,
+      htmlKb: 41.1,
+      scriptCount: 8,
+      stylesheetCount: 3,
+      imageCount: 12,
+      fontCount: 2,
+      estimatedTotalKb: 890,
+      distribution: {
+        htmlPct: 5,
+        jsPct: 34,
+        cssPct: 8,
+        imagesPct: 53,
+      },
+    },
+    infrastructure: {
+      server: "Cloudflare Edge",
+      compression: "brotli (br)",
+      cacheControl: "public, max-age=31536000, immutable",
+      isHttps: true,
+    },
+    thirdPartySummary: [
+      { name: "Stripe.js", domain: "js.stripe.com", category: "Payments" },
+      { name: "Cloudflare Web Analytics", domain: "cloudflareinsights.com", category: "CDN Telemetry" },
+    ],
     opportunities: [
-      { title: "Serve images in next-gen formats", description: "All hero assets are optimized via AVIF/WebP edge CDN.", savingsMs: 80 },
-      { title: "Preconnect to required origins", description: "Fonts and scripts are asynchronously pre-warmed.", savingsMs: 40 },
+      {
+        title: "Serve images in next-gen formats",
+        description: "All hero assets are optimized via AVIF/WebP edge CDN with responsive sizes attributes.",
+        savingsMs: 80,
+        difficulty: "quick_win",
+        codeSnippet: `<Image\n  src="/hero.png"\n  alt="Hero Asset"\n  priority={true}\n  format={['avif', 'webp']}\n  sizes="(max-width: 768px) 100vw, 1200px"\n/>`,
+      },
+      {
+        title: "Preconnect to required origins",
+        description: "Fonts and third-party scripts are asynchronously pre-warmed via DNS-prefetch and preconnect.",
+        savingsMs: 40,
+        difficulty: "quick_win",
+        codeSnippet: `<link rel="preconnect" href="https://fonts.googleapis.com" />\n<link rel="dns-prefetch" href="https://fonts.gstatic.com" />`,
+      },
     ],
     isLiveApi: true,
   },
@@ -86,8 +163,38 @@ const DEMO_PRESETS: Record<string, VitalsData> = {
       ttfb: { value: 65, unit: "ms", rating: "good" },
       speedIndex: { value: 1.3, unit: "s", rating: "good" },
     },
+    assetsSummary: {
+      htmlBytes: 51200,
+      htmlKb: 50.0,
+      scriptCount: 11,
+      stylesheetCount: 4,
+      imageCount: 15,
+      fontCount: 2,
+      estimatedTotalKb: 1140,
+      distribution: {
+        htmlPct: 4,
+        jsPct: 37,
+        cssPct: 8,
+        imagesPct: 51,
+      },
+    },
+    infrastructure: {
+      server: "Vercel Edge Network",
+      compression: "brotli (br)",
+      cacheControl: "s-maxage=3600, stale-while-revalidate=86400",
+      isHttps: true,
+    },
+    thirdPartySummary: [
+      { name: "Vercel Speed Insights", domain: "vercel.live", category: "Observability" },
+    ],
     opportunities: [
-      { title: "Eliminate render-blocking resources", description: "Scripts loaded with defer & module attributes.", savingsMs: 120 },
+      {
+        title: "Eliminate render-blocking resources",
+        description: "Scripts loaded with defer & module attributes to keep the main thread unblocked during initial paint.",
+        savingsMs: 120,
+        difficulty: "moderate",
+        codeSnippet: `<script src="/framework.js" defer type="module"></script>\n<Script src="/tracker.js" strategy="lazyOnload" />`,
+      },
     ],
     isLiveApi: true,
   },
@@ -101,8 +208,35 @@ const DEMO_PRESETS: Record<string, VitalsData> = {
       ttfb: { value: 82, unit: "ms", rating: "good" },
       speedIndex: { value: 1.5, unit: "s", rating: "good" },
     },
+    assetsSummary: {
+      htmlBytes: 38400,
+      htmlKb: 37.5,
+      scriptCount: 7,
+      stylesheetCount: 2,
+      imageCount: 9,
+      fontCount: 1,
+      estimatedTotalKb: 680,
+      distribution: {
+        htmlPct: 6,
+        jsPct: 39,
+        cssPct: 6,
+        imagesPct: 49,
+      },
+    },
+    infrastructure: {
+      server: "Cloudflare Edge",
+      compression: "gzip",
+      cacheControl: "public, max-age=3600",
+      isHttps: true,
+    },
     opportunities: [
-      { title: "Properly size images", description: "Ensure documentation SVGs are inline or cached.", savingsMs: 150 },
+      {
+        title: "Properly size images",
+        description: "Ensure documentation SVGs are inline or cached via long-lived Cache-Control headers.",
+        savingsMs: 150,
+        difficulty: "quick_win",
+        codeSnippet: `// Edge Response Cache-Control\nres.setHeader('Cache-Control', 'public, max-age=31536000, immutable');`,
+      },
     ],
     isLiveApi: true,
   },
@@ -142,15 +276,15 @@ const METRIC_INSPECTION_GUIDES: Record<string, MetricInspectionDetails> = {
     name: "CLS",
     fullName: "Cumulative Layout Shift",
     googleWeight: "25% of Lighthouse Performance Score",
-    goodThreshold: "≤ 0.1 score",
-    moderateThreshold: "0.1 – 0.25 score",
-    poorThreshold: "> 0.25 score",
+    goodThreshold: "≤ 0.10",
+    moderateThreshold: "0.10 – 0.25",
+    poorThreshold: "> 0.25",
     whyItMatters:
-      "CLS measures visual stability by tracking unexpected layout shifts during page lifetime. High CLS frustrates users by causing mis-clicks on links and buttons.",
+      "CLS quantifies unexpected visual jumps that occur during the lifespan of a page. Sudden shifts cause users to accidentally click wrong links and degrade conversion rates.",
     howToFix: [
-      "Always declare explicit width and height attributes on all <img> and <video> tags.",
-      "Reserve slot space for dynamically injected banner ads and cookie banners.",
-      "Avoid inserting content above existing content unless responding to explicit user interaction.",
+      "Always declare explicit width and height attributes on all <img> and <video> elements.",
+      "Reserve slot dimensions for dynamic advertisements and cookie consent banners using min-height.",
+      "Use font-display: optional or size-adjust to prevent Flash of Unstyled Text (FOUT) shifts.",
     ],
   },
   fcp: {
@@ -162,43 +296,43 @@ const METRIC_INSPECTION_GUIDES: Record<string, MetricInspectionDetails> = {
     moderateThreshold: "1.8s – 3.0 seconds",
     poorThreshold: "> 3.0 seconds",
     whyItMatters:
-      "FCP marks the exact time when the browser renders the very first piece of DOM content (text, non-white canvas, SVG, or logo). It reassures the user that the site is responsive.",
+      "FCP marks the instant a user sees something appearing on their screen (text, background, or SVG). It provides immediate visual feedback that the website is operational.",
     howToFix: [
-      "Inline critical-path CSS above the fold and defer non-critical style sheets.",
-      "Minimize render-blocking JavaScript files loaded in the HTML <head>.",
-      "Enable HTTP/2 or HTTP/3 multiplexing to avoid head-of-line blocking.",
+      "Inline critical above-the-fold CSS directly into the HTML document <head>.",
+      "Eliminate render-blocking external stylesheets and script tags.",
+      "Enable modern Brotli (br) compression across all HTML responses.",
     ],
   },
   fid: {
-    key: "fid",
+    key: "inp",
     name: "INP / TBT",
-    fullName: "Interaction to Next Paint / Total Blocking Time",
+    fullName: "Interaction to Next Paint (Replaces FID)",
     googleWeight: "25% of Lighthouse Performance Score",
     goodThreshold: "≤ 200 ms",
     moderateThreshold: "200 ms – 500 ms",
     poorThreshold: "> 500 ms",
     whyItMatters:
-      "INP (which replaced FID in Google's official Core Web Vitals) assesses a page's overall responsiveness to all user clicks, taps, and key presses throughout the entire user session.",
+      "Official Core Web Vital (as of Google March 2024). Measures overall responsiveness to user clicks, taps, and keypresses by checking main thread CPU bottlenecks.",
     howToFix: [
-      "Break up long JavaScript tasks (>50ms) using requestIdleCallback or Web Workers.",
-      "Defer loading heavy marketing analytics (Facebook Pixel, Hotjar, GTM) until after interaction.",
-      "Avoid heavy synchronous client-side state recalculations during click handlers.",
+      "Break long tasks (>50ms) into micro-tasks using scheduler.yield() or requestIdleCallback.",
+      "Defer third-party tracking scripts (Hotjar, GA4, Meta Pixel) until after initial user interaction.",
+      "Avoid heavy layout thrashing and expensive synchronous DOM reads in event handlers.",
     ],
   },
   ttfb: {
     key: "ttfb",
     name: "TTFB",
     fullName: "Time to First Byte",
-    googleWeight: "Heuristic (Underpins LCP & FCP)",
+    googleWeight: "Foundational Diagnostic (Impacts all CWVs)",
     goodThreshold: "≤ 800 ms",
     moderateThreshold: "800 ms – 1800 ms",
     poorThreshold: "> 1800 ms",
     whyItMatters:
-      "TTFB measures the duration between the browser's HTTP request and receiving the first byte of response from the origin server. Fast TTFB is the bedrock of all performance metrics.",
+      "TTFB measures the time between the browser opening a connection and the initial byte of HTML arriving from the server. Without fast TTFB, achieving a good LCP is mathematically impossible.",
     howToFix: [
-      "Implement Edge Full-Page Caching via Vercel Edge, Cloudflare, or Fastly.",
-      "Optimize slow database queries and ORM N+1 bottlenecks on server-side rendered routes.",
-      "Enable TLS 1.3 session resumption and TCP Fast Open on web servers.",
+      "Deploy page caching via Cloudflare Edge / Vercel ISR / Fastly.",
+      "Enable HTTP/3 and TLS 1.3 session resumption to minimize connection round-trips.",
+      "Optimize backend database queries and implement Redis caching on server routes.",
     ],
   },
 };
@@ -217,6 +351,9 @@ export default function SpeedLabClient() {
   const [deviceMode, setDeviceMode] = useState<"mobile" | "desktop">("mobile");
   const [activeInspector, setActiveInspector] = useState<MetricInspectionDetails | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [expandedOpportunityIdx, setExpandedOpportunityIdx] = useState<number | null>(0);
+  const [copiedSnippetIdx, setCopiedSnippetIdx] = useState<number | null>(null);
+  const [opportunityFilter, setOpportunityFilter] = useState<"all" | "high_impact" | "code_ready">("all");
 
   // Interactive "What-If" Speed Remediation Simulator Toggles
   const [simBrotli, setSimBrotli] = useState(false);
@@ -231,7 +368,7 @@ export default function SpeedLabClient() {
     }, 2500);
   };
 
-  const handleScan = async (targetToScan = url) => {
+  const handleScan = async (targetToScan = url, overrideStrategy = deviceMode) => {
     if (!targetToScan) return;
     setLoading(true);
     setError(null);
@@ -243,13 +380,15 @@ export default function SpeedLabClient() {
     }
 
     try {
-      const res = await fetch(`/api/tools/speed?url=${encodeURIComponent(formattedUrl)}`);
+      const res = await fetch(
+        `/api/tools/speed?url=${encodeURIComponent(formattedUrl)}&strategy=${overrideStrategy}`
+      );
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Failed to analyze page speed.");
       }
       setRawData(json.data);
-      // reset simulations on fresh scan
+      // Reset simulations on fresh scan
       setSimBrotli(false);
       setSimImages(false);
       setSimDeferJs(false);
@@ -269,7 +408,7 @@ export default function SpeedLabClient() {
         formatted = `https://${formatted}`;
       }
       setUrl(formatted);
-      handleScan(formatted);
+      handleScan(formatted, deviceMode);
     }
   }, [urlParam]);
 
@@ -277,7 +416,6 @@ export default function SpeedLabClient() {
   const data: VitalsData | null = useMemo(() => {
     if (!rawData) return null;
 
-    // Simulation bonuses
     let bonusScore = 0;
     let ttfbReduction = 0;
     let lcpReduction = 0;
@@ -382,6 +520,9 @@ export default function SpeedLabClient() {
         timestamp: new Date().toISOString(),
         scores: data.scores,
         metrics: data.metrics,
+        assetsSummary: data.assetsSummary,
+        infrastructure: data.infrastructure,
+        thirdPartySummary: data.thirdPartySummary,
         opportunities: data.opportunities,
         sourceMode: data.sourceMode,
       },
@@ -389,13 +530,15 @@ export default function SpeedLabClient() {
       2
     );
     const blob = new Blob([jsonStr], { type: "application/json" });
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = `pagespeed-telemetry-${new URL(url).hostname}.json`;
-    a.click();
-    URL.revokeObjectURL(blobUrl);
-    showToast("PageSpeed telemetry JSON downloaded!");
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = `pagespeed-telemetry-${new URL(url).hostname}-${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(href);
+    showToast("Telemetry JSON report exported successfully!");
   };
 
   const handlePrint = () => {
@@ -404,96 +547,141 @@ export default function SpeedLabClient() {
     }
   };
 
-  const getRatingBadge = (rating: string) => {
-    if (rating === "good") {
-      return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-          <CheckCircle className="w-3 h-3" /> Good
-        </span>
-      );
-    }
-    if (rating === "needs-improvement") {
-      return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-          <AlertTriangle className="w-3 h-3" /> Moderate
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200">
-        <XCircle className="w-3 h-3" /> Poor
-      </span>
-    );
+  const handleCopySnippet = (snippet: string, idx: number) => {
+    if (typeof window === "undefined") return;
+    navigator.clipboard.writeText(snippet);
+    setCopiedSnippetIdx(idx);
+    showToast("Code snippet copied to clipboard!");
+    setTimeout(() => {
+      setCopiedSnippetIdx((c) => (c === idx ? null : c));
+    }, 2000);
   };
 
-  // Helper for metric range sliders
-  const renderRangeBar = (val: number, goodMax: number, modMax: number, maxDisplay: number, unit: string) => {
-    const clampedVal = Math.min(Math.max(val, 0), maxDisplay);
-    const percent = Math.min((clampedVal / maxDisplay) * 100, 100);
-    const goodPercent = (goodMax / maxDisplay) * 100;
-    const modPercent = ((modMax - goodMax) / maxDisplay) * 100;
-
-    return (
-      <div className="space-y-1 mt-2.5">
-        <div className="relative h-2 rounded-full overflow-hidden flex bg-slate-100">
-          <div style={{ width: `${goodPercent}%` }} className="bg-emerald-500 h-full" />
-          <div style={{ width: `${modPercent}%` }} className="bg-amber-400 h-full" />
-          <div className="flex-1 bg-rose-500 h-full" />
-          {/* Needle / Pin */}
-          <div
-            className="absolute top-0 bottom-0 w-1.5 bg-slate-900 border border-white shadow-xs rounded-full transform -translate-x-1/2 transition-all duration-300"
-            style={{ left: `${percent}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-[9px] text-slate-400 font-mono">
-          <span>0</span>
-          <span className="text-emerald-600 font-semibold">&lt;{goodMax}{unit}</span>
-          <span className="text-amber-600 font-semibold">{modMax}{unit}</span>
-          <span>{maxDisplay}{unit}+</span>
-        </div>
-      </div>
-    );
-  };
-
-  // Proportional Waterfall calculations
+  // Calculate proportional percentages for the Gantt timeline
   const waterfallMetrics = useMemo(() => {
     if (!data) return null;
     const ttfbVal = data.metrics.ttfb.value;
     const fcpVal = Math.round(data.metrics.fcp.value * 1000);
     const lcpVal = Math.round(data.metrics.lcp.value * 1000);
-    const inpVal = Math.round(data.metrics.fid.value);
-    const totalTime = Math.max(lcpVal + inpVal, 1000);
+    const inpVal = data.metrics.fid.value;
 
-    const ttfbPct = Math.max(8, Math.min(28, (ttfbVal / totalTime) * 100));
-    const fcpPct = Math.max(10, Math.min(32, (Math.max(fcpVal - ttfbVal, 80) / totalTime) * 100));
-    const lcpPct = Math.max(15, Math.min(42, (Math.max(lcpVal - fcpVal, 120) / totalTime) * 100));
-    const inpPct = Math.max(8, 100 - (ttfbPct + fcpPct + lcpPct));
+    const totalDuration = Math.max(lcpVal + inpVal, 1000);
 
-    return { ttfbVal, fcpVal, lcpVal, inpVal, totalTime, ttfbPct, fcpPct, lcpPct, inpPct };
+    const ttfbPct = Math.min(100, Math.max(4, Math.round((ttfbVal / totalDuration) * 100)));
+    const fcpPct = Math.min(100, Math.max(6, Math.round(((fcpVal - ttfbVal) / totalDuration) * 100)));
+    const lcpPct = Math.min(100, Math.max(8, Math.round(((lcpVal - fcpVal) / totalDuration) * 100)));
+    const inpPct = Math.min(100, Math.max(4, Math.round((inpVal / totalDuration) * 100)));
+
+    return {
+      totalDuration,
+      ttfbVal,
+      fcpVal,
+      lcpVal,
+      inpVal,
+      ttfbPct,
+      fcpPct,
+      lcpPct,
+      inpPct,
+    };
   }, [data]);
 
   const activeSimulationCount = [simBrotli, simImages, simDeferJs, simInlineCss].filter(Boolean).length;
+  const rawBaseScore = rawData?.scores.performance ?? 0;
+  const simulatedScoreGain = data && rawData ? data.scores.performance - rawBaseScore : 0;
+
+  // Filtered Opportunities
+  const filteredOpportunities = useMemo(() => {
+    if (!data) return [];
+    if (opportunityFilter === "high_impact") {
+      return data.opportunities.filter((opp) => (opp.savingsMs ?? 0) >= 100);
+    }
+    if (opportunityFilter === "code_ready") {
+      return data.opportunities.filter((opp) => Boolean(opp.codeSnippet));
+    }
+    return data.opportunities;
+  }, [data, opportunityFilter]);
+
+  const getRatingBadge = (rating: "good" | "needs-improvement" | "poor") => {
+    switch (rating) {
+      case "good":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <CheckCircle className="w-3 h-3 text-emerald-500" />
+            Good
+          </span>
+        );
+      case "needs-improvement":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+            <AlertTriangle className="w-3 h-3 text-amber-500" />
+            Needs Work
+          </span>
+        );
+      case "poor":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+            <XCircle className="w-3 h-3 text-rose-500" />
+            Poor
+          </span>
+        );
+    }
+  };
+
+  const renderRangeBar = (
+    value: number,
+    goodLimit: number,
+    moderateLimit: number,
+    maxScale: number,
+    unit: string
+  ) => {
+    const clampedValue = Math.min(Math.max(value, 0), maxScale);
+    const markerPositionPercent = (clampedValue / maxScale) * 100;
+    const goodPercent = (goodLimit / maxScale) * 100;
+    const modPercent = ((moderateLimit - goodLimit) / maxScale) * 100;
+    const poorPercent = 100 - (goodPercent + modPercent);
+
+    return (
+      <div className="mt-4 space-y-1">
+        <div className="relative w-full h-2 rounded-full overflow-hidden flex bg-slate-100">
+          <div style={{ width: `${goodPercent}%` }} className="h-full bg-emerald-500" />
+          <div style={{ width: `${modPercent}%` }} className="h-full bg-amber-400" />
+          <div style={{ width: `${poorPercent}%` }} className="h-full bg-rose-500" />
+          {/* Needle / indicator marker */}
+          <div
+            className="absolute top-0 bottom-0 w-1.5 bg-slate-900 border-x border-white shadow-xs rounded-full transition-all duration-500 -ml-0.5"
+            style={{ left: `${markerPositionPercent}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-[10px] font-mono text-slate-400 px-0.5">
+          <span>0</span>
+          <span className="text-emerald-700 font-semibold">&lt;{goodLimit}{unit}</span>
+          <span className="text-amber-700 font-semibold">{moderateLimit}{unit}</span>
+          <span>{maxScale}{unit}+</span>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-      {/* Floating Toast Notification */}
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      {/* Floating Notification Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700 text-xs font-semibold flex items-center gap-2 animate-in slide-in-from-bottom duration-200">
-          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 bg-slate-900 text-white text-xs font-semibold rounded-xl shadow-2xl border border-slate-800 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-10">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold mb-3 shadow-2xs">
-          <Zap className="w-3.5 h-3.5 text-amber-600" />
-          Google PageSpeed Insights &amp; Lighthouse Telemetry Lab
+      {/* Header Banner */}
+      <div className="text-center max-w-2xl mx-auto space-y-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/80 text-amber-800 text-xs font-semibold">
+          <Zap className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+          <span>Google PageSpeed Insights &amp; Lighthouse Telemetry Lab</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
           Core Web Vitals &amp; PageSpeed Lab
         </h1>
-        <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm text-slate-600 leading-relaxed">
           Inspect LCP, CLS, INP, FCP, and TTFB with sub-second accuracy. Identify exactly which script payloads and assets are causing render blocks before they hurt organic search rankings.
         </p>
 
@@ -503,29 +691,30 @@ export default function SpeedLabClient() {
             e.preventDefault();
             handleScan();
           }}
-          className="mt-6 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto"
+          className="mt-6 flex flex-col sm:flex-row gap-2 max-w-xl mx-auto"
         >
-          <input
-            type="text"
-            required
-            placeholder="Enter URL to test (e.g. https://yourdomain.com)"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 px-4 py-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white shadow-2xs font-mono"
-          />
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white font-mono shadow-2xs"
+            />
+          </div>
           <button
             type="submit"
             disabled={loading}
-            className="px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 shadow-sm shrink-0"
+            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shrink-0"
           >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Analyzing Speed...
+                Auditing Web Vitals...
               </>
             ) : (
               <>
-                <Play className="w-4 h-4 fill-white" />
+                <Play className="w-4 h-4 fill-current" />
                 Test PageSpeed
               </>
             )}
@@ -548,7 +737,7 @@ export default function SpeedLabClient() {
                   setSimDeferJs(false);
                   setSimInlineCss(false);
                 }
-                handleScan(p.url);
+                handleScan(p.url, deviceMode);
               }}
               className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-700 font-semibold transition-colors cursor-pointer border border-slate-200"
             >
@@ -569,7 +758,6 @@ export default function SpeedLabClient() {
       {/* Results */}
       {data && (
         <div className="space-y-8 animate-in fade-in duration-300">
-          
           {/* Quick Action Toolbar (Share, JSON, Print, Full Audit) */}
           <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
             <div className="flex items-center gap-2 text-xs text-slate-600">
@@ -610,7 +798,7 @@ export default function SpeedLabClient() {
 
               <button
                 type="button"
-                onClick={() => handleScan()}
+                onClick={() => handleScan(url, deviceMode)}
                 disabled={loading}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors cursor-pointer"
               >
@@ -623,11 +811,40 @@ export default function SpeedLabClient() {
           {/* Main Hero Card: Radial Gauge + Score Breakdown + Device Toggle */}
           <div className="p-6 sm:p-8 bg-white border border-slate-200/90 rounded-2xl shadow-sm">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-              
-              {/* Left: Big Radial Gauge */}
+              {/* Left: Big Radial Gauge with Ambient Glow & Gradient Stroke */}
               <div className="flex items-center gap-6">
                 <div className="relative w-32 h-32 flex items-center justify-center shrink-0">
-                  <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 120 120">
+                  {/* Subtle ambient glow */}
+                  <div
+                    className={`absolute inset-0 rounded-full blur-xl opacity-30 ${
+                      data.scores.performance >= 90
+                        ? "bg-emerald-500"
+                        : data.scores.performance >= 50
+                        ? "bg-amber-500"
+                        : "bg-rose-500"
+                    }`}
+                  />
+                  <svg className="w-full h-full -rotate-90 transform relative z-10" viewBox="0 0 120 120">
+                    <defs>
+                      <linearGradient id="scoreGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        {data.scores.performance >= 90 ? (
+                          <>
+                            <stop offset="0%" stopColor="#10b981" />
+                            <stop offset="100%" stopColor="#06b6d4" />
+                          </>
+                        ) : data.scores.performance >= 50 ? (
+                          <>
+                            <stop offset="0%" stopColor="#f59e0b" />
+                            <stop offset="100%" stopColor="#ea580c" />
+                          </>
+                        ) : (
+                          <>
+                            <stop offset="0%" stopColor="#f43f5e" />
+                            <stop offset="100%" stopColor="#dc2626" />
+                          </>
+                        )}
+                      </linearGradient>
+                    </defs>
                     <circle
                       cx="60"
                       cy="60"
@@ -640,7 +857,7 @@ export default function SpeedLabClient() {
                       cx="60"
                       cy="60"
                       r="50"
-                      stroke={data.scores.performance >= 90 ? "#10b981" : data.scores.performance >= 50 ? "#f59e0b" : "#ef4444"}
+                      stroke="url(#scoreGaugeGrad)"
                       strokeWidth="10"
                       strokeDasharray={2 * Math.PI * 50}
                       strokeDashoffset={2 * Math.PI * 50 * (1 - data.scores.performance / 100)}
@@ -649,7 +866,7 @@ export default function SpeedLabClient() {
                       className="transition-all duration-700 ease-out"
                     />
                   </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                     <span className="text-3xl font-black text-slate-900 tracking-tight">
                       {data.scores.performance}
                     </span>
@@ -693,7 +910,12 @@ export default function SpeedLabClient() {
                 <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold shrink-0">
                   <button
                     type="button"
-                    onClick={() => setDeviceMode("mobile")}
+                    onClick={() => {
+                      setDeviceMode("mobile");
+                      if (rawData && rawData.sourceMode !== "preset_benchmark") {
+                        handleScan(url, "mobile");
+                      }
+                    }}
                     className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                       deviceMode === "mobile"
                         ? "bg-white text-blue-600 shadow-2xs border border-slate-200/70"
@@ -705,7 +927,12 @@ export default function SpeedLabClient() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setDeviceMode("desktop")}
+                    onClick={() => {
+                      setDeviceMode("desktop");
+                      if (rawData && rawData.sourceMode !== "preset_benchmark") {
+                        handleScan(url, "desktop");
+                      }
+                    }}
                     className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                       deviceMode === "desktop"
                         ? "bg-white text-blue-600 shadow-2xs border border-slate-200/70"
@@ -730,21 +957,25 @@ export default function SpeedLabClient() {
             {/* 4-Pillar Lighthouse Score Breakdown Strip */}
             <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: "Performance", val: data.scores.performance, desc: "Core Web Vitals & Speed" },
-                { label: "Accessibility", val: data.scores.accessibility ?? 96, desc: "ARIA, Contrast & Alt Tags" },
-                { label: "Best Practices", val: data.scores.bestPractices ?? 100, desc: "HTTPS, Modern APIs & CSP" },
-                { label: "SEO Readiness", val: data.scores.seo ?? 100, desc: "Crawlability & Meta Tags" },
+                { label: "Performance", icon: Zap, val: data.scores.performance, desc: "Core Web Vitals & Speed" },
+                { label: "Accessibility", icon: Eye, val: data.scores.accessibility ?? 96, desc: "ARIA, Contrast & Alt Tags" },
+                { label: "Best Practices", icon: ShieldCheck, val: data.scores.bestPractices ?? 100, desc: "HTTPS, Modern APIs & CSP" },
+                { label: "SEO Readiness", icon: Globe, val: data.scores.seo ?? 100, desc: "Crawlability & Meta Tags" },
               ].map((pillar) => {
+                const Icon = pillar.icon;
                 const isHigh = pillar.val >= 90;
                 const isMed = pillar.val >= 50 && pillar.val < 90;
                 return (
                   <div
                     key={pillar.label}
-                    className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/80 flex items-center justify-between gap-3"
+                    className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/80 flex items-center justify-between gap-3 hover:bg-white hover:shadow-2xs transition-all"
                   >
                     <div className="min-w-0">
-                      <div className="text-xs font-bold text-slate-900 truncate">{pillar.label}</div>
-                      <div className="text-[10px] text-slate-500 truncate">{pillar.desc}</div>
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 truncate">
+                        <Icon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span>{pillar.label}</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 truncate mt-0.5">{pillar.desc}</div>
                     </div>
                     <span
                       className={`px-2.5 py-1 rounded-lg font-mono text-sm font-black border shrink-0 ${
@@ -764,8 +995,8 @@ export default function SpeedLabClient() {
           </div>
 
           {/* Loading Journey Waterfall Milestone Visual (Proportional & Dynamic) */}
-          <div className="p-6 bg-slate-900 text-white rounded-2xl border border-slate-800 shadow-xl">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+          <div className="p-6 bg-slate-900 text-white rounded-2xl border border-slate-800 shadow-xl space-y-5">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-emerald-400" />
                 <span className="text-xs font-mono font-bold text-slate-200">
@@ -777,9 +1008,13 @@ export default function SpeedLabClient() {
               </span>
             </div>
 
+            {/* 4 Milestone KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
               <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 transition-colors">
-                <div className="text-[10px] text-slate-400 font-mono uppercase mb-1">Milestone 1</div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-slate-400 font-mono uppercase">Milestone 1</span>
+                  <Server className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
                 <div className="text-xs font-bold text-slate-200">TTFB (Server Response)</div>
                 <div className="text-lg font-black text-emerald-400 font-mono mt-1">
                   {data.metrics.ttfb.value} {data.metrics.ttfb.unit}
@@ -788,7 +1023,10 @@ export default function SpeedLabClient() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 transition-colors">
-                <div className="text-[10px] text-slate-400 font-mono uppercase mb-1">Milestone 2</div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-slate-400 font-mono uppercase">Milestone 2</span>
+                  <Eye className="w-3.5 h-3.5 text-sky-400" />
+                </div>
                 <div className="text-xs font-bold text-slate-200">FCP (First Paint)</div>
                 <div className="text-lg font-black text-sky-400 font-mono mt-1">
                   {data.metrics.fcp.value} {data.metrics.fcp.unit}
@@ -797,7 +1035,10 @@ export default function SpeedLabClient() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 transition-colors">
-                <div className="text-[10px] text-slate-400 font-mono uppercase mb-1">Milestone 3</div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-slate-400 font-mono uppercase">Milestone 3</span>
+                  <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
+                </div>
                 <div className="text-xs font-bold text-slate-200">LCP (Largest Contentful)</div>
                 <div className="text-lg font-black text-blue-400 font-mono mt-1">
                   {data.metrics.lcp.value} {data.metrics.lcp.unit}
@@ -806,7 +1047,10 @@ export default function SpeedLabClient() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 transition-colors">
-                <div className="text-[10px] text-slate-400 font-mono uppercase mb-1">Milestone 4</div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-slate-400 font-mono uppercase">Milestone 4</span>
+                  <MousePointerClick className="w-3.5 h-3.5 text-purple-400" />
+                </div>
                 <div className="text-xs font-bold text-slate-200">Interactive Latency (INP)</div>
                 <div className="text-lg font-black text-purple-400 font-mono mt-1">
                   {data.metrics.fid.value} {data.metrics.fid.unit}
@@ -817,41 +1061,121 @@ export default function SpeedLabClient() {
 
             {/* Visual Horizontal Proportional Waterfall Gantt Timeline Bar */}
             {waterfallMetrics && (
-              <div className="mt-5 pt-4 border-t border-slate-800 space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-                  <span>0ms (Request Start)</span>
-                  <span className="text-emerald-400">TTFB ({waterfallMetrics.ttfbVal}ms)</span>
-                  <span className="text-sky-400">FCP ({waterfallMetrics.fcpVal}ms)</span>
-                  <span className="text-blue-400 font-bold">LCP ({waterfallMetrics.lcpVal}ms)</span>
-                  <span className="text-purple-400">Interactive ({waterfallMetrics.lcpVal + waterfallMetrics.inpVal}ms)</span>
+              <div className="pt-2 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 flex-wrap gap-2">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-slate-500" />
+                    <span>0ms (Request Start)</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    <span>TTFB ({waterfallMetrics.ttfbVal}ms)</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-sky-400">
+                    <span className="w-2 h-2 rounded-full bg-sky-400" />
+                    <span>FCP ({waterfallMetrics.fcpVal}ms)</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-blue-400 font-bold">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    <span>LCP ({waterfallMetrics.lcpVal}ms)</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-purple-400">
+                    <span className="w-2 h-2 rounded-full bg-purple-500" />
+                    <span>Interactive ({waterfallMetrics.lcpVal + waterfallMetrics.inpVal}ms)</span>
+                  </span>
                 </div>
                 <div className="w-full h-3.5 rounded-full bg-slate-950 border border-slate-800 overflow-hidden flex p-0.5 gap-0.5">
                   <div
-                    className="h-full rounded-l-full bg-emerald-400 hover:bg-emerald-300 transition-all duration-500 cursor-help"
+                    className="h-full rounded-l-full bg-gradient-to-r from-emerald-500 to-emerald-400 hover:brightness-110 transition-all duration-500 cursor-help"
                     style={{ width: `${waterfallMetrics.ttfbPct}%` }}
                     title={`Milestone 1: TTFB (${waterfallMetrics.ttfbVal}ms)`}
                   />
                   <div
-                    className="h-full bg-sky-400 hover:bg-sky-300 transition-all duration-500 cursor-help"
+                    className="h-full bg-gradient-to-r from-sky-500 to-sky-400 hover:brightness-110 transition-all duration-500 cursor-help"
                     style={{ width: `${waterfallMetrics.fcpPct}%` }}
                     title={`Milestone 2: FCP (${waterfallMetrics.fcpVal}ms)`}
                   />
                   <div
-                    className="h-full bg-blue-500 hover:bg-blue-400 transition-all duration-500 cursor-help"
+                    className="h-full bg-gradient-to-r from-blue-600 to-blue-500 hover:brightness-110 transition-all duration-500 cursor-help"
                     style={{ width: `${waterfallMetrics.lcpPct}%` }}
                     title={`Milestone 3: LCP (${waterfallMetrics.lcpVal}ms)`}
                   />
                   <div
-                    className="h-full rounded-r-full bg-purple-500 hover:bg-purple-400 transition-all duration-500 cursor-help"
+                    className="h-full rounded-r-full bg-gradient-to-r from-purple-600 to-purple-500 hover:brightness-110 transition-all duration-500 cursor-help"
                     style={{ width: `${waterfallMetrics.inpPct}%` }}
                     title={`Milestone 4: INP/TBT (${waterfallMetrics.inpVal}ms)`}
                   />
                 </div>
               </div>
             )}
+
+            {/* Detailed 4-Row DevTools-Style Waterfall Breakdown */}
+            {waterfallMetrics && (
+              <div className="pt-3 border-t border-slate-800/80 space-y-2">
+                <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Step-by-Step Render Pipeline Breakdown
+                </div>
+                {[
+                  {
+                    step: "1. DNS, TLS & Initial Server Response",
+                    range: `0ms → ${waterfallMetrics.ttfbVal}ms`,
+                    duration: `${waterfallMetrics.ttfbVal}ms`,
+                    pct: waterfallMetrics.ttfbPct,
+                    color: "bg-emerald-500",
+                    offset: 0,
+                  },
+                  {
+                    step: "2. DOM Parse & Critical CSS Execution",
+                    range: `${waterfallMetrics.ttfbVal}ms → ${waterfallMetrics.fcpVal}ms`,
+                    duration: `${Math.max(10, waterfallMetrics.fcpVal - waterfallMetrics.ttfbVal)}ms`,
+                    pct: waterfallMetrics.fcpPct,
+                    color: "bg-sky-500",
+                    offset: waterfallMetrics.ttfbPct,
+                  },
+                  {
+                    step: "3. Hero Asset Download & Viewport Paint",
+                    range: `${waterfallMetrics.fcpVal}ms → ${waterfallMetrics.lcpVal}ms`,
+                    duration: `${Math.max(10, waterfallMetrics.lcpVal - waterfallMetrics.fcpVal)}ms`,
+                    pct: waterfallMetrics.lcpPct,
+                    color: "bg-blue-500",
+                    offset: waterfallMetrics.ttfbPct + waterfallMetrics.fcpPct,
+                  },
+                  {
+                    step: "4. JavaScript Hydration & Input Readiness",
+                    range: `${waterfallMetrics.lcpVal}ms → ${waterfallMetrics.lcpVal + waterfallMetrics.inpVal}ms`,
+                    duration: `${waterfallMetrics.inpVal}ms`,
+                    pct: waterfallMetrics.inpPct,
+                    color: "bg-purple-500",
+                    offset: waterfallMetrics.ttfbPct + waterfallMetrics.fcpPct + waterfallMetrics.lcpPct,
+                  },
+                ].map((row, rIdx) => (
+                  <div key={rIdx} className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
+                    <div className="flex items-center justify-between font-mono text-[11px] mb-1.5">
+                      <span className="text-slate-300 font-semibold">{row.step}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500">{row.range}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-bold">
+                          {row.duration}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Visual Gantt Bar with Left Offset */}
+                    <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden relative">
+                      <div
+                        className={`h-full rounded-full ${row.color} transition-all duration-500`}
+                        style={{
+                          marginLeft: `${Math.min(90, row.offset)}%`,
+                          width: `${Math.max(5, row.pct)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Frame-by-Frame Filmstrip Progression (Lighthouse & WebPageTest Style) */}
+          {/* Frame-by-Frame Filmstrip Progression with Realistic Browser Windows */}
           <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -864,60 +1188,122 @@ export default function SpeedLabClient() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {/* Frame 1 */}
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between h-40">
+              {/* Frame 1 (0.00s) */}
+              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between h-48 hover:shadow-xs transition-shadow">
                 <div className="text-[10px] font-mono font-bold text-slate-400 flex items-center justify-between">
                   <span>0.00s</span>
                   <span className="text-slate-400">0% Paint</span>
                 </div>
-                <div className="w-full flex-1 my-2 bg-white rounded-lg border border-slate-200/80 flex items-center justify-center p-2">
-                  <div className="w-4 h-4 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+                {/* Mini Browser Window Mockup */}
+                <div className="w-full flex-1 my-2 bg-white rounded-lg border border-slate-200/80 overflow-hidden flex flex-col">
+                  <div className="h-4 bg-slate-100 border-b border-slate-200 flex items-center px-1.5 gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <div className="ml-auto w-16 h-2 rounded bg-slate-200 flex items-center justify-center">
+                      <span className="text-[6px] text-slate-500 font-mono">🔒 https://...</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 flex flex-col items-center justify-center p-2 space-y-1.5">
+                    <div className="w-4 h-4 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+                    <span className="text-[8px] font-mono text-slate-400">Connecting</span>
+                  </div>
                 </div>
                 <div className="text-[10px] text-slate-500 truncate font-mono">DNS &amp; TLS Handshake</div>
               </div>
 
-              {/* Frame 2 */}
-              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between h-40">
+              {/* Frame 2 (FCP) */}
+              <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between h-48 hover:shadow-xs transition-shadow">
                 <div className="text-[10px] font-mono font-bold text-sky-600 flex items-center justify-between">
                   <span>{data.metrics.fcp.value}s</span>
                   <span className="text-sky-600">35% (FCP)</span>
                 </div>
-                <div className="w-full flex-1 my-2 bg-white rounded-lg border border-slate-200/80 p-2 space-y-1.5 flex flex-col justify-start">
-                  <div className="w-12 h-2 rounded bg-slate-200" />
-                  <div className="w-full h-1.5 rounded bg-slate-100" />
-                  <div className="w-3/4 h-1.5 rounded bg-slate-100" />
+                {/* Mini Browser Window Mockup */}
+                <div className="w-full flex-1 my-2 bg-white rounded-lg border border-slate-200/80 overflow-hidden flex flex-col">
+                  <div className="h-4 bg-slate-100 border-b border-slate-200 flex items-center px-1.5 gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <div className="ml-auto w-16 h-2 rounded bg-slate-200 flex items-center justify-center">
+                      <span className="text-[6px] text-slate-500 font-mono">🔒 https://...</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 p-2 space-y-1.5">
+                    {/* Header navbar skeleton */}
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="w-8 h-2 rounded bg-slate-300" />
+                      <div className="w-12 h-1.5 rounded bg-slate-200" />
+                    </div>
+                    <div className="w-16 h-2 rounded bg-slate-300" />
+                    <div className="w-full h-1.5 rounded bg-slate-100" />
+                    <div className="w-3/4 h-1.5 rounded bg-slate-100" />
+                  </div>
                 </div>
                 <div className="text-[10px] text-sky-700 font-semibold truncate font-mono">First Contentful Paint</div>
               </div>
 
-              {/* Frame 3 */}
-              <div className="p-3 rounded-xl border border-blue-200 bg-blue-50/30 flex flex-col justify-between h-40">
+              {/* Frame 3 (LCP) */}
+              <div className="p-3 rounded-xl border border-blue-200 bg-blue-50/30 flex flex-col justify-between h-48 hover:shadow-xs transition-shadow">
                 <div className="text-[10px] font-mono font-bold text-blue-600 flex items-center justify-between">
                   <span>{data.metrics.lcp.value}s</span>
                   <span className="text-blue-600">85% (LCP)</span>
                 </div>
-                <div className="w-full flex-1 my-2 bg-white rounded-lg border border-blue-100 p-2 space-y-1.5 flex flex-col justify-start shadow-2xs">
-                  <div className="w-16 h-2 rounded bg-blue-600/70" />
-                  <div className="w-full h-8 rounded bg-blue-100/60 flex items-center justify-center text-[9px] font-mono text-blue-500">
-                    Hero Banner
+                {/* Mini Browser Window Mockup */}
+                <div className="w-full flex-1 my-2 bg-white rounded-lg border border-blue-100 overflow-hidden flex flex-col shadow-2xs">
+                  <div className="h-4 bg-slate-100 border-b border-slate-200 flex items-center px-1.5 gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <div className="ml-auto w-16 h-2 rounded bg-slate-200 flex items-center justify-center">
+                      <span className="text-[6px] text-slate-500 font-mono">🔒 https://...</span>
+                    </div>
                   </div>
-                  <div className="w-2/3 h-1.5 rounded bg-slate-200" />
+                  <div className="flex-1 p-2 space-y-1.5">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="w-10 h-2 rounded bg-blue-600/70" />
+                      <div className="w-14 h-1.5 rounded bg-slate-200" />
+                    </div>
+                    {/* Hero Graphic block */}
+                    <div className="w-full h-8 rounded bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center text-[9px] font-mono text-blue-600 font-bold border border-blue-200/50">
+                      Hero Banner
+                    </div>
+                    <div className="w-10 h-2 rounded bg-blue-600" />
+                  </div>
                 </div>
                 <div className="text-[10px] text-blue-700 font-bold truncate font-mono">Largest Contentful Paint</div>
               </div>
 
-              {/* Frame 4 */}
-              <div className="p-3 rounded-xl border border-emerald-200 bg-emerald-50/30 flex flex-col justify-between h-40">
+              {/* Frame 4 (Interactive) */}
+              <div className="p-3 rounded-xl border border-emerald-200 bg-emerald-50/30 flex flex-col justify-between h-48 hover:shadow-xs transition-shadow">
                 <div className="text-[10px] font-mono font-bold text-emerald-600 flex items-center justify-between">
                   <span>{Number((data.metrics.lcp.value + 0.2).toFixed(2))}s</span>
                   <span className="text-emerald-600">100% Ready</span>
                 </div>
-                <div className="w-full flex-1 my-2 bg-white rounded-lg border border-emerald-100 p-2 space-y-1.5 flex flex-col justify-start shadow-2xs">
-                  <div className="w-16 h-2 rounded bg-slate-900" />
-                  <div className="w-full h-8 rounded bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-[9px] font-bold text-white">
-                    Hydrated Interactive UI
+                {/* Mini Browser Window Mockup */}
+                <div className="w-full flex-1 my-2 bg-white rounded-lg border border-emerald-100 overflow-hidden flex flex-col shadow-2xs">
+                  <div className="h-4 bg-slate-100 border-b border-slate-200 flex items-center px-1.5 gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <div className="ml-auto w-16 h-2 rounded bg-slate-200 flex items-center justify-center">
+                      <span className="text-[6px] text-slate-500 font-mono">🔒 https://...</span>
+                    </div>
                   </div>
-                  <div className="w-14 h-2 rounded bg-emerald-500" />
+                  <div className="flex-1 p-2 space-y-1.5">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="w-12 h-2 rounded bg-slate-900" />
+                      <div className="w-16 h-2 rounded-full bg-emerald-100 border border-emerald-200 text-[6px] text-emerald-700 text-center font-bold">
+                        Interactive
+                      </div>
+                    </div>
+                    <div className="w-full h-8 rounded bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-[9px] font-bold text-white shadow-xs">
+                      Hydrated App
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 pt-0.5">
+                      <div className="h-3 rounded bg-slate-100 border border-slate-200" />
+                      <div className="h-3 rounded bg-slate-100 border border-slate-200" />
+                    </div>
+                  </div>
                 </div>
                 <div className="text-[10px] text-emerald-700 font-bold truncate font-mono">Fully Interactive (INP)</div>
               </div>
@@ -934,11 +1320,16 @@ export default function SpeedLabClient() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              
               {/* LCP */}
               <div
                 onClick={() => setActiveInspector(METRIC_INSPECTION_GUIDES.lcp)}
-                className="p-5 bg-white border border-slate-200/90 hover:border-blue-400 hover:shadow-md rounded-2xl flex flex-col justify-between shadow-2xs transition-all cursor-pointer group"
+                className={`p-5 rounded-2xl flex flex-col justify-between border transition-all cursor-pointer group shadow-2xs hover:-translate-y-1 hover:shadow-md duration-300 ${
+                  data.metrics.lcp.rating === "good"
+                    ? "bg-gradient-to-b from-white to-emerald-50/20 border-slate-200/90 hover:border-emerald-300"
+                    : data.metrics.lcp.rating === "needs-improvement"
+                    ? "bg-gradient-to-b from-white to-amber-50/20 border-slate-200/90 hover:border-amber-300"
+                    : "bg-gradient-to-b from-white to-rose-50/20 border-slate-200/90 hover:border-rose-300"
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -964,7 +1355,13 @@ export default function SpeedLabClient() {
               {/* CLS */}
               <div
                 onClick={() => setActiveInspector(METRIC_INSPECTION_GUIDES.cls)}
-                className="p-5 bg-white border border-slate-200/90 hover:border-blue-400 hover:shadow-md rounded-2xl flex flex-col justify-between shadow-2xs transition-all cursor-pointer group"
+                className={`p-5 rounded-2xl flex flex-col justify-between border transition-all cursor-pointer group shadow-2xs hover:-translate-y-1 hover:shadow-md duration-300 ${
+                  data.metrics.cls.rating === "good"
+                    ? "bg-gradient-to-b from-white to-emerald-50/20 border-slate-200/90 hover:border-emerald-300"
+                    : data.metrics.cls.rating === "needs-improvement"
+                    ? "bg-gradient-to-b from-white to-amber-50/20 border-slate-200/90 hover:border-amber-300"
+                    : "bg-gradient-to-b from-white to-rose-50/20 border-slate-200/90 hover:border-rose-300"
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -990,7 +1387,13 @@ export default function SpeedLabClient() {
               {/* FCP */}
               <div
                 onClick={() => setActiveInspector(METRIC_INSPECTION_GUIDES.fcp)}
-                className="p-5 bg-white border border-slate-200/90 hover:border-blue-400 hover:shadow-md rounded-2xl flex flex-col justify-between shadow-2xs transition-all cursor-pointer group"
+                className={`p-5 rounded-2xl flex flex-col justify-between border transition-all cursor-pointer group shadow-2xs hover:-translate-y-1 hover:shadow-md duration-300 ${
+                  data.metrics.fcp.rating === "good"
+                    ? "bg-gradient-to-b from-white to-emerald-50/20 border-slate-200/90 hover:border-emerald-300"
+                    : data.metrics.fcp.rating === "needs-improvement"
+                    ? "bg-gradient-to-b from-white to-amber-50/20 border-slate-200/90 hover:border-amber-300"
+                    : "bg-gradient-to-b from-white to-rose-50/20 border-slate-200/90 hover:border-rose-300"
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -1016,7 +1419,13 @@ export default function SpeedLabClient() {
               {/* INP / FID */}
               <div
                 onClick={() => setActiveInspector(METRIC_INSPECTION_GUIDES.fid)}
-                className="p-5 bg-white border border-slate-200/90 hover:border-blue-400 hover:shadow-md rounded-2xl flex flex-col justify-between shadow-2xs transition-all cursor-pointer group"
+                className={`p-5 rounded-2xl flex flex-col justify-between border transition-all cursor-pointer group shadow-2xs hover:-translate-y-1 hover:shadow-md duration-300 ${
+                  data.metrics.fid.rating === "good"
+                    ? "bg-gradient-to-b from-white to-emerald-50/20 border-slate-200/90 hover:border-emerald-300"
+                    : data.metrics.fid.rating === "needs-improvement"
+                    ? "bg-gradient-to-b from-white to-amber-50/20 border-slate-200/90 hover:border-amber-300"
+                    : "bg-gradient-to-b from-white to-rose-50/20 border-slate-200/90 hover:border-rose-300"
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -1042,7 +1451,13 @@ export default function SpeedLabClient() {
               {/* TTFB */}
               <div
                 onClick={() => setActiveInspector(METRIC_INSPECTION_GUIDES.ttfb)}
-                className="p-5 bg-white border border-slate-200/90 hover:border-blue-400 hover:shadow-md rounded-2xl flex flex-col justify-between shadow-2xs transition-all cursor-pointer group"
+                className={`p-5 rounded-2xl flex flex-col justify-between border transition-all cursor-pointer group shadow-2xs hover:-translate-y-1 hover:shadow-md duration-300 ${
+                  data.metrics.ttfb.rating === "good"
+                    ? "bg-gradient-to-b from-white to-emerald-50/20 border-slate-200/90 hover:border-emerald-300"
+                    : data.metrics.ttfb.rating === "needs-improvement"
+                    ? "bg-gradient-to-b from-white to-amber-50/20 border-slate-200/90 hover:border-amber-300"
+                    : "bg-gradient-to-b from-white to-rose-50/20 border-slate-200/90 hover:border-rose-300"
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -1064,11 +1479,180 @@ export default function SpeedLabClient() {
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
-          {/* Interactive "What-If" Speed Remediation Simulator */}
+          {/* Asset Weight & Resource Composition Card with Stacked Distribution Bar */}
+          {data.assetsSummary && (
+            <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <HardDrive className="w-4 h-4 text-indigo-600" />
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Resource Weight &amp; Asset Payload Breakdown
+                  </h3>
+                </div>
+                <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200">
+                  Total Transfer Estimate: ~{data.assetsSummary.estimatedTotalKb} KB
+                </span>
+              </div>
+
+              {/* Stacked Proportional Distribution Bar */}
+              {data.assetsSummary.distribution && (
+                <div className="space-y-1.5">
+                  <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden flex p-0.5 gap-0.5 border border-slate-200">
+                    <div
+                      className="h-full rounded-l-full bg-emerald-500 transition-all duration-500 cursor-help"
+                      style={{ width: `${data.assetsSummary.distribution.htmlPct}%` }}
+                      title={`HTML: ${data.assetsSummary.distribution.htmlPct}% (~${data.assetsSummary.htmlKb} KB)`}
+                    />
+                    <div
+                      className="h-full bg-blue-500 transition-all duration-500 cursor-help"
+                      style={{ width: `${data.assetsSummary.distribution.jsPct}%` }}
+                      title={`JavaScript: ${data.assetsSummary.distribution.jsPct}% (~${data.assetsSummary.scriptCount * 38} KB)`}
+                    />
+                    <div
+                      className="h-full bg-purple-500 transition-all duration-500 cursor-help"
+                      style={{ width: `${data.assetsSummary.distribution.cssPct}%` }}
+                      title={`CSS: ${data.assetsSummary.distribution.cssPct}% (~${data.assetsSummary.stylesheetCount * 22} KB)`}
+                    />
+                    <div
+                      className="h-full rounded-r-full bg-amber-500 transition-all duration-500 cursor-help"
+                      style={{ width: `${data.assetsSummary.distribution.imagesPct}%` }}
+                      title={`Media: ${data.assetsSummary.distribution.imagesPct}% (~${data.assetsSummary.imageCount * 45} KB)`}
+                    />
+                  </div>
+                  {/* Bar Legend */}
+                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 flex-wrap gap-2 px-1">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span>HTML ({data.assetsSummary.distribution.htmlPct}%)</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-blue-500" />
+                      <span>JavaScript ({data.assetsSummary.distribution.jsPct}%)</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-purple-500" />
+                      <span>CSS ({data.assetsSummary.distribution.cssPct}%)</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      <span>Media Assets ({data.assetsSummary.distribution.imagesPct}%)</span>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* 4 Payload Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-left pt-1">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">HTML Document</div>
+                  <div className="text-base font-extrabold text-slate-900 font-mono mt-0.5">
+                    {data.assetsSummary.htmlKb} KB
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Raw DOM Payload</div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">JavaScript Payloads</div>
+                  <div className="text-base font-extrabold text-blue-600 font-mono mt-0.5">
+                    {data.assetsSummary.scriptCount} Scripts
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    ~{data.assetsSummary.scriptCount * 38} KB uncompressed
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">Stylesheets</div>
+                  <div className="text-base font-extrabold text-purple-600 font-mono mt-0.5">
+                    {data.assetsSummary.stylesheetCount} CSS Bundles
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    ~{data.assetsSummary.stylesheetCount * 22} KB stylesheets
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">Images &amp; Icons</div>
+                  <div className="text-base font-extrabold text-emerald-600 font-mono mt-0.5">
+                    {data.assetsSummary.imageCount} Assets
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    ~{data.assetsSummary.imageCount * 45} KB media
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Hosting & Edge Infrastructure Telemetry Card */}
+          {data.infrastructure && (
+            <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-2xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Server className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Hosting &amp; Edge Infrastructure Telemetry
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  HTTP/2+ Active
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">Edge Server Platform</div>
+                  <div className="text-sm font-bold text-slate-900 font-mono mt-0.5">
+                    {data.infrastructure.server}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">CDN &amp; Reverse Proxy</div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">Compression Algorithm</div>
+                  <div className="text-sm font-bold text-emerald-700 font-mono mt-0.5 flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>{data.infrastructure.compression.toUpperCase()}</span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Content-Encoding Header</div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">Cache-Control Policy</div>
+                  <div className="text-sm font-bold text-slate-900 font-mono mt-0.5 truncate" title={data.infrastructure.cacheControl}>
+                    {data.infrastructure.cacheControl}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Browser Caching Lifetime</div>
+                </div>
+              </div>
+
+              {/* Third-Party Scripts Breakdown */}
+              {data.thirdPartySummary && data.thirdPartySummary.length > 0 && (
+                <div className="pt-2 border-t border-slate-100">
+                  <div className="text-[11px] font-mono font-semibold text-slate-500 mb-2">
+                    Detected Third-Party Telemetry &amp; Marketing Scripts:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {data.thirdPartySummary.map((tp, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-slate-100 text-slate-800 border border-slate-200 font-mono"
+                      >
+                        <Tag className="w-3 h-3 text-blue-600" />
+                        <span>{tp.name}</span>
+                        <span className="text-[10px] text-slate-400">({tp.category})</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Interactive "What-If" Speed Remediation Simulator with Live Uplift Bar */}
           <div className="p-6 sm:p-7 bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl border border-indigo-900/60 shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
               <div>
@@ -1084,7 +1668,20 @@ export default function SpeedLabClient() {
                 <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                   {activeSimulationCount} Optimizations Active
                 </span>
-                {activeSimulationCount > 0 && (
+                {activeSimulationCount < 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSimBrotli(true);
+                      setSimImages(true);
+                      setSimDeferJs(true);
+                      setSimInlineCss(true);
+                    }}
+                    className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer underline"
+                  >
+                    Apply All
+                  </button>
+                ) : (
                   <button
                     type="button"
                     onClick={() => {
@@ -1093,7 +1690,7 @@ export default function SpeedLabClient() {
                       setSimDeferJs(false);
                       setSimInlineCss(false);
                     }}
-                    className="text-xs text-slate-400 hover:text-white underline cursor-pointer"
+                    className="text-xs text-slate-400 hover:text-white cursor-pointer underline"
                   >
                     Reset
                   </button>
@@ -1102,21 +1699,24 @@ export default function SpeedLabClient() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-left">
-              
               {/* Toggle 1: Edge CDN / Brotli */}
               <div
                 onClick={() => setSimBrotli(!simBrotli)}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                   simBrotli
-                    ? "bg-indigo-900/40 border-indigo-500 shadow-md shadow-indigo-500/10"
+                    ? "bg-indigo-900/40 border-indigo-400 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-400"
                     : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-slate-200">Edge CDN Caching</span>
-                  <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${
-                    simBrotli ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold" : "border-slate-600"
-                  }`}>
+                  <span
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${
+                      simBrotli
+                        ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold"
+                        : "border-slate-600"
+                    }`}
+                  >
                     {simBrotli && "✓"}
                   </span>
                 </div>
@@ -1133,15 +1733,19 @@ export default function SpeedLabClient() {
                 onClick={() => setSimImages(!simImages)}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                   simImages
-                    ? "bg-indigo-900/40 border-indigo-500 shadow-md shadow-indigo-500/10"
+                    ? "bg-indigo-900/40 border-indigo-400 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-400"
                     : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-slate-200">Next-Gen AVIF Assets</span>
-                  <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${
-                    simImages ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold" : "border-slate-600"
-                  }`}>
+                  <span
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${
+                      simImages
+                        ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold"
+                        : "border-slate-600"
+                    }`}
+                  >
                     {simImages && "✓"}
                   </span>
                 </div>
@@ -1158,15 +1762,19 @@ export default function SpeedLabClient() {
                 onClick={() => setSimDeferJs(!simDeferJs)}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                   simDeferJs
-                    ? "bg-indigo-900/40 border-indigo-500 shadow-md shadow-indigo-500/10"
+                    ? "bg-indigo-900/40 border-indigo-400 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-400"
                     : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-slate-200">Defer Third-Party JS</span>
-                  <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${
-                    simDeferJs ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold" : "border-slate-600"
-                  }`}>
+                  <span
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${
+                      simDeferJs
+                        ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold"
+                        : "border-slate-600"
+                    }`}
+                  >
                     {simDeferJs && "✓"}
                   </span>
                 </div>
@@ -1183,15 +1791,19 @@ export default function SpeedLabClient() {
                 onClick={() => setSimInlineCss(!simInlineCss)}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                   simInlineCss
-                    ? "bg-indigo-900/40 border-indigo-500 shadow-md shadow-indigo-500/10"
+                    ? "bg-indigo-900/40 border-indigo-400 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-400"
                     : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-slate-200">Inline Above-Fold CSS</span>
-                  <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${
-                    simInlineCss ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold" : "border-slate-600"
-                  }`}>
+                  <span
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] ${
+                      simInlineCss
+                        ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold"
+                        : "border-slate-600"
+                    }`}
+                  >
                     {simInlineCss && "✓"}
                   </span>
                 </div>
@@ -1202,40 +1814,181 @@ export default function SpeedLabClient() {
                   Saves ~250ms FCP (+2 pts)
                 </div>
               </div>
+            </div>
 
+            {/* Live Projected Uplift Bar */}
+            <div className="mt-5 p-4 rounded-xl bg-slate-950 border border-indigo-900/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 font-bold">
+                  +{simulatedScoreGain}
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>Projected Performance:</span>
+                    <span className="text-slate-400">{rawBaseScore}</span>
+                    <span className="text-slate-500">&rarr;</span>
+                    <span className="text-emerald-400 font-mono font-extrabold text-sm">
+                      {data.scores.performance} / 100
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
+                    {activeSimulationCount > 0
+                      ? `Active uplift: ${activeSimulationCount} optimizations applied. Estimated bounce reduction: -${activeSimulationCount * 4}%.`
+                      : "Toggle any optimization above to preview projected Lighthouse score uplift."}
+                  </div>
+                </div>
+              </div>
+
+              {activeSimulationCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => showToast("Optimization roadmap copied to clipboard!")}
+                  className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer shrink-0"
+                >
+                  Save Optimization Spec
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Diagnostic Opportunities */}
+          {/* Diagnostic Opportunities with Expandable Code Fixes & Filters */}
           {data.opportunities.length > 0 && (
-            <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  Automated Speed Remediation &amp; Potential Savings
-                </h3>
-                <span className="text-xs font-semibold text-emerald-600">
-                  {data.opportunities.length} Items Identified
-                </span>
-              </div>
-              <div className="space-y-3">
-                {data.opportunities.map((opp, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                        <CheckCircle className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                        {opp.title}
-                      </div>
-                      <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">{opp.description}</p>
-                    </div>
-                    {opp.savingsMs !== undefined && opp.savingsMs > 0 && (
-                      <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 shrink-0">
-                        {opp.savingsMs < 200
-                          ? `Save ~${opp.savingsMs}ms`
-                          : `Save ~${(opp.savingsMs / 1000).toFixed(2)}s`}
-                      </span>
-                    )}
+            <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                    Automated Speed Remediation &amp; Actionable Code Fixes
+                  </h3>
+                  <div className="text-xs text-slate-500 mt-0.5">
+                    Pre-generated code templates tailored to resolve detected Core Web Vitals bottlenecks.
                   </div>
-                ))}
+                </div>
+
+                {/* Filter Pills */}
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setOpportunityFilter("all")}
+                    className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                      opportunityFilter === "all"
+                        ? "bg-white text-blue-600 shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    All ({data.opportunities.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOpportunityFilter("high_impact")}
+                    className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                      opportunityFilter === "high_impact"
+                        ? "bg-white text-blue-600 shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    High Impact (&gt;100ms)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOpportunityFilter("code_ready")}
+                    className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                      opportunityFilter === "code_ready"
+                        ? "bg-white text-blue-600 shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Code Fixes Ready
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {filteredOpportunities.map((opp, idx) => {
+                  const isExpanded = expandedOpportunityIdx === idx;
+                  return (
+                    <div
+                      key={idx}
+                      className="rounded-xl border border-slate-200/90 bg-slate-50/70 overflow-hidden transition-all"
+                    >
+                      <div
+                        onClick={() => setExpandedOpportunityIdx(isExpanded ? null : idx)}
+                        className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-slate-100/60 transition-colors"
+                      >
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                            <CheckCircle className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                            <span>{opp.title}</span>
+                            {opp.difficulty && (
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
+                                  opp.difficulty === "quick_win"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : opp.difficulty === "moderate"
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : "bg-indigo-50 text-indigo-700 border-indigo-200"
+                                }`}
+                              >
+                                {opp.difficulty === "quick_win"
+                                  ? "Quick Win (5 mins)"
+                                  : opp.difficulty === "moderate"
+                                  ? "Moderate (30 mins)"
+                                  : "Architectural (1 hr)"}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">{opp.description}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {opp.savingsMs !== undefined && opp.savingsMs > 0 && (
+                            <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                              {opp.savingsMs < 200
+                                ? `Save ~${opp.savingsMs}ms`
+                                : `Save ~${(opp.savingsMs / 1000).toFixed(2)}s`}
+                            </span>
+                          )}
+                          <div className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
+                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expandable Code Fix Accordion */}
+                      {isExpanded && opp.codeSnippet && (
+                        <div className="p-4 bg-slate-950 text-slate-200 border-t border-slate-800 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 font-bold">
+                              <FileCode2 className="w-3.5 h-3.5" />
+                              Recommended Code Implementation
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopySnippet(opp.codeSnippet!, idx);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+                            >
+                              {copiedSnippetIdx === idx ? (
+                                <>
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                  <span>Copied!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3 h-3" />
+                                  <span>Copy Snippet</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                          <pre className="p-3 rounded-lg bg-slate-900 border border-slate-800 font-mono text-[11px] text-sky-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                            {opp.codeSnippet}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1262,7 +2015,7 @@ export default function SpeedLabClient() {
         </div>
       )}
 
-      {/* Interactive Metric Inspector Modal / Bottom Sheet */}
+      {/* Interactive Metric Inspector Modal */}
       {activeInspector && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
