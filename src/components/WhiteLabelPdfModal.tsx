@@ -33,16 +33,6 @@ export default function WhiteLabelPdfModal({
   if (!isOpen) return null;
 
   const handlePrint = () => {
-    if (!hasWhiteLabelAccess) {
-      triggerUpgradeModal({
-        requiredTier: "enterprise",
-        featureTitle: "White-Label Agency Client PDF Export",
-        description:
-          "Custom agency branding, consultant signatures, client notes, and white-label client PDF generation is an Agency & Enterprise feature.",
-      });
-      return;
-    }
-
     // Inject printable banner into window print session
     const printHeaderId = "whitelabel-print-header";
     let printEl = document.getElementById(printHeaderId);

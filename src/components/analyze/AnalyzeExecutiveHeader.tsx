@@ -40,6 +40,7 @@ interface AnalyzeExecutiveHeaderProps {
   onOpenEmailModal: () => void;
   onOpenWhiteLabelModal: () => void;
   onDownloadJson: () => void;
+  onExportCsv?: () => void;
   onSelectTab: (tab: any) => void;
   onFilterCategory?: (catKey: string) => void;
   selectedCategory?: string | null;
@@ -59,91 +60,83 @@ export default function AnalyzeExecutiveHeader({
   onOpenEmailModal,
   onOpenWhiteLabelModal,
   onDownloadJson,
+  onExportCsv,
   onSelectTab,
   onFilterCategory,
   selectedCategory,
   onInspectStatus,
 }: AnalyzeExecutiveHeaderProps) {
   return (
-    <div className="flat-card p-6 sm:p-7 bg-white shadow-xs">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5 mb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex-wrap">
-            <span>Technical SEO Audit</span>
-            <span>•</span>
-            {isDemoMode ? (
-              <span className="text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-semibold normal-case text-[11px]">
-                Audit Mode: Sample Benchmark Snapshot
-              </span>
-            ) : (
-              <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-semibold inline-flex items-center gap-1 normal-case text-[11px]">
-                <ShieldCheck className="w-3.5 h-3.5" /> Audit Mode: Live HTTP Crawl Verified
-              </span>
-            )}
-            {timestamp && (
-              <span
-                suppressHydrationWarning
-                className="text-[11px] font-mono text-slate-400 normal-case"
-              >
-                • Audited {new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
-              {page.domain}
-            </h1>
-            <a
-              href={page.finalUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 text-xs text-blue-600 hover:bg-blue-50 font-mono transition-colors"
+    <div className="space-y-3">
+      {/* Top Outside Action Toolbar: Audit meta on left, 6 action buttons at top right */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider flex-wrap">
+          <span>Technical SEO Audit</span>
+          <span>•</span>
+          {isDemoMode ? (
+            <span className="text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-semibold normal-case text-[11px]">
+              Audit Mode: Sample Benchmark Snapshot
+            </span>
+          ) : (
+            <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-semibold inline-flex items-center gap-1 normal-case text-[11px]">
+              <ShieldCheck className="w-3.5 h-3.5" /> Audit Mode: Live HTTP Crawl Verified
+            </span>
+          )}
+          {timestamp && (
+            <span
+              suppressHydrationWarning
+              className="text-[11px] font-mono text-slate-400 normal-case hidden sm:inline"
             >
-              {page.finalUrl}
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
+              • Audited {new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* 6 Actions: Positioned OUTSIDE the box at top right */}
+        <div className="flex items-center gap-2 flex-wrap md:justify-end">
           <Link
             href={`/compare?siteA=${encodeURIComponent(page.finalUrl)}&siteB=${encodeURIComponent("https://vercel.com")}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors whitespace-nowrap cursor-pointer"
+            title="Compare this website side-by-side with a competitor"
           >
             <GitCompare className="w-3.5 h-3.5 text-slate-600" />
-            Compare
+            <span>Compare</span>
           </Link>
           <button
             type="button"
             onClick={onCopyShareLink}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
+            title="Copy shareable link to this audit report"
           >
             {copiedShareLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-slate-600" />}
-            {copiedShareLink ? "Link Copied!" : "Share Report"}
+            <span>{copiedShareLink ? "Link Copied!" : "Share Report"}</span>
           </button>
           <button
             type="button"
             onClick={onOpenEmailModal}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
+            title="Email report to client or team"
           >
             <Mail className="w-3.5 h-3.5" />
-            Email Report
+            <span>Email Report</span>
           </button>
           <button
             type="button"
             onClick={onOpenWhiteLabelModal}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
+            title="Export or print white-label PDF audit report"
           >
             <Printer className="w-3.5 h-3.5" />
-            White-Label PDF
+            <span>White-Label PDF</span>
           </button>
           <button
             type="button"
             onClick={onDownloadJson}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
+            title="Download full audit data in JSON format"
           >
             <Download className="w-3.5 h-3.5 text-slate-600" />
-            JSON
+            <span>JSON</span>
           </button>
           <button
             type="button"
@@ -163,14 +156,37 @@ export default function AnalyzeExecutiveHeader({
                   details: d.recommendation || d.impact,
                 }))
               );
+              onExportCsv?.();
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
+            title="Export diagnostic checklist to CSV spreadsheet"
           >
             <Download className="w-3.5 h-3.5 text-emerald-600" />
-            CSV
+            <span>CSV</span>
           </button>
         </div>
       </div>
+
+      {/* Main Executive Summary Box */}
+      <div className="flat-card p-6 sm:p-7 bg-white shadow-xs">
+        {/* Row 1: Full-Width Domain and Target URL Header (No buttons crowding it!) */}
+        <div className="border-b border-slate-200 pb-5 mb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight shrink-0">
+              {page.domain}
+            </h1>
+            <a
+              href={page.finalUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="Open verified target URL in new tab"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-blue-600 hover:bg-blue-50 font-mono transition-colors max-w-full break-all"
+            >
+              <span className="truncate">{page.finalUrl}</span>
+              <ExternalLink className="w-3 h-3 shrink-0 text-slate-400" />
+            </a>
+          </div>
+        </div>
 
       {/* Row 2: Interactive Quick Telemetry Pills (With proper bottom spacing!) */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
@@ -399,5 +415,6 @@ export default function AnalyzeExecutiveHeader({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

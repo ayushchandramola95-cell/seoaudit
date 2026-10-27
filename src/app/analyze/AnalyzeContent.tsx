@@ -585,6 +585,7 @@ export default function AnalyzeContent() {
             onOpenEmailModal={() => setIsEmailModalOpen(true)}
             onOpenWhiteLabelModal={() => setIsWhiteLabelOpen(true)}
             onDownloadJson={handleDownloadJson}
+            onExportCsv={() => showToast("Diagnostic findings exported to CSV!")}
             onSelectTab={(tab) => {
               setActiveTab(tab);
               setTimeout(() => scrollToSection("audit-suites-tabs"), 60);
