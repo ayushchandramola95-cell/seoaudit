@@ -101,8 +101,18 @@ export default function AnalyzeContent() {
   >("diagnostics");
   const [serpView, setSerpView] = useState<"desktop" | "mobile" | "twitter" | "facebook">("desktop");
   const [filterStatus, setFilterStatus] = useState<"all" | "passed" | "warning" | "error">("all");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [diagnosticSearch, setDiagnosticSearch] = useState("");
   const [techCategoryFilter, setTechCategoryFilter] = useState<string>("all");
+
+  const scrollToSection = (id: string, offset = -90) => {
+    if (typeof window === "undefined") return;
+    const el = document.getElementById(id);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.pageYOffset + offset;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    }
+  };
   const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [isWhiteLabelOpen, setIsWhiteLabelOpen] = useState(false);
@@ -235,6 +245,8 @@ export default function AnalyzeContent() {
   const filteredDiagnostics = data?.audit.diagnostics.filter((item) => {
     const matchesStatus = filterStatus === "all" || item.status === filterStatus;
     if (!matchesStatus) return false;
+    const matchesCategory = !selectedCategory || item.category === selectedCategory;
+    if (!matchesCategory) return false;
     if (!diagnosticSearch.trim()) return true;
     const q = diagnosticSearch.toLowerCase();
     return (
@@ -275,7 +287,10 @@ export default function AnalyzeContent() {
             <div className="hidden md:flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-semibold">
               <button
                 type="button"
-                onClick={() => setActiveTab("diagnostics")}
+                onClick={() => {
+                  setActiveTab("diagnostics");
+                  scrollToSection("audit-suites-tabs");
+                }}
                 className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                   ["diagnostics", "structure", "headers", "media"].includes(activeTab)
                     ? "bg-white text-blue-700 shadow-xs font-bold"
@@ -286,7 +301,10 @@ export default function AnalyzeContent() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("performance")}
+                onClick={() => {
+                  setActiveTab("performance");
+                  scrollToSection("audit-suites-tabs");
+                }}
                 className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                   ["performance", "traffic", "tech"].includes(activeTab)
                     ? "bg-white text-emerald-700 shadow-xs font-bold"
@@ -297,7 +315,10 @@ export default function AnalyzeContent() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("ai")}
+                onClick={() => {
+                  setActiveTab("ai");
+                  scrollToSection("audit-suites-tabs");
+                }}
                 className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                   ["ai", "geo", "keywords", "social", "schema"].includes(activeTab)
                     ? "bg-white text-indigo-700 shadow-xs font-bold"
@@ -308,7 +329,10 @@ export default function AnalyzeContent() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("deadlinks")}
+                onClick={() => {
+                  setActiveTab("deadlinks");
+                  scrollToSection("audit-suites-tabs");
+                }}
                 className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                   ["deadlinks", "links"].includes(activeTab)
                     ? "bg-white text-purple-700 shadow-xs font-bold"
@@ -561,10 +585,22 @@ export default function AnalyzeContent() {
             onOpenEmailModal={() => setIsEmailModalOpen(true)}
             onOpenWhiteLabelModal={() => setIsWhiteLabelOpen(true)}
             onDownloadJson={handleDownloadJson}
-            onSelectTab={(tab) => setActiveTab(tab)}
+            onSelectTab={(tab) => {
+              setActiveTab(tab);
+              setTimeout(() => scrollToSection("audit-suites-tabs"), 60);
+            }}
             onFilterCategory={(catKey) => {
+              setSelectedCategory((prev) => (prev === catKey ? null : catKey));
+              setActiveTab("diagnostics");
               setFilterStatus("all");
-              setDiagnosticSearch(catKey);
+              setDiagnosticSearch("");
+              setTimeout(() => scrollToSection("diagnostics-checklist"), 60);
+            }}
+            selectedCategory={selectedCategory}
+            onInspectStatus={(status) => {
+              setActiveTab("diagnostics");
+              setFilterStatus(status);
+              setTimeout(() => scrollToSection("diagnostics-checklist"), 60);
             }}
           />
 
@@ -575,15 +611,27 @@ export default function AnalyzeContent() {
               setActiveTab("diagnostics");
               setFilterStatus(status);
               setDiagnosticSearch("");
+              setTimeout(() => scrollToSection("diagnostics-checklist"), 60);
             }}
-            onOpenAiFixes={() => setActiveTab("ai")}
+            onOpenAiFixes={() => {
+              setActiveTab("ai");
+              setTimeout(() => scrollToSection("audit-suites-tabs"), 60);
+            }}
           />
 
           <AnalyzeVisualCharts
             page={data.page}
             audit={data.audit}
             performance={data.performance}
-            onSelectTab={(tab) => setActiveTab(tab)}
+            onSelectTab={(tab) => {
+              setActiveTab(tab);
+              setTimeout(() => scrollToSection("audit-suites-tabs"), 60);
+            }}
+            onInspectStatus={(status) => {
+              setActiveTab("diagnostics");
+              setFilterStatus(status);
+              setTimeout(() => scrollToSection("diagnostics-checklist"), 60);
+            }}
           />
 
           {/* Suite & Feature Navigation System */}
@@ -685,7 +733,7 @@ export default function AnalyzeContent() {
             };
 
             return (
-              <div className="space-y-3.5">
+              <div id="audit-suites-tabs" className="space-y-3.5">
                 {/* Level 1: 4 Categorized Product Suites */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {suites.map((s) => {
@@ -772,53 +820,134 @@ export default function AnalyzeContent() {
 
           {/* TAB 1: SEO DIAGNOSTICS */}
           {activeTab === "diagnostics" && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-semibold text-slate-500 mr-1">Status:</span>
-                  {[
-                    { id: "all", label: "All Checks", count: data.audit.diagnostics.length, color: "text-slate-700" },
-                    { id: "passed", label: "Passed", count: data.audit.passedCount, color: "text-emerald-700" },
-                    { id: "warning", label: "Warnings", count: data.audit.warningCount, color: "text-amber-700" },
-                    { id: "error", label: "Errors", count: data.audit.errorCount, color: "text-rose-700" },
-                  ].map((filter) => {
-                    const isSelected = filterStatus === filter.id;
+            <div id="diagnostics-checklist" className="space-y-4">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs font-semibold text-slate-500 mr-1">Status:</span>
+                    {[
+                      { id: "all", label: "All Checks", count: data.audit.diagnostics.length, color: "text-slate-700" },
+                      { id: "passed", label: "Passed", count: data.audit.passedCount, color: "text-emerald-700" },
+                      { id: "warning", label: "Warnings", count: data.audit.warningCount, color: "text-amber-700" },
+                      { id: "error", label: "Errors", count: data.audit.errorCount, color: "text-rose-700" },
+                    ].map((filter) => {
+                      const isSelected = filterStatus === filter.id;
+                      return (
+                        <button
+                          key={filter.id}
+                          type="button"
+                          onClick={() => setFilterStatus(filter.id as typeof filterStatus)}
+                          className={`px-3 py-1.5 text-xs rounded-lg font-bold border transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-slate-900 text-white border-slate-900"
+                              : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          <span className={isSelected ? "text-white" : filter.color}>{filter.label}</span>{" "}
+                          <span className={isSelected ? "text-slate-300 font-mono" : "text-slate-400 font-mono"}>
+                            ({filter.count})
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1 sm:w-56">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={diagnosticSearch}
+                        onChange={(e) => setDiagnosticSearch(e.target.value)}
+                        placeholder="Filter rules (e.g. canonical, h1)..."
+                        className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600"
+                      />
+                    </div>
+                    <div className="text-xs text-slate-500 font-mono whitespace-nowrap hidden md:block">
+                      {filteredDiagnostics?.length}/{data.audit.diagnostics.length} rules
+                    </div>
+                  </div>
+                </div>
+
+                {/* Category Pill Filters */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-2.5 border-t border-slate-100">
+                  <span className="text-xs font-semibold text-slate-500 mr-1">Category:</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory(null)}
+                    className={`px-2.5 py-1 text-xs rounded-md font-bold transition-colors cursor-pointer ${
+                      selectedCategory === null
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    All Categories ({data.audit.diagnostics.length})
+                  </button>
+                  {Object.entries(data.audit.categories).map(([key, cat]) => {
+                    const isSelected = selectedCategory === key;
+                    const catCount = data.audit.diagnostics.filter((d) => d.category === key).length;
                     return (
                       <button
-                        key={filter.id}
+                        key={key}
                         type="button"
-                        onClick={() => setFilterStatus(filter.id as typeof filterStatus)}
-                        className={`px-3 py-1.5 text-xs rounded-lg font-bold border transition-colors cursor-pointer ${
+                        onClick={() => setSelectedCategory(isSelected ? null : key)}
+                        className={`px-2.5 py-1 text-xs rounded-md font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                           isSelected
-                            ? "bg-slate-900 text-white border-slate-900"
-                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                         }`}
                       >
-                        <span className={isSelected ? "text-white" : filter.color}>{filter.label}</span>{" "}
-                        <span className={isSelected ? "text-slate-300 font-mono" : "text-slate-400 font-mono"}>
-                          ({filter.count})
+                        <span>{cat.name}</span>
+                        <span
+                          className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                            isSelected ? "bg-blue-700 text-white" : "bg-slate-200 text-slate-600"
+                          }`}
+                        >
+                          {catCount}
                         </span>
                       </button>
                     );
                   })}
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="relative flex-1 sm:w-56">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={diagnosticSearch}
-                      onChange={(e) => setDiagnosticSearch(e.target.value)}
-                      placeholder="Filter rules (e.g. canonical, h1)..."
-                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-                  <div className="text-xs text-slate-500 font-mono whitespace-nowrap hidden md:block">
-                    {filteredDiagnostics?.length}/{data.audit.diagnostics.length} rules
-                  </div>
-                </div>
               </div>
+
+              {/* Active Category Filter Indicator Banner */}
+              {selectedCategory && data.audit.categories[selectedCategory as keyof typeof data.audit.categories] && (
+                <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold">Active Category:</span>
+                    <span className="font-extrabold uppercase bg-blue-200/90 text-blue-900 px-2 py-0.5 rounded text-[11px]">
+                      {data.audit.categories[selectedCategory as keyof typeof data.audit.categories].name}
+                    </span>
+                    <span className="text-slate-600">({filteredDiagnostics?.length} rules displayed)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory(null)}
+                    className="font-bold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer flex items-center gap-1 text-[11px]"
+                  >
+                    <span>Clear Category Filter</span>
+                    <span>✕</span>
+                  </button>
+                </div>
+              )}
+
+              {filteredDiagnostics?.length === 0 && (
+                <div className="flat-card p-8 bg-white text-center">
+                  <p className="text-sm font-semibold text-slate-700 mb-2">No checks match your current filter.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setFilterStatus("all");
+                      setDiagnosticSearch("");
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 cursor-pointer"
+                  >
+                    Reset all filters
+                  </button>
+                </div>
+              )}
 
               <div className="space-y-3">
                 {filteredDiagnostics?.map((item) => (

@@ -22,6 +22,7 @@ interface AnalyzeVisualChartsProps {
   audit: SeoAuditReport;
   performance: PageSpeedReport;
   onSelectTab: (tab: any) => void;
+  onInspectStatus?: (status: "all" | "passed" | "warning" | "error") => void;
 }
 
 export default function AnalyzeVisualCharts({
@@ -29,6 +30,7 @@ export default function AnalyzeVisualCharts({
   audit,
   performance,
   onSelectTab,
+  onInspectStatus,
 }: AnalyzeVisualChartsProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredAxis, setHoveredAxis] = useState<number | null>(null);
@@ -302,8 +304,15 @@ export default function AnalyzeVisualCharts({
               <div className="space-y-2 flex-1 max-w-[165px] text-xs">
                 <button
                   type="button"
-                  onClick={() => onSelectTab("diagnostics")}
-                  className="w-full flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 transition-colors cursor-pointer"
+                  onClick={() => {
+                    if (onInspectStatus) {
+                      onInspectStatus("passed");
+                    } else {
+                      onSelectTab("diagnostics");
+                    }
+                  }}
+                  title="Filter diagnostics checklist by passed checks"
+                  className="w-full flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Passed
@@ -312,8 +321,15 @@ export default function AnalyzeVisualCharts({
                 </button>
                 <button
                   type="button"
-                  onClick={() => onSelectTab("diagnostics")}
-                  className="w-full flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:border-amber-300 transition-colors cursor-pointer"
+                  onClick={() => {
+                    if (onInspectStatus) {
+                      onInspectStatus("warning");
+                    } else {
+                      onSelectTab("diagnostics");
+                    }
+                  }}
+                  title="Filter diagnostics checklist by warnings"
+                  className="w-full flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:border-amber-300 hover:bg-amber-50/50 transition-colors cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> Warnings
@@ -322,8 +338,15 @@ export default function AnalyzeVisualCharts({
                 </button>
                 <button
                   type="button"
-                  onClick={() => onSelectTab("diagnostics")}
-                  className="w-full flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:border-rose-300 transition-colors cursor-pointer"
+                  onClick={() => {
+                    if (onInspectStatus) {
+                      onInspectStatus("error");
+                    } else {
+                      onSelectTab("diagnostics");
+                    }
+                  }}
+                  title="Filter diagnostics checklist by critical errors"
+                  className="w-full flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:border-rose-300 hover:bg-rose-50/50 transition-colors cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <XCircle className="w-3.5 h-3.5 text-rose-500" /> Critical

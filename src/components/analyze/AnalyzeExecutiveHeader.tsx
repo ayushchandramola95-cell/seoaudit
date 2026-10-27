@@ -42,6 +42,8 @@ interface AnalyzeExecutiveHeaderProps {
   onDownloadJson: () => void;
   onSelectTab: (tab: any) => void;
   onFilterCategory?: (catKey: string) => void;
+  selectedCategory?: string | null;
+  onInspectStatus?: (status: "all" | "passed" | "warning" | "error") => void;
 }
 
 export default function AnalyzeExecutiveHeader({
@@ -59,6 +61,8 @@ export default function AnalyzeExecutiveHeader({
   onDownloadJson,
   onSelectTab,
   onFilterCategory,
+  selectedCategory,
+  onInspectStatus,
 }: AnalyzeExecutiveHeaderProps) {
   return (
     <div className="flat-card p-6 sm:p-7 bg-white shadow-xs">
@@ -171,13 +175,15 @@ export default function AnalyzeExecutiveHeader({
       {/* Row 2: Interactive Quick Telemetry Pills (With proper bottom spacing!) */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div
-            className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-semibold flex items-center gap-1.5"
-            title="Time required for our server to fetch and parse the HTML document"
+          <button
+            type="button"
+            onClick={() => onSelectTab("performance")}
+            className="px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Jump to Speed & Core Web Vitals tab"
           >
             <Clock className="w-3.5 h-3.5 text-slate-400" />
             <span>Audit Fetch: {page.responseTimeMs} ms</span>
-          </div>
+          </button>
 
           <button
             type="button"
@@ -225,15 +231,30 @@ export default function AnalyzeExecutiveHeader({
         </div>
 
         <div className="flex items-center gap-2 text-xs font-bold">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <button
+            type="button"
+            onClick={() => onInspectStatus?.("passed")}
+            title="Filter checklist by passed checks"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer"
+          >
             <CheckCircle2 className="w-3.5 h-3.5" /> {audit.passedCount} Passed
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+          </button>
+          <button
+            type="button"
+            onClick={() => onInspectStatus?.("warning")}
+            title="Filter checklist by warnings"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-colors cursor-pointer"
+          >
             <AlertTriangle className="w-3.5 h-3.5" /> {audit.warningCount} Warnings
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 border border-rose-200">
+          </button>
+          <button
+            type="button"
+            onClick={() => onInspectStatus?.("error")}
+            title="Filter checklist by errors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
+          >
             <XCircle className="w-3.5 h-3.5" /> {audit.errorCount} Errors
-          </span>
+          </button>
         </div>
       </div>
 
@@ -298,58 +319,83 @@ export default function AnalyzeExecutiveHeader({
         </div>
 
         <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {Object.entries(audit.categories).map(([key, cat]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => {
-                onSelectTab("diagnostics");
-                if (onFilterCategory) onFilterCategory(key);
-              }}
-              className="text-left p-4 bg-slate-50/70 hover:bg-white rounded-2xl border border-slate-200 hover:border-blue-300 shadow-2xs transition-all flex flex-col justify-between cursor-pointer group"
-            >
-              <div>
-                <div className="text-[11px] font-bold text-slate-600 group-hover:text-blue-600 uppercase tracking-wide leading-snug mb-2">
-                  {cat.name}
+          {Object.entries(audit.categories).map(([key, cat]) => {
+            const isSelected = selectedCategory === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  if (onFilterCategory) {
+                    onFilterCategory(key);
+                  } else {
+                    onSelectTab("diagnostics");
+                  }
+                }}
+                className={`text-left p-4 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer group relative ${
+                  isSelected
+                    ? "bg-blue-50/90 border-blue-500 shadow-sm ring-2 ring-blue-500/50"
+                    : "bg-slate-50/70 hover:bg-white border-slate-200 hover:border-blue-300 shadow-2xs"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-2">
+                    <span
+                      className={`text-[11px] font-bold uppercase tracking-wide leading-snug ${
+                        isSelected ? "text-blue-700 font-extrabold" : "text-slate-600 group-hover:text-blue-600"
+                      }`}
+                    >
+                      {cat.name}
+                    </span>
+                    {isSelected && (
+                      <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-blue-600 text-white shrink-0">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-baseline gap-1 mb-2">
+                    <span className="text-2xl font-black text-slate-900 font-mono">{cat.score}</span>
+                    <span className="text-xs font-semibold text-slate-400 font-mono">/ {cat.maxScore}</span>
+                  </div>
                 </div>
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-2xl font-black text-slate-900 font-mono">{cat.score}</span>
-                  <span className="text-xs font-semibold text-slate-400 font-mono">/ {cat.maxScore}</span>
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
-                  <span>Coverage</span>
-                  <span
-                    className={
-                      cat.percentage >= 80
-                        ? "text-emerald-600"
-                        : cat.percentage >= 50
-                        ? "text-amber-600"
-                        : "text-rose-600"
-                    }
-                  >
-                    {cat.percentage}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden mb-2">
+                <div>
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
+                    <span>Coverage</span>
+                    <span
+                      className={
+                        cat.percentage >= 80
+                          ? "text-emerald-600"
+                          : cat.percentage >= 50
+                          ? "text-amber-600"
+                          : "text-rose-600"
+                      }
+                    >
+                      {cat.percentage}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden mb-2">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${
+                        cat.percentage >= 80
+                          ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                          : cat.percentage >= 50
+                          ? "bg-gradient-to-r from-amber-500 to-yellow-400"
+                          : "bg-gradient-to-r from-rose-500 to-red-400"
+                      }`}
+                      style={{ width: `${cat.percentage}%` }}
+                    />
+                  </div>
                   <div
-                    className={`h-full rounded-full transition-all duration-700 ${
-                      cat.percentage >= 80
-                        ? "bg-gradient-to-r from-emerald-500 to-teal-400"
-                        : cat.percentage >= 50
-                        ? "bg-gradient-to-r from-amber-500 to-yellow-400"
-                        : "bg-gradient-to-r from-rose-500 to-red-400"
+                    className={`text-[10px] font-bold transition-transform flex items-center justify-between ${
+                      isSelected ? "text-blue-700 font-extrabold" : "text-blue-600 group-hover:translate-x-0.5"
                     }`}
-                    style={{ width: `${cat.percentage}%` }}
-                  />
+                  >
+                    <span>{isSelected ? "Filtering category ✓" : "View checks →"}</span>
+                  </div>
                 </div>
-                <div className="text-[10px] font-bold text-blue-600 group-hover:translate-x-0.5 transition-transform">
-                  View checks →
-                </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
