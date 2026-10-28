@@ -22,10 +22,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const normalizeUrl = (u: string) => {
+      let trimmed = u.trim();
+      if (!/^https?:\/\//i.test(trimmed)) {
+        trimmed = "https://" + trimmed;
+      }
+      return trimmed;
+    };
+
     // Scrape both URLs in parallel
     const [targetPage, competitorPage] = await Promise.all([
-      scrapeWebsite(targetUrl.trim()),
-      scrapeWebsite(competitorUrl.trim()),
+      scrapeWebsite(normalizeUrl(targetUrl)),
+      scrapeWebsite(normalizeUrl(competitorUrl)),
     ]);
 
     // Extract keyword profiles
@@ -51,12 +59,14 @@ export async function POST(req: NextRequest) {
     competitorKeywords.topTwoWordPhrases.forEach((k) => compMap.set(k.phrase.toLowerCase(), k.count));
 
     // Calculate Content Gap Matrix with TF-IDF Opportunity Scoring
-    const missingOnTarget: Array<KeywordFrequency & { opportunityScore: number; inCompTitleOrH1: boolean }> = [];
-    const sharedKeywords: KeywordFrequency[] = [];
-    const targetLeads: KeywordFrequency[] = [];
+    const missingOnTarget: Array<KeywordFrequency & { opportunityScore: number; inCompTitleOrH1: boolean; isTwoWord: boolean }> = [];
+    const sharedKeywords: Array<KeywordFrequency & { isTwoWord: boolean }> = [];
+    const targetLeads: Array<KeywordFrequency & { inTargetTitleOrH1: boolean; isTwoWord: boolean }> = [];
 
     const compTitleLower = (competitorPage.title || "").toLowerCase();
     const compH1Lower = competitorPage.headings.h1Items.join(" ").toLowerCase();
+    const targetTitleLower = (targetPage.title || "").toLowerCase();
+    const targetH1Lower = targetPage.headings.h1Items.join(" ").toLowerCase();
 
     // Check competitor terms
     compMap.forEach((count, term) => {
@@ -73,6 +83,7 @@ export async function POST(req: NextRequest) {
           gapStatus: "missing",
           opportunityScore: rawOpp,
           inCompTitleOrH1,
+          isTwoWord,
         });
       } else {
         sharedKeywords.push({
@@ -80,18 +91,23 @@ export async function POST(req: NextRequest) {
           targetCount,
           competitorCount: count,
           gapStatus: "shared",
+          isTwoWord,
         });
       }
     });
 
-    // Check target-only terms
+    // Check target-only terms (Defensive Moats)
     targetMap.forEach((count, term) => {
       if (!compMap.has(term)) {
+        const inTargetTitleOrH1 = targetTitleLower.includes(term) || targetH1Lower.includes(term);
+        const isTwoWord = term.includes(" ");
         targetLeads.push({
           term,
           targetCount: count,
           competitorCount: 0,
           gapStatus: "lead",
+          inTargetTitleOrH1,
+          isTwoWord,
         });
       }
     });
@@ -108,13 +124,13 @@ export async function POST(req: NextRequest) {
 
     const missingTopics = competitorPage.headings.h2Samples
       .filter((h: string) => !targetHeadings.has(h.toLowerCase().trim()) && h.length > 5)
-      .slice(0, 8);
+      .slice(0, 10);
 
     // Content length disparity
     const wordDiff = competitorPage.wordCount - targetPage.wordCount;
 
     // AI Actionable Outline suggestions
-    const suggestedOutline = missingTopics.slice(0, 5).map((topic: string, i: number) => ({
+    const suggestedOutline = missingTopics.slice(0, 6).map((topic: string, i: number) => ({
       heading: topic,
       recommendedKeywords: missingOnTarget.slice(i * 2, i * 2 + 3).map((k) => k.term),
       importance: i === 0 ? "Critical" : i < 3 ? "High" : "Medium",
@@ -149,9 +165,9 @@ export async function POST(req: NextRequest) {
           Math.min(95, Math.round((sharedKeywords.length / (sharedKeywords.length + missingOnTarget.length || 1)) * 100))
         ),
       },
-      missingKeywords: missingOnTarget.slice(0, 25),
-      sharedKeywords: sharedKeywords.slice(0, 25),
-      targetLeads: targetLeads.slice(0, 25),
+      missingKeywords: missingOnTarget.slice(0, 50),
+      sharedKeywords: sharedKeywords.slice(0, 50),
+      targetLeads: targetLeads.slice(0, 50),
       missingTopics,
       suggestedOutline,
     });
