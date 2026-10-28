@@ -4,6 +4,7 @@ import {
   detectTechnologies,
   inspectDnsInfrastructure,
   analyzeArchitecture,
+  generateStackInsights,
   DetectedTechnology,
 } from "@/lib/modules/tech/detector";
 import { validateUrlForSsrf, SsrfSecurityError } from "@/lib/security/ssrf";
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
     statusCode = pageData.httpStatus;
     finalUrl = pageData.finalUrl;
     domain = pageData.domain;
-  } catch (scrapeErr: unknown) {
+  } catch {
     // 2. Resilient Fallback: Direct Fetch (even on 403/503 Cloudflare/WAF responses)
     try {
       const controller = new AbortController();
@@ -85,11 +86,11 @@ export async function GET(req: NextRequest) {
   const pageTechs = detectTechnologies(rawHtml, headersRecord);
 
   // 4. Run DNS Infrastructure Discovery (Cloudflare DNS, AWS Route53, Google Workspace, Microsoft 365, etc.)
-  const dnsTechs = await inspectDnsInfrastructure(domain);
+  const dnsResult = await inspectDnsInfrastructure(domain);
 
   // Merge and deduplicate technologies by name
   const techMap = new Map<string, DetectedTechnology>();
-  for (const t of [...pageTechs, ...dnsTechs]) {
+  for (const t of [...pageTechs, ...dnsResult.detected]) {
     if (!techMap.has(t.name)) {
       techMap.set(t.name, t);
     } else {
@@ -108,6 +109,9 @@ export async function GET(req: NextRequest) {
   // 5. Analyze Stack Architecture, Modernness Score & Performance Tier
   const architecture = analyzeArchitecture(allTechnologies, headersRecord, statusCode);
 
+  // 6. Generate Security Risks, Header Checks & Optimization Opportunities
+  const insights = generateStackInsights(allTechnologies, headersRecord);
+
   return NextResponse.json({
     success: true,
     url: finalUrl,
@@ -117,6 +121,9 @@ export async function GET(req: NextRequest) {
     totalTechnologies: allTechnologies.length,
     architecture,
     data: allTechnologies,
+    rawHeaders: headersRecord,
     rawHeadersCount: Object.keys(headersRecord).length,
+    dnsRecords: dnsResult.rawRecords,
+    insights,
   });
 }

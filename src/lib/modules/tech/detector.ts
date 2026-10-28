@@ -39,6 +39,27 @@ export interface TechSignature {
   domSelectors?: string[];
 }
 
+export interface StackRisk {
+  severity: "high" | "medium" | "low" | "good";
+  title: string;
+  description: string;
+  recommendation: string;
+}
+
+export interface StackOptimization {
+  title: string;
+  category: string;
+  impact: "High" | "Medium" | "Quick Win";
+  description: string;
+}
+
+export interface SecurityHeaderCheck {
+  header: string;
+  value: string | null;
+  status: "pass" | "warn" | "fail";
+  description: string;
+}
+
 export const TECH_SIGNATURES: TechSignature[] = [
   // --------------------------------------------------------------------------
   // Frontend Frameworks & Libraries
@@ -226,12 +247,20 @@ export const TECH_SIGNATURES: TechSignature[] = [
     htmlPatterns: [/hubspot-messages-iframe-container/i, /hs-banner/i],
   },
   {
-    name: "Docusaurus",
+    name: "Sanity.io",
     category: "CMS & Site Builder",
-    website: "https://docusaurus.io",
-    description: "Modern documentation site generator built on React.",
-    meta: [{ name: "generator", pattern: /docusaurus/i, versionCapture: /docusaurus\s+v?([\d.]+)/i }],
-    htmlPatterns: [/docusaurus-search/i, /__docusaurus/i],
+    website: "https://sanity.io",
+    description: "Composable content cloud with structured real-time content studio.",
+    scripts: [/cdn\.sanity\.io/i],
+    htmlPatterns: [/cdn\.sanity\.io\/images/i],
+  },
+  {
+    name: "Contentful",
+    category: "CMS & Site Builder",
+    website: "https://contentful.com",
+    description: "Enterprise headless content platform with omnichannel API delivery.",
+    scripts: [/cdn\.contentful\.com/i],
+    htmlPatterns: [/images\.ctfassets\.net/i],
   },
 
   // --------------------------------------------------------------------------
@@ -331,7 +360,7 @@ export const TECH_SIGNATURES: TechSignature[] = [
   },
 
   // --------------------------------------------------------------------------
-  // Analytics, Telemetry & Marketing
+  // Analytics, Telemetry & Marketing Pixels
   // --------------------------------------------------------------------------
   {
     name: "Google Analytics 4 (GA4)",
@@ -348,6 +377,22 @@ export const TECH_SIGNATURES: TechSignature[] = [
     description: "Tag management system allowing rapid deployment of measurement tags.",
     scripts: [/googletagmanager\.com\/gtm\.js/i],
     htmlPatterns: [/googletagmanager\.com\/ns\.html\?id=GTM-/i],
+  },
+  {
+    name: "Meta Pixel (Facebook)",
+    category: "Analytics & Telemetry",
+    website: "https://facebook.com/business",
+    description: "Tracking pixel for measuring and optimizing Facebook & Instagram advertising.",
+    scripts: [/connect\.facebook\.net\/[a-zA-Z_]+\/fbevents\.js/i],
+    htmlPatterns: [/fbq\('init'/i],
+  },
+  {
+    name: "LinkedIn Insight Tag",
+    category: "Analytics & Telemetry",
+    website: "https://business.linkedin.com",
+    description: "Conversion tracking, retargeting, and audience demographics for B2B campaigns.",
+    scripts: [/snap\.licdn\.com\/li\.lms-analytics\/insight\.min\.js/i],
+    htmlPatterns: [/_linkedin_partner_id/i],
   },
   {
     name: "PostHog",
@@ -382,28 +427,12 @@ export const TECH_SIGNATURES: TechSignature[] = [
     htmlPatterns: [/analytics\.load\(/i],
   },
   {
-    name: "Mixpanel",
-    category: "Analytics & Telemetry",
-    website: "https://mixpanel.com",
-    description: "Self-serve product analytics for tracking conversion and retention funnels.",
-    scripts: [/cdn\.mxpnl\.com\/libs\/mixpanel/i],
-    htmlPatterns: [/mixpanel\.init\(/i],
-  },
-  {
     name: "Sentry",
     category: "Analytics & Telemetry",
     website: "https://sentry.io",
     description: "Application performance monitoring and real-time crash error tracking.",
     scripts: [/browser\.sentry-cdn\.com/i],
     htmlPatterns: [/Sentry\.init\(/i, /sentry\.io\/api\//i],
-  },
-  {
-    name: "Datadog RUM",
-    category: "Analytics & Telemetry",
-    website: "https://datadoghq.com",
-    description: "Real User Monitoring and cloud observability platform.",
-    scripts: [/datadog-rum/i],
-    htmlPatterns: [/DD_RUM\.init/i],
   },
 
   // --------------------------------------------------------------------------
@@ -432,14 +461,6 @@ export const TECH_SIGNATURES: TechSignature[] = [
     description: "Customizable open-source eCommerce platform built on WordPress.",
     meta: [{ name: "generator", pattern: /woocommerce/i, versionCapture: /woocommerce\s+([\d.]+)/i }],
     htmlPatterns: [/woocommerce/i, /class="[^"]*woocommerce/i],
-  },
-  {
-    name: "Klarna",
-    category: "E-Commerce & Payments",
-    website: "https://klarna.com",
-    description: "Buy now, pay later (BNPL) payment provider and shopping app.",
-    scripts: [/klarna\.com/i],
-    htmlPatterns: [/klarna-placement/i],
   },
 
   // --------------------------------------------------------------------------
@@ -473,13 +494,6 @@ export const TECH_SIGNATURES: TechSignature[] = [
     description: "Fast, modern web server written in Go with automatic HTTPS by default.",
     headers: [{ name: "server", pattern: /caddy/i }],
   },
-  {
-    name: "Microsoft-IIS",
-    category: "Web Server & Gateway",
-    website: "https://iis.net",
-    description: "Extensible web server created by Microsoft for Windows Server.",
-    headers: [{ name: "server", pattern: /microsoft-iis/i, versionCapture: /microsoft-iis\/([\d.]+)/i }],
-  },
 
   // --------------------------------------------------------------------------
   // Marketing & Customer Communication
@@ -507,13 +521,6 @@ export const TECH_SIGNATURES: TechSignature[] = [
     description: "All-in-one customer messaging platform with live chat and knowledge base.",
     scripts: [/client\.crisp\.chat/i],
     htmlPatterns: [/\$crisp\.push/i],
-  },
-  {
-    name: "HubSpot Marketing",
-    category: "Marketing & Communication",
-    website: "https://hubspot.com",
-    description: "Lead capture forms, marketing automation, and CRM synchronization.",
-    scripts: [/js\.hs-analytics\.net/i, /js\.hsforms\.net/i],
   },
 
   // --------------------------------------------------------------------------
@@ -553,21 +560,24 @@ export const TECH_SIGNATURES: TechSignature[] = [
 
 /**
  * Inspects public DNS records (NS, MX, TXT) to discover enterprise infrastructure.
- * Resilient against network timeouts.
+ * Returns both detected technologies and the raw record lists.
  */
-export async function inspectDnsInfrastructure(domain: string): Promise<DetectedTechnology[]> {
+export async function inspectDnsInfrastructure(domain: string): Promise<{
+  detected: DetectedTechnology[];
+  rawRecords: { ns: string[]; mx: string[]; txt: string[] };
+}> {
   const detected: DetectedTechnology[] = [];
   const cleanDomain = domain.replace(/^www\./, "").toLowerCase();
+  let nsRecords: string[] = [];
+  let mxRecords: { exchange: string; priority: number }[] = [];
+  let txtRecords: string[][] = [];
 
   try {
-    // 1. Inspect Nameservers (NS)
     const nsPromise = dns.resolveNs(cleanDomain).catch(() => []);
-    // 2. Inspect Mail Exchange (MX)
     const mxPromise = dns.resolveMx(cleanDomain).catch(() => []);
-    // 3. Inspect TXT records (SPF, domain verifications)
     const txtPromise = dns.resolveTxt(cleanDomain).catch(() => []);
 
-    const [nsRecords, mxRecords, txtRecords] = await Promise.all([nsPromise, mxPromise, txtPromise]);
+    [nsRecords, mxRecords, txtRecords] = await Promise.all([nsPromise, mxPromise, txtPromise]);
 
     const nsJoined = nsRecords.join(" ").toLowerCase();
     const mxJoined = mxRecords.map((m) => m.exchange).join(" ").toLowerCase();
@@ -654,7 +664,16 @@ export async function inspectDnsInfrastructure(domain: string): Promise<Detected
     // Non-blocking DNS inspection failure
   }
 
-  return detected;
+  const flattenedTxt = txtRecords.map((t) => (Array.isArray(t) ? t.join(" ") : String(t)));
+
+  return {
+    detected,
+    rawRecords: {
+      ns: nsRecords,
+      mx: mxRecords.map((m) => `${m.exchange} (Priority: ${m.priority})`),
+      txt: flattenedTxt.slice(0, 10),
+    },
+  };
 }
 
 /**
@@ -792,7 +811,6 @@ export function analyzeArchitecture(
   statusCode: number
 ) {
   const names = new Set(techs.map((t) => t.name.toLowerCase()));
-  const categories = new Set(techs.map((t) => t.category));
 
   // Determine Archetype
   let archetype = "Hybrid Cloud Infrastructure";
@@ -843,4 +861,171 @@ export function analyzeArchitecture(
     securityPosture,
     hasWaf: names.has("cloudflare") || names.has("akamai") || names.has("fastly"),
   };
+}
+
+/**
+ * Generates security vulnerability risks, optimization opportunities, and security header evaluations.
+ */
+export function generateStackInsights(
+  techs: DetectedTechnology[],
+  headers: Record<string, string>
+): {
+  risks: StackRisk[];
+  optimizations: StackOptimization[];
+  headerChecks: SecurityHeaderCheck[];
+} {
+  const risks: StackRisk[] = [];
+  const optimizations: StackOptimization[] = [];
+  const headerChecks: SecurityHeaderCheck[] = [];
+
+  const names = new Set(techs.map((t) => t.name.toLowerCase()));
+
+  // 1. Server Header Information Disclosure Check
+  const serverHeader = headers["server"];
+  if (serverHeader) {
+    if (/\d+\.\d+/.test(serverHeader)) {
+      risks.push({
+        severity: "high",
+        title: "Exact Server Version Leaked in HTTP Header",
+        description: `Header 'server: ${serverHeader}' exposes exact server daemon version, facilitating automated CVE exploit discovery.`,
+        recommendation: "Disable server tokens in web server config (e.g. server_tokens off in Nginx, ServerSignature Off in Apache).",
+      });
+      headerChecks.push({
+        header: "Server",
+        value: serverHeader,
+        status: "fail",
+        description: "Reveals exact daemon and version build.",
+      });
+    } else {
+      headerChecks.push({
+        header: "Server",
+        value: serverHeader,
+        status: "warn",
+        description: "Generic server header present.",
+      });
+    }
+  } else {
+    headerChecks.push({
+      header: "Server",
+      value: null,
+      status: "pass",
+      description: "Server header hidden or stripped by reverse proxy.",
+    });
+  }
+
+  // 2. X-Powered-By Check
+  const xpb = headers["x-powered-by"];
+  if (xpb) {
+    risks.push({
+      severity: "medium",
+      title: "Backend Technology Disclosed via X-Powered-By",
+      description: `Header 'x-powered-by: ${xpb}' reveals application runtime framework to scanners.`,
+      recommendation: "Remove X-Powered-By header in application middleware (e.g. app.disable('x-powered-by') in Express).",
+    });
+    headerChecks.push({
+      header: "X-Powered-By",
+      value: xpb,
+      status: "fail",
+      description: "Leaks backend runtime technology.",
+    });
+  } else {
+    headerChecks.push({
+      header: "X-Powered-By",
+      value: null,
+      status: "pass",
+      description: "No backend framework disclosure detected.",
+    });
+  }
+
+  // 3. Strict-Transport-Security (HSTS)
+  const hsts = headers["strict-transport-security"];
+  if (hsts) {
+    headerChecks.push({
+      header: "Strict-Transport-Security",
+      value: hsts,
+      status: "pass",
+      description: "Forces HTTPS connections and mitigates SSL-stripping.",
+    });
+  } else {
+    risks.push({
+      severity: "medium",
+      title: "Missing HTTP Strict Transport Security (HSTS)",
+      description: "Browsers may attempt unencrypted HTTP connections before redirecting to HTTPS.",
+      recommendation: "Add 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload' header.",
+    });
+    headerChecks.push({
+      header: "Strict-Transport-Security",
+      value: null,
+      status: "fail",
+      description: "Missing HSTS encryption policy.",
+    });
+  }
+
+  // 4. Content-Security-Policy (CSP)
+  const csp = headers["content-security-policy"];
+  if (csp) {
+    headerChecks.push({
+      header: "Content-Security-Policy",
+      value: csp.slice(0, 50) + "...",
+      status: "pass",
+      description: "Restricts unauthorized script injection and XSS.",
+    });
+  } else {
+    headerChecks.push({
+      header: "Content-Security-Policy",
+      value: null,
+      status: "warn",
+      description: "No CSP defined; consider adding nonce-based script policy.",
+    });
+  }
+
+  // 5. Outdated jQuery Check
+  const jquery = techs.find((t) => t.name === "jQuery");
+  if (jquery && jquery.version && (jquery.version.startsWith("1.") || jquery.version.startsWith("2."))) {
+    risks.push({
+      severity: "high",
+      title: `Legacy jQuery ${jquery.version} In Use`,
+      description: `jQuery v${jquery.version} has documented Cross-Site Scripting (XSS) and prototype pollution vulnerabilities.`,
+      recommendation: "Upgrade to jQuery 3.7+ or replace with native modern DOM APIs.",
+    });
+  }
+
+  // 6. Optimization Opportunities
+  if (!names.has("cloudflare") && !names.has("vercel") && !names.has("fastly") && !names.has("amazon cloudfront")) {
+    optimizations.push({
+      title: "Adopt an Anycast Edge CDN",
+      category: "Performance & Latency",
+      impact: "High",
+      description: "Routing through Cloudflare, Fastly, or CloudFront delivers assets from global edge caches under 30ms.",
+    });
+  }
+
+  if (names.has("next.js") || names.has("nuxt.js")) {
+    optimizations.push({
+      title: "Leverage Incremental Static Regeneration (ISR)",
+      category: "Framework Architecture",
+      impact: "High",
+      description: "Combines static edge caching speed with dynamic server revalidation on demand.",
+    });
+  }
+
+  if (!names.has("cloudflare turnstile") && !names.has("google recaptcha")) {
+    optimizations.push({
+      title: "Implement Invisible Bot Verification",
+      category: "Security & Anti-Scraping",
+      impact: "Quick Win",
+      description: "Deploy Cloudflare Turnstile to block automated credential stuffing without user friction.",
+    });
+  }
+
+  if (names.has("google tag manager") && names.has("meta pixel (facebook)")) {
+    optimizations.push({
+      title: "Consolidate Marketing Pixels via Server-Side GTM",
+      category: "Web Vitals / TBT",
+      impact: "Medium",
+      description: "Move third-party trackers off the main browser thread to reduce Total Blocking Time (TBT).",
+    });
+  }
+
+  return { risks, optimizations, headerChecks };
 }
