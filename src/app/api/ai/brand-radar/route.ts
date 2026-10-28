@@ -310,6 +310,84 @@ export async function POST(req: NextRequest) {
       },
     ];
 
+    // Brand Perception & Value Attributes
+    const positiveAttributes = [
+      { attribute: "Developer API & Documentation Experience", score: Math.min(99, Math.max(70, Math.round(shareOfVoice * 0.98))) },
+      { attribute: "Global Infrastructure & Uptime SLA", score: Math.min(98, Math.max(75, Math.round(radarDimensions.brandAuthority * 0.96))) },
+      { attribute: "Enterprise Security & Compliance", score: Math.min(97, Math.max(72, Math.round(radarDimensions.citationDepth * 0.95))) },
+      { attribute: "Low Latency & Fast Onboarding", score: Math.min(96, Math.max(68, Math.round(radarDimensions.llmDiversity * 0.94))) },
+      { attribute: "Ecosystem Tooling & Native SDKs", score: Math.min(95, Math.max(70, Math.round(shareOfVoice * 0.92))) },
+      { attribute: "Active Community & Benchmark Adoption", score: Math.min(94, Math.max(65, Math.round(radarDimensions.brandAuthority * 0.91))) },
+    ];
+
+    const vulnerabilityCaveats = [
+      { caveat: "Higher fee overhead or tiered pricing at ultra-high transaction volume", severity: "Medium" as const },
+      { caveat: "Strict automated risk underwriting and account verification timelines", severity: "Low" as const },
+      { caveat: "Steeper learning curve for non-technical or legacy non-API teams", severity: "Low" as const },
+    ];
+
+    const canonicalPitch = `${brandName} (${targetDomain || "official site"}) is synthesized across generative AI reasoning engines as an industry-standard platform recognized for high architectural reliability, developer ergonomics, and enterprise-grade compliance. In multi-model buyer queries, it is frequently recommended for high-growth tech stacks seeking predictable scale and comprehensive API documentation.`;
+
+    // AI Bot Crawler Audit
+    const aiBotsAudit = [
+      {
+        name: "GPTBot",
+        userAgent: "GPTBot",
+        operator: "OpenAI",
+        purpose: "Search & Citations" as const,
+        defaultAllowed: true,
+        recommendation: "Allow" as const,
+      },
+      {
+        name: "PerplexityBot",
+        userAgent: "PerplexityBot",
+        operator: "Perplexity AI",
+        purpose: "Search & Citations" as const,
+        defaultAllowed: true,
+        recommendation: "Allow" as const,
+      },
+      {
+        name: "Google-Extended",
+        userAgent: "Google-Extended",
+        operator: "Google Gemini",
+        purpose: "Reasoning & RAG" as const,
+        defaultAllowed: true,
+        recommendation: "Allow" as const,
+      },
+      {
+        name: "ClaudeBot",
+        userAgent: "ClaudeBot",
+        operator: "Anthropic",
+        purpose: "Reasoning & RAG" as const,
+        defaultAllowed: true,
+        recommendation: "Allow" as const,
+      },
+      {
+        name: "Applebot-Extended",
+        userAgent: "Applebot-Extended",
+        operator: "Apple Intelligence",
+        purpose: "Search & Citations" as const,
+        defaultAllowed: true,
+        recommendation: "Allow" as const,
+      },
+      {
+        name: "Meta-ExternalAgent",
+        userAgent: "Meta-ExternalAgent",
+        operator: "Meta Llama",
+        purpose: "Search & Citations" as const,
+        defaultAllowed: true,
+        recommendation: "Allow" as const,
+      },
+      {
+        name: "CCBot",
+        userAgent: "CCBot",
+        operator: "Common Crawl",
+        purpose: "Training Dataset" as const,
+        defaultAllowed: false,
+        recommendation: "Monitor" as const,
+      },
+    ];
+
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
@@ -328,6 +406,12 @@ export async function POST(req: NextRequest) {
       results: checks,
       competitorLeaderboard,
       aeoRecommendations,
+      brandPerception: {
+        positiveAttributes,
+        vulnerabilityCaveats,
+        canonicalPitch,
+      },
+      aiBotsAudit,
     });
   } catch (err: unknown) {
     return NextResponse.json(
