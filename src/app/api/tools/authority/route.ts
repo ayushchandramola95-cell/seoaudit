@@ -59,6 +59,33 @@ export async function GET(req: NextRequest) {
       rank: Math.round(globalRank * (1 + Math.abs(deltaOffsets[idx]) * 0.3)),
     }));
 
+    // E-E-A-T Authority Pillars Breakdown
+    const eeat = {
+      overallScore: Math.min(100, Math.max(30, Math.round(normalizedScore * 0.92 + 6))),
+      authoritativeness: Math.min(100, Math.max(25, Math.round(decimal * 10))),
+      trustworthiness: Math.min(100, Math.max(40, Math.round(decimal * 9.5 + 4))),
+      experience: Math.min(100, Math.max(35, Math.round(decimal * 9.2 + 8))),
+      expertise: Math.min(100, Math.max(30, Math.round(decimal * 9.0 + 9))),
+    };
+
+    // Anchor Text Distribution Simulation
+    const anchorProfile = [
+      { type: "Brand Name / Trademark", percentage: 52, example: `${domain.split(".")[0]}` },
+      { type: "Topical / Industry Keyword", percentage: 22, example: "solutions & platform" },
+      { type: "Compound (Brand + Keyword)", percentage: 14, example: `${domain.split(".")[0]} tools` },
+      { type: "Raw URL Link", percentage: 8, example: `https://${domain}/` },
+      { type: "Generic Calls to Action", percentage: 4, example: "visit website / learn more" },
+    ];
+
+    // High-Authority Prospective Link Opportunities
+    const linkOpportunities = [
+      { domain: "github.com", da: 96, category: "Developer Community", difficulty: "Medium", type: "Resource & Docs" },
+      { domain: "producthunt.com", da: 90, category: "Tech Directory", difficulty: "Easy", type: "Product Launch" },
+      { domain: "techcrunch.com", da: 93, category: "Industry Press", difficulty: "Hard", type: "Editorial Feature" },
+      { domain: "wikipedia.org", da: 98, category: "Encyclopedia", difficulty: "Very Hard", type: "Notability Citation" },
+      { domain: "medium.com", da: 94, category: "Content Network", difficulty: "Easy", type: "Thought Leadership" },
+    ];
+
     // Tier Description
     let tierTitle = openPageRank.tier;
     if (!tierTitle) {
@@ -84,6 +111,9 @@ export async function GET(req: NextRequest) {
         rankingCapacity,
         rankingPower,
         trend,
+        eeat,
+        anchorProfile,
+        linkOpportunities,
       },
     });
   } catch (err: unknown) {

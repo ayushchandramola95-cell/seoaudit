@@ -30,6 +30,11 @@ import {
   HelpCircle,
   Hash,
   Scale,
+  Calculator,
+  Sliders,
+  Target,
+  Sparkle,
+  Lock,
 } from "lucide-react";
 
 interface AuthorityResult {
@@ -52,13 +57,22 @@ interface AuthorityResult {
     rankingCapacity: string;
     rankingPower: string;
     trend: Array<{ month: string; pageRank: number; rank: number }>;
+    eeat?: {
+      overallScore: number;
+      authoritativeness: number;
+      trustworthiness: number;
+      experience: number;
+      expertise: number;
+    };
+    anchorProfile?: Array<{ type: string; percentage: number; example: string }>;
+    linkOpportunities?: Array<{ domain: string; da: number; category: string; difficulty: string; type: string }>;
   };
 }
 
 export default function AuthorityCheckerClient() {
   const [target, setTarget] = useState("");
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"matrix" | "backlinks" | "ranking" | "compare" | "playbook">("matrix");
+  const [activeTab, setActiveTab] = useState<"matrix" | "backlinks" | "calculator" | "ranking" | "compare" | "playbook">("matrix");
   const [copiedToast, setCopiedToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,6 +80,12 @@ export default function AuthorityCheckerClient() {
   const [compareTarget, setCompareTarget] = useState("paypal.com");
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareResult, setCompareResult] = useState<AuthorityResult | null>(null);
+
+  // PageRank Formula Lab State
+  const [dampingFactor, setDampingFactor] = useState(0.85);
+  const [inboundLinksCount, setInboundLinksCount] = useState(150);
+  const [avgInboundPr, setAvgInboundPr] = useState(5.0);
+  const [avgOutboundPerNode, setAvgOutboundPerNode] = useState(25);
 
   // Initial Sample Result (Stripe)
   const [result, setResult] = useState<AuthorityResult | null>({
@@ -94,6 +114,27 @@ export default function AuthorityCheckerClient() {
         { month: "Aug", pageRank: 7.31, rank: 1530 },
         { month: "Sep", pageRank: 7.36, rank: 1470 },
         { month: "Oct", pageRank: 7.4, rank: 1420 },
+      ],
+      eeat: {
+        overallScore: 88,
+        authoritativeness: 89,
+        trustworthiness: 92,
+        experience: 86,
+        expertise: 85,
+      },
+      anchorProfile: [
+        { type: "Brand Name / Trademark", percentage: 52, example: "stripe" },
+        { type: "Topical / Industry Keyword", percentage: 22, example: "payment processing API" },
+        { type: "Compound (Brand + Keyword)", percentage: 14, example: "stripe payments checkout" },
+        { type: "Raw URL Link", percentage: 8, example: "https://stripe.com/" },
+        { type: "Generic Calls to Action", percentage: 4, example: "visit website / learn more" },
+      ],
+      linkOpportunities: [
+        { domain: "github.com", da: 96, category: "Developer Community", difficulty: "Medium", type: "Resource & Docs" },
+        { domain: "producthunt.com", da: 90, category: "Tech Directory", difficulty: "Easy", type: "Product Launch" },
+        { domain: "techcrunch.com", da: 93, category: "Industry Press", difficulty: "Hard", type: "Editorial Feature" },
+        { domain: "wikipedia.org", da: 98, category: "Encyclopedia", difficulty: "Very Hard", type: "Notability Citation" },
+        { domain: "medium.com", da: 94, category: "Content Network", difficulty: "Easy", type: "Thought Leadership" },
       ],
     },
   });
@@ -204,6 +245,17 @@ export default function AuthorityCheckerClient() {
     showToast(`Downloaded authority-${result.domain}.json`);
   };
 
+  // Simulated PageRank calculation in Formula Lab
+  const calculatedLabPr = useMemo(() => {
+    // PR = (1-d) + d * (sum of (PR_i / C_i))
+    // Each link contributes avgInboundPr / avgOutboundPerNode
+    const base = 1 - dampingFactor;
+    const equityPerLink = (avgInboundPr / Math.max(1, avgOutboundPerNode)) * 0.12;
+    const totalEquity = inboundLinksCount * equityPerLink;
+    const rawPr = base + dampingFactor * totalEquity;
+    return Math.min(10.0, Math.max(0.1, Math.round(rawPr * 100) / 100));
+  }, [dampingFactor, inboundLinksCount, avgInboundPr, avgOutboundPerNode]);
+
   const scoreDecimal = result?.data?.pageRankDecimal ?? 7.4;
   const scorePercent = result?.data?.normalizedScore ?? Math.min(100, Math.round(scoreDecimal * 10));
 
@@ -242,10 +294,10 @@ export default function AuthorityCheckerClient() {
             </div>
 
             {/* Mode Switcher Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs overflow-x-auto scrollbar-none">
               <button
                 onClick={() => setActiveTab("matrix")}
-                className={`px-3 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === "matrix" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -254,16 +306,25 @@ export default function AuthorityCheckerClient() {
               </button>
               <button
                 onClick={() => setActiveTab("backlinks")}
-                className={`px-3 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === "backlinks" ? "bg-white text-sky-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 <Link2 className="w-3.5 h-3.5 text-sky-600" />
-                <span>Link Graph</span>
+                <span>Link Graph &amp; E-E-A-T</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("calculator")}
+                className={`px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                  activeTab === "calculator" ? "bg-white text-purple-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Calculator className="w-3.5 h-3.5 text-purple-600" />
+                <span>Formula Lab</span>
               </button>
               <button
                 onClick={() => setActiveTab("ranking")}
-                className={`px-3 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === "ranking" ? "bg-white text-indigo-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -272,7 +333,7 @@ export default function AuthorityCheckerClient() {
               </button>
               <button
                 onClick={() => setActiveTab("compare")}
-                className={`px-3 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === "compare" ? "bg-white text-blue-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -281,7 +342,7 @@ export default function AuthorityCheckerClient() {
               </button>
               <button
                 onClick={() => setActiveTab("playbook")}
-                className={`px-3 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === "playbook" ? "bg-white text-emerald-700 shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -657,69 +718,243 @@ export default function AuthorityCheckerClient() {
               </div>
             )}
 
-            {/* TAB 2: BACKLINKS & CITATION LINK GRAPH */}
+            {/* TAB 2: LINK GRAPH, ANCHORS & E-E-A-T */}
             {activeTab === "backlinks" && (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Estimated Total Backlinks</span>
-                    <div className="text-2xl font-black text-slate-900 font-mono">
-                      {result.data.estimatedTotalBacklinks.toLocaleString()}
+                {/* E-E-A-T Pillar Score Cards */}
+                {result.data.eeat && (
+                  <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-amber-500" />
+                          Google E-E-A-T Quality &amp; Trust Index
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Experience, Expertise, Authoritativeness, and Trustworthiness evaluation derived from seed-set link graphs.
+                        </p>
+                      </div>
+                      <div className="text-xs font-mono font-bold bg-amber-50 text-amber-800 px-3 py-1 rounded-xl border border-amber-200 self-start sm:self-auto">
+                        E-E-A-T Composite: {result.data.eeat.overallScore} / 100
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Cumulative inbound hyperlinks citing {result.domain} across the web index graph.
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-1">
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[11px] font-bold text-slate-500">Authoritativeness</span>
+                        <div className="text-xl font-extrabold text-slate-900 font-mono">
+                          {result.data.eeat.authoritativeness} <span className="text-xs font-normal text-slate-400">/ 100</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500">Seed-set academic &amp; editorial citations</p>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[11px] font-bold text-slate-500">Trustworthiness</span>
+                        <div className="text-xl font-extrabold text-emerald-600 font-mono">
+                          {result.data.eeat.trustworthiness} <span className="text-xs font-normal text-slate-400">/ 100</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500">HSTS, SSL, and low spam score</p>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[11px] font-bold text-slate-500">Experience / Age</span>
+                        <div className="text-xl font-extrabold text-slate-900 font-mono">
+                          {result.data.eeat.experience} <span className="text-xs font-normal text-slate-400">/ 100</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500">Domain longevity and index persistence</p>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <span className="text-[11px] font-bold text-slate-500">Topical Expertise</span>
+                        <div className="text-xl font-extrabold text-indigo-600 font-mono">
+                          {result.data.eeat.expertise} <span className="text-xs font-normal text-slate-400">/ 100</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500">Thematic topical cluster breadth</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Anchor Text Distribution */}
+                {result.data.anchorProfile && (
+                  <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <PieChart className="w-4 h-4 text-indigo-600" />
+                      Inbound Anchor Text Profile &amp; Natural Balance
+                    </h4>
+                    <div className="space-y-3">
+                      {result.data.anchorProfile.map((anchor, idx) => (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="font-semibold text-slate-800">{anchor.type}</span>
+                            <span className="font-mono text-slate-500">{anchor.percentage}% (e.g. &quot;{anchor.example}&quot;)</span>
+                          </div>
+                          <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-sky-500 rounded-full"
+                              style={{ width: `${anchor.percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* High-Authority Prospective Link Gap Opportunities */}
+                {result.data.linkOpportunities && (
+                  <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <Target className="w-4 h-4 text-emerald-600" />
+                      High-Yield Prospective Authority Link Opportunities
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Tier-1 industry domains where competing high-authority websites frequently earn citations.
                     </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {result.data.linkOpportunities.map((opp, idx) => (
+                        <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-900">{opp.domain}</span>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-mono">
+                              DA {opp.da}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500">{opp.category} • {opp.type}</div>
+                          <div className="text-[10px] font-semibold text-indigo-600">Difficulty: {opp.difficulty}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: PAGERANK MATHEMATICAL FORMULA LAB */}
+            {activeTab === "calculator" && (
+              <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-6">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <Calculator className="w-4 h-4 text-purple-600" />
+                    Interactive Google PageRank Formula Simulator
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    Experiment with the mathematical link equity equation formulated by Larry Page &amp; Sergey Brin to see how incoming link quality affects PageRank yield.
+                  </p>
+                </div>
+
+                {/* Formula Callout */}
+                <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200 text-xs text-purple-950 font-mono space-y-1">
+                  <div className="font-bold text-[13px]">PR(A) = (1 - d) + d · Σ [ PR(T_i) / C(T_i) ]</div>
+                  <p className="text-[11px] text-purple-700 font-sans">
+                    Where <em>d</em> is the damping factor, <em>PR(T_i)</em> is the PageRank of referring page <em>i</em>, and <em>C(T_i)</em> is the number of outbound links on page <em>i</em>.
+                  </p>
+                </div>
+
+                {/* Sliders Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-slate-800 mb-1">
+                        <span>Damping Factor (d)</span>
+                        <span className="font-mono text-purple-700">{dampingFactor}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="0.95"
+                        step="0.05"
+                        value={dampingFactor}
+                        onChange={(e) => setDampingFactor(parseFloat(e.target.value))}
+                        className="w-full accent-purple-600 cursor-pointer"
+                      />
+                      <span className="text-[10px] text-slate-400">Industry standard Google default is 0.85</span>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-slate-800 mb-1">
+                        <span>Referring Links Count</span>
+                        <span className="font-mono text-purple-700">{inboundLinksCount} links</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="5"
+                        max="1000"
+                        step="5"
+                        value={inboundLinksCount}
+                        onChange={(e) => setInboundLinksCount(parseInt(e.target.value, 10))}
+                        className="w-full accent-purple-600 cursor-pointer"
+                      />
+                    </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Estimated Unique Root Domains</span>
-                    <div className="text-2xl font-black text-sky-600 font-mono">
-                      {result.data.estimatedReferringDomains.toLocaleString()}
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-slate-800 mb-1">
+                        <span>Average Inbound PageRank</span>
+                        <span className="font-mono text-purple-700">{avgInboundPr} / 10 PR</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="9"
+                        step="0.5"
+                        value={avgInboundPr}
+                        onChange={(e) => setAvgInboundPr(parseFloat(e.target.value))}
+                        className="w-full accent-purple-600 cursor-pointer"
+                      />
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Distinct host domains providing authoritative link equity citations.
-                    </p>
-                  </div>
 
-                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Institutional (.EDU &amp; .GOV) Links</span>
-                    <div className="text-2xl font-black text-emerald-600 font-mono">
-                      ~{result.data.eduGovBacklinks.toLocaleString()}
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-slate-800 mb-1">
+                        <span>Avg. Outbound Links on Referring Pages</span>
+                        <span className="font-mono text-purple-700">{avgOutboundPerNode} links/page</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="5"
+                        max="100"
+                        step="5"
+                        value={avgOutboundPerNode}
+                        onChange={(e) => setAvgOutboundPerNode(parseInt(e.target.value, 10))}
+                        className="w-full accent-purple-600 cursor-pointer"
+                      />
+                      <span className="text-[10px] text-slate-400">Fewer outbound links = less dilution for your link</span>
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      High-trust academic and governmental citations delivering core seed-set trust.
-                    </p>
                   </div>
                 </div>
 
-                {/* Backlink Quality Attributes */}
-                <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-4">
-                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    Backlink Equity Health &amp; Trust Signals
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                      <div className="text-xs font-bold text-slate-800">Dofollow vs Nofollow Ratio</div>
-                      <div className="text-lg font-extrabold text-slate-900 font-mono">78% / 22%</div>
-                      <div className="text-[11px] text-emerald-600 font-medium">Optimal natural link profile</div>
+                {/* Simulated Output Arena */}
+                <div className="p-6 bg-slate-900 text-white rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300">
+                      Simulated Algorithmic PageRank Output
+                    </span>
+                    <div className="text-3xl font-black text-white font-mono mt-1">
+                      {calculatedLabPr} <span className="text-sm font-normal text-purple-300">/ 10.0 PR</span>
                     </div>
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                      <div className="text-xs font-bold text-slate-800">Anchor Diversity Index</div>
-                      <div className="text-lg font-extrabold text-slate-900 font-mono">92 / 100</div>
-                      <div className="text-[11px] text-emerald-600 font-medium">Low over-optimization penalty risk</div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                      <div className="text-xs font-bold text-slate-800">Spam Link Score</div>
-                      <div className="text-lg font-extrabold text-slate-900 font-mono">&lt; 2%</div>
-                      <div className="text-[11px] text-emerald-600 font-medium">Clean reputation, low toxic backlink flag</div>
-                    </div>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Yields an estimated Domain Authority equivalent of ~{Math.round(calculatedLabPr * 9.8)}/100.
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDampingFactor(0.85);
+                      setInboundLinksCount(150);
+                      setAvgInboundPr(5.0);
+                      setAvgOutboundPerNode(25);
+                      showToast("Reset simulation variables to baseline!");
+                    }}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl border border-slate-700 cursor-pointer transition-colors"
+                  >
+                    Reset Variables
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* TAB 3: SEARCH RANKING CAPACITY */}
+            {/* TAB 4: SEARCH RANKING CAPACITY */}
             {activeTab === "ranking" && (
               <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-6">
                 <div>
@@ -787,7 +1022,7 @@ export default function AuthorityCheckerClient() {
               </div>
             )}
 
-            {/* TAB 4: HEAD-TO-HEAD DOMAIN COMPARE */}
+            {/* TAB 5: HEAD-TO-HEAD DOMAIN COMPARE */}
             {activeTab === "compare" && (
               <div className="space-y-6">
                 <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-4">
@@ -910,7 +1145,7 @@ export default function AuthorityCheckerClient() {
               </div>
             )}
 
-            {/* TAB 5: AUTHORITY GROWTH PLAYBOOK */}
+            {/* TAB 6: AUTHORITY GROWTH PLAYBOOK */}
             {activeTab === "playbook" && (
               <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-6">
                 <div>
