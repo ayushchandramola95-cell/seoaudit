@@ -36,6 +36,13 @@ import {
   X,
   Activity,
   Globe,
+  CheckSquare,
+  Square,
+  Zap,
+  Info,
+  ShieldAlert,
+  ChevronRight,
+  Code2,
 } from "lucide-react";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { formatTierName } from "@/lib/auth/tierLimits";
@@ -123,6 +130,8 @@ const DEMO_GAP: ContentGapData = {
     { term: "crypto checkout settlement", targetCount: 0, competitorCount: 4, gapStatus: "missing", opportunityScore: 72, inCompTitleOrH1: false, isTwoWord: true },
     { term: "cashback rewards program", targetCount: 0, competitorCount: 5, gapStatus: "missing", opportunityScore: 68, inCompTitleOrH1: false, isTwoWord: true },
     { term: "installments pay in 4", targetCount: 0, competitorCount: 6, gapStatus: "missing", opportunityScore: 65, inCompTitleOrH1: false, isTwoWord: true },
+    { term: "contactless qr code payment", targetCount: 0, competitorCount: 5, gapStatus: "missing", opportunityScore: 63, inCompTitleOrH1: false, isTwoWord: true },
+    { term: "instant bank debit transfer", targetCount: 0, competitorCount: 4, gapStatus: "missing", opportunityScore: 60, inCompTitleOrH1: false, isTwoWord: true },
   ],
   sharedKeywords: [
     { term: "online payments", targetCount: 14, competitorCount: 18, gapStatus: "shared", isTwoWord: true },
@@ -180,7 +189,7 @@ const SAMPLE_PAIRS = [
 ];
 
 export default function ContentGapClient() {
-  const { tier, triggerUpgradeModal, canAccess } = usePlan();
+  const { tier, triggerUpgradeModal } = usePlan();
   const [targetUrl, setTargetUrl] = useState("https://stripe.com");
   const [competitorUrl, setCompetitorUrl] = useState("https://paypal.com");
   const [loading, setLoading] = useState(false);
@@ -195,9 +204,15 @@ export default function ContentGapClient() {
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedAllMissing, setCopiedAllMissing] = useState(false);
 
+  // Multi-select keywords in Gaps table
+  const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set());
+
+  // AI Prompt Customization Mode
+  const [aiPromptMode, setAiPromptMode] = useState<"guide" | "landing" | "compare">("guide");
+
   // Filter & Search Controls
   const [missingSearch, setMissingSearch] = useState("");
-  const [missingFilter, setMissingFilter] = useState<"all" | "highPriority" | "inHeader" | "twoWord">("all");
+  const [missingFilter, setMissingFilter] = useState<"all" | "highPriority" | "inHeader" | "transactional" | "commercial" | "twoWord">("all");
   const [missingSort, setMissingSort] = useState<"oppDesc" | "compFreqDesc" | "alpha">("oppDesc");
   const [moatsSearch, setMoatsSearch] = useState("");
   const [sharedSearch, setSharedSearch] = useState("");
@@ -207,7 +222,7 @@ export default function ContentGapClient() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 340);
+      setIsScrolled(window.scrollY > 420);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -229,13 +244,18 @@ export default function ContentGapClient() {
     return u;
   };
 
-  const getCleanDomain = (raw: string) => {
-    try {
-      const parsed = new URL(normalizeInputUrl(raw));
-      return parsed.hostname.replace(/^www\./, "");
-    } catch {
-      return raw.replace(/^https?:\/\//i, "").replace(/^www\./, "").split("/")[0] || raw;
+  const inferKeywordIntent = (term: string): { label: "Transactional" | "Commercial" | "Technical" | "Informational"; color: string; bg: string } => {
+    const t = term.toLowerCase();
+    if (/buy|price|cost|checkout|pay|reader|fee|wallet|card|transfer|rate|settlement|installment/i.test(t)) {
+      return { label: "Transactional", color: "text-emerald-700 border-emerald-200", bg: "bg-emerald-50" };
     }
+    if (/protection|guarantee|review|comparison|vs|best|software|platform|rewards|service|consumer/i.test(t)) {
+      return { label: "Commercial", color: "text-amber-700 border-amber-200", bg: "bg-amber-50" };
+    }
+    if (/api|sdk|endpoint|webhook|latency|code|script|crypto|radar|pci|dss|compliance/i.test(t)) {
+      return { label: "Technical", color: "text-indigo-700 border-indigo-200", bg: "bg-indigo-50" };
+    }
+    return { label: "Informational", color: "text-blue-700 border-blue-200", bg: "bg-blue-50" };
   };
 
   const handleSelectSample = (t: string, c: string) => {
@@ -308,6 +328,7 @@ export default function ContentGapClient() {
       }
 
       setData(json);
+      setSelectedKeywords(new Set());
       showToast(`Content gap analyzed: ${json.target.domain} vs ${json.competitor.domain}`);
     } catch (err: unknown) {
       setError((err as Error).message || "An unexpected error occurred during content gap analysis.");
@@ -321,6 +342,30 @@ export default function ContentGapClient() {
     setCopiedTerm(term);
     showToast(`Copied "${term}" to clipboard`);
     setTimeout(() => setCopiedTerm(null), 2000);
+  };
+
+  const toggleSelectKeyword = (term: string) => {
+    setSelectedKeywords((prev) => {
+      const next = new Set(prev);
+      if (next.has(term)) next.delete(term);
+      else next.add(term);
+      return next;
+    });
+  };
+
+  const handleSelectAllVisible = () => {
+    if (selectedKeywords.size === filteredMissingKeywords.length && filteredMissingKeywords.length > 0) {
+      setSelectedKeywords(new Set());
+    } else {
+      setSelectedKeywords(new Set(filteredMissingKeywords.map((k) => k.term)));
+    }
+  };
+
+  const handleCopySelected = () => {
+    if (selectedKeywords.size === 0) return;
+    const text = Array.from(selectedKeywords).join(", ");
+    navigator.clipboard.writeText(text);
+    showToast(`Copied ${selectedKeywords.size} selected keywords to clipboard!`);
   };
 
   const handleCopyAllMissing = () => {
@@ -388,19 +433,33 @@ export default function ContentGapClient() {
 
   const handleCopyAiPrompt = () => {
     if (!data) return;
-    const topKeywords = data.missingKeywords.slice(0, 12).map((k) => `"${k.term}"`).join(", ");
+    const targetKeywords = selectedKeywords.size > 0 
+      ? Array.from(selectedKeywords).map((k) => `"${k}"`).join(", ")
+      : data.missingKeywords.slice(0, 12).map((k) => `"${k.term}"`).join(", ");
+    
     const topics = data.missingTopics.slice(0, 4).map((t) => `"${t}"`).join(", ");
 
-    const prompt = `Act as an expert SEO copywriter and topic authority strategist.
-I need to update my webpage for "${data.target.domain}" to close the topical and semantic content gap against competitor "${data.competitor.domain}".
+    let modeDescription = "comprehensive topic guide and section refresh";
+    if (aiPromptMode === "landing") {
+      modeDescription = "high-converting product landing page section copy";
+    } else if (aiPromptMode === "compare") {
+      modeDescription = "head-to-head comparison page against " + data.competitor.domain;
+    }
+
+    const prompt = `Act as an expert enterprise SEO copywriter and search intent specialist.
+Task: Write a ${modeDescription} for "${data.target.domain}" to close the topical and semantic content gap against competitor "${data.competitor.domain}".
 
 Competitor currently ranks for these priority subheadings:
 ${topics}
 
-Please write an in-depth, helpful, and natural section draft incorporating these high-intent missing semantic keywords:
-${topKeywords}
+Please write an in-depth, authoritative, and natural content draft incorporating these high-intent missing semantic keywords:
+${targetKeywords}
 
-Ensure natural keyword density, maintain high EEAT authority, include concise bullet points and direct answers for Google Featured Snippets, and target an additional ${Math.max(500, Math.abs(data.gapSummary.wordDisparity))} words of copy depth.`;
+Requirements:
+1. Maintain high EEAT topical authority and natural semantic integration (no keyword stuffing).
+2. Include direct, concise answers for Google Featured Snippets and People Also Ask boxes.
+3. Structure with clean H2 and H3 subheadings with actionable bullet points.
+4. Target an additional ${Math.max(500, Math.abs(data.gapSummary.wordDisparity))} words of substantive copy depth to achieve topical parity.`;
 
     navigator.clipboard.writeText(prompt);
     setCopiedPrompt(true);
@@ -422,6 +481,10 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
       list = list.filter((k) => (k.opportunityScore ?? 0) >= 80);
     } else if (missingFilter === "inHeader") {
       list = list.filter((k) => k.inCompTitleOrH1);
+    } else if (missingFilter === "transactional") {
+      list = list.filter((k) => inferKeywordIntent(k.term).label === "Transactional");
+    } else if (missingFilter === "commercial") {
+      list = list.filter((k) => inferKeywordIntent(k.term).label === "Commercial");
     } else if (missingFilter === "twoWord") {
       list = list.filter((k) => k.isTwoWord || k.term.includes(" "));
     }
@@ -453,6 +516,12 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
     return data.sharedKeywords.filter((k) => k.term.toLowerCase().includes(q));
   }, [data?.sharedKeywords, sharedSearch]);
 
+  // Highest Opportunity Keyword
+  const topOpportunityKeyword = useMemo(() => {
+    if (!data?.missingKeywords || data.missingKeywords.length === 0) return null;
+    return [...data.missingKeywords].sort((a, b) => (b.opportunityScore ?? 0) - (a.opportunityScore ?? 0))[0];
+  }, [data?.missingKeywords]);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
       {/* Toast Notification */}
@@ -463,30 +532,43 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
         </div>
       )}
 
-      {/* FULL-WIDTH FIXED SUB-NAVBAR ON SCROLL */}
+      {/* FULL-WIDTH FIXED SUB-NAVBAR ON SCROLL (SLEEK MAC-STYLE PILL COCKPIT) */}
       {isScrolled && data && (
         <aside
           aria-label="Content Gap Sub-Navigation"
-          className="fixed top-16 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs py-2 px-4 sm:px-6 lg:px-8 transition-all duration-200 animate-in fade-in slide-in-from-top-1 no-print"
+          className="fixed top-16 inset-x-0 z-40 bg-white/92 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] py-2 px-4 sm:px-6 lg:px-8 transition-all duration-200 animate-in fade-in slide-in-from-top-1 no-print"
         >
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-            {/* Left: Domains Head-to-Head */}
+            {/* Left: Unified Matchup Badge */}
             <div className="flex items-center gap-2 shrink-0">
-              <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-900">
-                <span className="text-blue-700 font-extrabold truncate max-w-[110px] sm:max-w-[140px]">
-                  {data.target.domain}
-                </span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono font-bold">
-                  {data.gapSummary.topicCoverageScore}% Overlap
-                </span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-mono shadow-sm border border-slate-800">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                  <span className="truncate max-w-[100px] sm:max-w-[130px]">{data.target.domain}</span>
+                </div>
                 <span className="text-slate-400 font-sans font-normal text-[11px]">vs</span>
-                <span className="text-purple-700 font-extrabold truncate max-w-[110px] sm:max-w-[140px]">
-                  {data.competitor.domain}
-                </span>
+                <div className="flex items-center gap-1.5 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                  <span className="truncate max-w-[100px] sm:max-w-[130px]">{data.competitor.domain}</span>
+                </div>
               </div>
+
+              <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-mono font-bold">
+                <span>{data.gapSummary.topicCoverageScore}%</span>
+                <span className="text-blue-500 font-normal">Match</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSwap}
+                className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                title="Swap Contenders (⇄)"
+              >
+                <ArrowUpDown className="w-3.5 h-3.5 rotate-90 text-indigo-600" />
+              </button>
             </div>
 
-            {/* Middle: 6 Sleek Tabs (Zero scrollbars) */}
+            {/* Middle: 6 Clean Segmented Tabs (Zero scrollbars) */}
             <nav
               className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-semibold overflow-x-auto no-scrollbar"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -494,108 +576,136 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
               <button
                 type="button"
                 onClick={() => handleTabClick("missing")}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
                   activeTab === "missing"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-slate-900 text-white shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <Flame className="w-3.5 h-3.5 text-rose-500" />
-                <span>Missing Gaps ({data.missingKeywords.length})</span>
+                <Flame className={`w-3.5 h-3.5 ${activeTab === "missing" ? "text-rose-400" : "text-rose-500"}`} />
+                <span>Missing Gaps</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    activeTab === "missing" ? "bg-rose-500 text-white" : "bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  {data.missingKeywords.length}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleTabClick("moats")}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
                   activeTab === "moats"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-slate-900 text-white shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                <span>Target Moats ({data.targetLeads.length})</span>
+                <ShieldCheck className={`w-3.5 h-3.5 ${activeTab === "moats" ? "text-blue-400" : "text-blue-600"}`} />
+                <span>Target Moats</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    activeTab === "moats" ? "bg-blue-500 text-white" : "bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  {data.targetLeads.length}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleTabClick("topics")}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
                   activeTab === "topics"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-slate-900 text-white shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-purple-600" />
-                <span>H2 Sections ({data.missingTopics.length})</span>
+                <Layers className={`w-3.5 h-3.5 ${activeTab === "topics" ? "text-purple-400" : "text-purple-600"}`} />
+                <span>H2 Sections</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    activeTab === "topics" ? "bg-purple-500 text-white" : "bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  {data.missingTopics.length}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleTabClick("outline")}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
                   activeTab === "outline"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-slate-900 text-white shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Strategy Brief</span>
+                <Sparkles className={`w-3.5 h-3.5 ${activeTab === "outline" ? "text-amber-400" : "text-amber-500"}`} />
+                <span>Editorial Brief</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleTabClick("shared")}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
                   activeTab === "shared"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-slate-900 text-white shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <Hash className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Shared Terms ({data.sharedKeywords.length})</span>
+                <Hash className={`w-3.5 h-3.5 ${activeTab === "shared" ? "text-indigo-400" : "text-indigo-600"}`} />
+                <span>Shared Core</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    activeTab === "shared" ? "bg-indigo-500 text-white" : "bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  {data.sharedKeywords.length}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleTabClick("distribution")}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
                   activeTab === "distribution"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-slate-900 text-white shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                <Activity className={`w-3.5 h-3.5 ${activeTab === "distribution" ? "text-emerald-400" : "text-emerald-600"}`} />
                 <span>Semantic Balance</span>
               </button>
             </nav>
 
-            {/* Right: Quick Actions */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            {/* Right: Quick Action Controls */}
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={handleSwap}
-                className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                title="Swap Target & Competitor"
+                onClick={handleCopyMarkdownBrief}
+                className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                title="Copy Markdown Editorial Brief"
               >
-                <GitCompare className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Swap</span>
+                {copiedBrief ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
+                <span className="hidden md:inline">{copiedBrief ? "Copied" : "Brief"}</span>
               </button>
 
               <button
                 type="button"
-                onClick={handleCopyMarkdownBrief}
-                className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                title="Copy Editorial Brief"
+                onClick={handleExportCsv}
+                className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                title="Export Gap Matrix as CSV"
               >
-                {copiedBrief ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline">{copiedBrief ? "Copied" : "Brief"}</span>
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span className="hidden md:inline">CSV</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="p-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200"
                 title="Scroll to Top"
               >
                 <ArrowUp className="w-4 h-4" />
@@ -671,7 +781,7 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                     <button
                       type="button"
                       onClick={() => setTargetUrl("")}
-                      className="text-[10px] font-semibold text-slate-400 hover:text-slate-700"
+                      className="text-[10px] font-semibold text-slate-400 hover:text-slate-700 cursor-pointer"
                     >
                       Clear
                     </button>
@@ -713,7 +823,7 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                     <button
                       type="button"
                       onClick={() => setCompetitorUrl("")}
-                      className="text-[10px] font-semibold text-slate-400 hover:text-slate-700"
+                      className="text-[10px] font-semibold text-slate-400 hover:text-slate-700 cursor-pointer"
                     >
                       Clear
                     </button>
@@ -765,7 +875,7 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
               <button
                 type="button"
                 onClick={handleSwap}
-                className="md:hidden w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5"
+                className="md:hidden w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <ArrowUpDown className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Swap Contenders</span>
@@ -812,9 +922,14 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                     {data.target.domain.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-400 block mb-0.5">
-                      Target Website (You)
-                    </span>
+                    <div className="flex items-center gap-2 justify-center sm:justify-start">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-400 block mb-0.5">
+                        Target Website (You)
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 font-mono font-bold">
+                        {data.targetLeads.length} Moats
+                      </span>
+                    </div>
                     <h2 className="text-lg font-black text-white font-mono tracking-tight truncate max-w-[220px]">
                       {data.target.domain}
                     </h2>
@@ -908,9 +1023,14 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                 {/* SITE B COCKPIT */}
                 <div className="flex items-center gap-4 text-center sm:text-right w-full lg:w-auto justify-center sm:justify-end flex-row-reverse sm:flex-row">
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-400 block mb-0.5">
-                      Competitor Benchmark
-                    </span>
+                    <div className="flex items-center gap-2 justify-center sm:justify-end">
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-mono font-bold">
+                        {data.missingKeywords.length} Lead Gaps
+                      </span>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-400 block mb-0.5">
+                        Competitor Benchmark
+                      </span>
+                    </div>
                     <h2 className="text-lg font-black text-white font-mono tracking-tight truncate max-w-[220px]">
                       {data.competitor.domain}
                     </h2>
@@ -925,9 +1045,34 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                   </div>
                 </div>
               </div>
+
+              {/* TOP OPPORTUNITY QUICK CALLOUT BANNER INSIDE HERO */}
+              {topOpportunityKeyword && (
+                <div className="mt-6 pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                    <span className="text-slate-400 font-medium">#1 Highest ROI Missing Opportunity:</span>
+                    <span className="font-mono font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                      &ldquo;{topOpportunityKeyword.term}&rdquo;
+                    </span>
+                    <span className="text-rose-400 font-mono font-bold">
+                      (Opp Score: {topOpportunityKeyword.opportunityScore}/100)
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(topOpportunityKeyword.term)}
+                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedTerm === topOpportunityKeyword.term ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>Copy Term</span>
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* 2. FOUR EXECUTIVE KPI METRIC CARDS */}
+            {/* 2. FOUR EXECUTIVE KPI METRIC CARDS + STRATEGIC AI ADVICE */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Card 1: Missing Keywords */}
               <div className="flat-card p-5 bg-white border border-rose-100 shadow-xs space-y-1">
@@ -1013,6 +1158,24 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                 </div>
                 <p className="text-[11px] text-slate-500 mt-2">
                   Structural subsections covered by competitor only.
+                </p>
+              </div>
+            </div>
+
+            {/* STRATEGIC AI ADVICE BANNER */}
+            <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200/80 flex items-start gap-3.5 shadow-2xs">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div className="text-xs leading-relaxed space-y-1">
+                <h3 className="font-bold text-indigo-950 flex items-center gap-1.5">
+                  <span>Executive Content Strategy Recommendation</span>
+                  <span className="px-1.5 py-0.2 rounded bg-indigo-200/60 text-indigo-800 text-[10px] font-extrabold uppercase">
+                    AI Insight
+                  </span>
+                </h3>
+                <p className="text-slate-600">
+                  {data.competitor.domain} outranks you primarily across <strong className="text-slate-900">commercial buyer protection and physical terminal integrations</strong>. Adding the {data.missingTopics.length} missing H2 subsections and targeting ~{Math.max(500, Math.abs(data.gapSummary.wordDisparity))} additional words of editorial depth will bridge the semantic deficit while protecting your {data.targetLeads.length} existing keyword moats.
                 </p>
               </div>
             </div>
@@ -1135,7 +1298,7 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                     {missingSearch && (
                       <button
                         onClick={() => setMissingSearch("")}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -1144,11 +1307,11 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
 
                   {/* Filter Pills & Sort */}
                   <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                    <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200">
+                    <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200 overflow-x-auto no-scrollbar">
                       <button
                         type="button"
                         onClick={() => setMissingFilter("all")}
-                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                           missingFilter === "all" ? "bg-slate-900 text-white font-bold" : "text-slate-600 hover:text-slate-900"
                         }`}
                       >
@@ -1157,7 +1320,7 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                       <button
                         type="button"
                         onClick={() => setMissingFilter("highPriority")}
-                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                           missingFilter === "highPriority" ? "bg-rose-600 text-white font-bold" : "text-slate-600 hover:text-slate-900"
                         }`}
                       >
@@ -1166,7 +1329,7 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                       <button
                         type="button"
                         onClick={() => setMissingFilter("inHeader")}
-                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                           missingFilter === "inHeader" ? "bg-purple-600 text-white font-bold" : "text-slate-600 hover:text-slate-900"
                         }`}
                       >
@@ -1174,8 +1337,26 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                       </button>
                       <button
                         type="button"
+                        onClick={() => setMissingFilter("transactional")}
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
+                          missingFilter === "transactional" ? "bg-emerald-600 text-white font-bold" : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        Transactional
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMissingFilter("commercial")}
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
+                          missingFilter === "commercial" ? "bg-amber-600 text-white font-bold" : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        Commercial
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => setMissingFilter("twoWord")}
-                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                           missingFilter === "twoWord" ? "bg-blue-600 text-white font-bold" : "text-slate-600 hover:text-slate-900"
                         }`}
                       >
@@ -1208,13 +1389,67 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                   </div>
                 </div>
 
+                {/* Floating Multi-Select Action Bar if items selected */}
+                {selectedKeywords.size > 0 && (
+                  <div className="mx-4 sm:mx-5 p-3 rounded-xl bg-slate-900 text-white text-xs flex items-center justify-between gap-3 animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-400" />
+                      <span className="font-bold">{selectedKeywords.size} keywords selected</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleCopySelected}
+                        className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Copy Selected</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCopyAiPrompt}
+                        className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        <span>Generate AI Prompt for Selected</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedKeywords(new Set())}
+                        className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                        title="Clear Selection"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Missing Keywords Table */}
                 <div className="overflow-x-auto px-4 sm:px-5 pb-5">
                   <table className="w-full text-xs text-left">
                     <thead className="text-[11px] font-mono uppercase text-slate-400 border-b border-slate-200 bg-slate-50/50">
                       <tr>
+                        <th className="py-2.5 px-3 w-8">
+                          <button
+                            type="button"
+                            onClick={handleSelectAllVisible}
+                            className="cursor-pointer text-slate-400 hover:text-slate-700 flex items-center"
+                            title="Select / Deselect all"
+                          >
+                            {selectedKeywords.size === filteredMissingKeywords.length && filteredMissingKeywords.length > 0 ? (
+                              <CheckSquare className="w-4 h-4 text-blue-600" />
+                            ) : (
+                              <Square className="w-4 h-4" />
+                            )}
+                          </button>
+                        </th>
                         <th className="py-2.5 px-3">Missing Keyword Phrase</th>
                         <th className="py-2.5 px-3 text-center">Opportunity ROI</th>
+                        <th className="py-2.5 px-3 text-center">Search Intent</th>
                         <th className="py-2.5 px-3 text-center">{data.competitor.domain}</th>
                         <th className="py-2.5 px-3 text-center">{data.target.domain}</th>
                         <th className="py-2.5 px-3 text-center">Strategic Prominence</th>
@@ -1224,8 +1459,30 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                     <tbody className="divide-y divide-slate-100 font-medium">
                       {filteredMissingKeywords.map((item, idx) => {
                         const opp = item.opportunityScore ?? 75;
+                        const intent = inferKeywordIntent(item.term);
+                        const isSelected = selectedKeywords.has(item.term);
+
                         return (
-                          <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                          <tr
+                            key={idx}
+                            className={`transition-colors ${
+                              isSelected ? "bg-blue-50/50 hover:bg-blue-50/70" : "hover:bg-slate-50/80"
+                            }`}
+                          >
+                            <td className="py-3 px-3">
+                              <button
+                                type="button"
+                                onClick={() => toggleSelectKeyword(item.term)}
+                                className="cursor-pointer text-slate-400 hover:text-slate-700 flex items-center"
+                              >
+                                {isSelected ? (
+                                  <CheckSquare className="w-4 h-4 text-blue-600" />
+                                ) : (
+                                  <Square className="w-4 h-4" />
+                                )}
+                              </button>
+                            </td>
+
                             <td className="py-3 px-3">
                               <div className="flex items-center gap-2 font-bold text-slate-900 font-mono text-xs">
                                 <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
@@ -1245,6 +1502,12 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                               >
                                 {opp >= 85 && <Flame className="w-3 h-3 text-rose-500" />}
                                 {opp}/100
+                              </span>
+                            </td>
+
+                            <td className="py-3 px-3 text-center">
+                              <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${intent.bg} ${intent.color}`}>
+                                {intent.label}
                               </span>
                             </td>
 
@@ -1292,7 +1555,7 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                       })}
                       {filteredMissingKeywords.length === 0 && (
                         <tr>
-                          <td colSpan={6} className="py-8 text-center text-slate-400 italic">
+                          <td colSpan={8} className="py-8 text-center text-slate-400 italic">
                             No missing keywords match the selected filter or search term.
                           </td>
                         </tr>
@@ -1329,6 +1592,17 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                   </div>
                 </div>
 
+                {/* Protective Guardrail Warning */}
+                <div className="mx-4 sm:mx-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+                  <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <span className="font-bold">Defensive Content Protection Rule:</span>
+                    <p className="text-amber-800 leading-relaxed">
+                      When expanding copy to target competitor topics, ensure you do not overwrite or delete these {data.targetLeads.length} core keywords. They represent your unique search equity and prevent counter-encroachment by {data.competitor.domain}.
+                    </p>
+                  </div>
+                </div>
+
                 <div className="overflow-x-auto px-4 sm:px-5 pb-5">
                   <table className="w-full text-xs text-left">
                     <thead className="text-[11px] font-mono uppercase text-slate-400 border-b border-slate-200 bg-slate-50/50">
@@ -1336,53 +1610,63 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                         <th className="py-2.5 px-3">Exclusive Moat Term</th>
                         <th className="py-2.5 px-3 text-center">{data.target.domain} Count</th>
                         <th className="py-2.5 px-3 text-center">{data.competitor.domain} Count</th>
+                        <th className="py-2.5 px-3 text-center">Intent</th>
                         <th className="py-2.5 px-3 text-center">Placement</th>
                         <th className="py-2.5 px-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
-                      {filteredMoats.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
-                          <td className="py-3 px-3">
-                            <div className="flex items-center gap-2 font-bold text-slate-900 font-mono text-xs">
-                              <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
-                              <span>{item.term}</span>
-                            </div>
-                          </td>
+                      {filteredMoats.map((item, idx) => {
+                        const intent = inferKeywordIntent(item.term);
+                        return (
+                          <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
+                            <td className="py-3 px-3">
+                              <div className="flex items-center gap-2 font-bold text-slate-900 font-mono text-xs">
+                                <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+                                <span>{item.term}</span>
+                              </div>
+                            </td>
 
-                          <td className="py-3 px-3 text-center font-mono font-bold text-blue-700">
-                            {item.targetCount}×
-                          </td>
+                            <td className="py-3 px-3 text-center font-mono font-bold text-blue-700">
+                              {item.targetCount}×
+                            </td>
 
-                          <td className="py-3 px-3 text-center font-mono text-slate-400 font-bold">
-                            0×
-                          </td>
+                            <td className="py-3 px-3 text-center font-mono text-slate-400 font-bold">
+                              0×
+                            </td>
 
-                          <td className="py-3 px-3 text-center">
-                            {item.inTargetTitleOrH1 ? (
-                              <span className="flat-badge bg-blue-50 text-blue-800 border-blue-200 text-[10px] font-bold">
-                                In Your H1 / Title
+                            <td className="py-3 px-3 text-center">
+                              <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${intent.bg} ${intent.color}`}>
+                                {intent.label}
                               </span>
-                            ) : (
-                              <span className="text-[11px] text-slate-400 font-mono">Body Copy</span>
-                            )}
-                          </td>
+                            </td>
 
-                          <td className="py-3 px-3 text-right">
-                            <button
-                              onClick={() => handleCopy(item.term)}
-                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer shadow-2xs"
-                            >
-                              {copiedTerm === item.term ? (
-                                <Check className="w-3 h-3 text-emerald-600" />
+                            <td className="py-3 px-3 text-center">
+                              {item.inTargetTitleOrH1 ? (
+                                <span className="flat-badge bg-blue-50 text-blue-800 border-blue-200 text-[10px] font-bold">
+                                  In Your H1 / Title
+                                </span>
                               ) : (
-                                <Copy className="w-3 h-3 text-slate-400" />
+                                <span className="text-[11px] text-slate-400 font-mono">Body Copy</span>
                               )}
-                              {copiedTerm === item.term ? "Copied" : "Copy"}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+
+                            <td className="py-3 px-3 text-right">
+                              <button
+                                onClick={() => handleCopy(item.term)}
+                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer shadow-2xs"
+                              >
+                                {copiedTerm === item.term ? (
+                                  <Check className="w-3 h-3 text-emerald-600" />
+                                ) : (
+                                  <Copy className="w-3 h-3 text-slate-400" />
+                                )}
+                                {copiedTerm === item.term ? "Copied" : "Copy"}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -1479,6 +1763,38 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                         <span>{copiedPrompt ? "Prompt Copied!" : "Copy AI Writer Prompt"}</span>
                       </button>
                     </div>
+                  </div>
+
+                  {/* AI Prompt Mode Selector */}
+                  <div className="flex items-center gap-2 bg-slate-800/90 p-1.5 rounded-xl border border-slate-700 text-xs">
+                    <span className="text-slate-400 font-semibold px-2">Prompt Mode:</span>
+                    <button
+                      type="button"
+                      onClick={() => setAiPromptMode("guide")}
+                      className={`px-3 py-1 rounded-lg transition-colors cursor-pointer font-bold ${
+                        aiPromptMode === "guide" ? "bg-blue-600 text-white" : "text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      Comprehensive Guide
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAiPromptMode("landing")}
+                      className={`px-3 py-1 rounded-lg transition-colors cursor-pointer font-bold ${
+                        aiPromptMode === "landing" ? "bg-blue-600 text-white" : "text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      Landing Page Section
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAiPromptMode("compare")}
+                      className={`px-3 py-1 rounded-lg transition-colors cursor-pointer font-bold ${
+                        aiPromptMode === "compare" ? "bg-blue-600 text-white" : "text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      Head-to-Head Comparison
+                    </button>
                   </div>
 
                   {/* Section Outlines */}
@@ -1580,10 +1896,14 @@ Ensure natural keyword density, maintain high EEAT authority, include concise bu
                             </td>
 
                             <td className="py-3 px-3 text-center font-mono">
-                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
-                                item.targetCount >= item.competitorCount ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"
-                              }`}>
-                                {item.targetCount >= item.competitorCount ? `Your Lead (${ratio}x)` : `Comp Lead (${(item.competitorCount / (item.targetCount || 1)).toFixed(1)}x)`}
+                              <span
+                                className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                                  item.targetCount >= item.competitorCount ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"
+                                }`}
+                              >
+                                {item.targetCount >= item.competitorCount
+                                  ? `Your Lead (${ratio}x)`
+                                  : `Comp Lead (${(item.competitorCount / (item.targetCount || 1)).toFixed(1)}x)`}
                               </span>
                             </td>
 
