@@ -255,37 +255,58 @@ export async function POST(req: NextRequest) {
       }))
       .sort((a, b) => b.count - a.count);
 
-    // Strategic AEO Recommendations
+    // 5-Axis AEO Radar Dimensions
+    const radarDimensions = {
+      brandAuthority: Math.min(100, Math.max(25, Math.round(shareOfVoice * 0.95 + (averageRank ? (5 - averageRank) * 3 : 8)))),
+      citationDepth: Math.min(100, Math.max(30, Math.round((citedCount / totalPrompts) * 85 + 15))),
+      sentimentScore: Math.round(
+        (checks.filter((c) => c.sentiment === "positive").length / Math.max(1, checks.length)) * 100
+      ),
+      llmDiversity: shareOfVoice >= 75 ? 96 : shareOfVoice >= 50 ? 82 : shareOfVoice >= 25 ? 65 : 45,
+      competitorDefense: Math.max(20, Math.min(100, Math.round(100 - (competitorLeaderboard[0]?.share || 35) * 0.7))),
+    };
+
+    // Strategic AEO Recommendations with developer code snippets
     const aeoRecommendations = [
       {
-        title: "Implement Schema.org Organization & SameAs Links",
-        impact: "High",
+        title: "Permit AI Search Spiders in /robots.txt",
+        impact: "Critical" as const,
+        category: "Robots" as const,
         description:
-          "AI models verify brand identity by querying structured Wikidata, Wikipedia, Crunchbase, and GitHub URLs declared in JSON-LD `sameAs` arrays.",
+          "Ensure your robots.txt allows GPTBot, ClaudeBot, PerplexityBot, and Google-Extended so retrieval and reasoning spiders can index your product documentation.",
+        codeSnippet: `User-agent: GPTBot\nAllow: /\n\nUser-agent: ClaudeBot\nAllow: /\n\nUser-agent: PerplexityBot\nAllow: /\n\nUser-agent: Google-Extended\nAllow: /`,
       },
       {
-        title: "Permit AI Crawler Spiders in /robots.txt",
-        impact: "Critical",
+        title: "Implement Schema.org Organization & SameAs Entities",
+        impact: "High" as const,
+        category: "Schema" as const,
         description:
-          "Ensure your robots.txt allows `GPTBot`, `ClaudeBot`, `PerplexityBot`, and `Google-Extended` so training spiders can index your product documentation.",
+          "AI models verify company entities by checking Wikidata, Wikipedia, Crunchbase, and GitHub URLs declared in JSON-LD sameAs arrays.",
+        codeSnippet: `{\n  "@context": "https://schema.org",\n  "@type": "Organization",\n  "name": "${brandName}",\n  "url": "https://${targetDomain || "example.com"}",\n  "sameAs": [\n    "https://www.wikidata.org/wiki/...",\n    "https://en.wikipedia.org/wiki/...",\n    "https://github.com/..."\n  ]\n}`,
       },
       {
-        title: "Publish Deterministic Versus & Comparison Pages",
-        impact: "High",
+        title: "Publish Deterministic Competitor Comparison Hubs",
+        impact: "High" as const,
+        category: "Content" as const,
         description:
-          "Create factual 'Alternative to [Competitor]' comparison tables with tabular feature matrices. LLMs heavily reference structured comparison tables when answering buyer queries.",
+          "Build factual 'Alternative to [Competitor]' comparison tables with structured feature matrices. LLMs frequently extract structured comparison tables when answering buyer queries.",
+        codeSnippet: `| Feature / SLA | ${brandName} | Top Competitor |\n| :--- | :--- | :--- |\n| Global Latency | <50ms Edge | ~250ms Legacy |\n| Developer SDKs | Node, Python, Go | Rest Only |\n| Native MCP | ✅ Built-in | ❌ Unsupported |`,
       },
       {
-        title: "Build Third-Party Review Footprints",
-        impact: "Medium",
+        title: "Structured FAQ & Conversational Definition Headings",
+        impact: "Medium" as const,
+        category: "KnowledgeGraph" as const,
         description:
-          "LLMs aggregate sentiment from G2, Capterra, Trustpilot, and Reddit discussions. Verified reviews increase your likelihood of being recommended in top-3 rankings.",
+          "Use explicit conversational question phrasing in <h2> and <h3> tags, followed by direct 40-word answers to win retrieval snippet selection in Perplexity and ChatGPT Search.",
+        codeSnippet: `<h2>What is ${brandName}?</h2>\n<p>${brandName} is an enterprise-grade platform engineered to deliver low-latency performance, complete regulatory compliance, and seamless developer APIs.</p>`,
       },
       {
-        title: "Publish FAQ & Clear Definition Headings",
-        impact: "Medium",
+        title: "Cultivate Verified Third-Party Review Footprints",
+        impact: "Medium" as const,
+        category: "Authority" as const,
         description:
-          "Use direct question phrasing in `<h2>` and `<h3>` tags followed by immediate, authoritative answers in the first 50 words to increase retrieval snippet selection.",
+          "LLMs aggregate sentiment from G2, Capterra, ProductHunt, and developer forums. High customer sentiment scores directly boost recommendation probability.",
+        codeSnippet: `// G2 & Capterra Integration\n// Ensure verified customer feedback matches target category keywords`,
       },
     ];
 
@@ -302,6 +323,7 @@ export async function POST(req: NextRequest) {
         averageRank,
         aeoGrade:
           shareOfVoice >= 80 ? "A+" : shareOfVoice >= 60 ? "A" : shareOfVoice >= 40 ? "B" : shareOfVoice >= 20 ? "C" : "D",
+        radarDimensions,
       },
       results: checks,
       competitorLeaderboard,
