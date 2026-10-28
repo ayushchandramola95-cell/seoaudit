@@ -142,7 +142,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=structure" className="hover:text-white transition-colors">
+                <Link href="/tools/document-architecture" className="hover:text-white transition-colors">
                   Document Architecture
                 </Link>
               </li>

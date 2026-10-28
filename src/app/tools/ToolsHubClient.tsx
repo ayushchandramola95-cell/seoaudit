@@ -58,6 +58,16 @@ export default function ToolsHubClient() {
       metric: "LCP, CLS, INP",
     },
     {
+      id: "document-architecture",
+      name: "Document Architecture & Heading Tree",
+      description: "Audit H1–H6 heading hierarchies, detect skipped levels, inspect DOM depth distribution, and export clean Markdown outlines.",
+      href: "/tools/document-architecture",
+      category: "crawl",
+      badge: "Semantic Tree",
+      icon: Layers,
+      metric: "H1–H6 Hierarchy",
+    },
+    {
       id: "schema-validator",
       name: "Schema JSON-LD & OG Validator",
       description: "Validate Schema.org structured data, rich snippet syntax, OpenGraph tags, and Twitter Cards for AI & search visibility.",

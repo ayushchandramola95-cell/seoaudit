@@ -183,9 +183,9 @@ export default function Header() {
                             </div>
                           </Link>
 
-                          <Link href="/analyze?tab=structure" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                          <Link href="/tools/document-architecture" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                             <div className="flex items-start gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Layers className="w-4 h-4" />
                               </div>
                               <div>

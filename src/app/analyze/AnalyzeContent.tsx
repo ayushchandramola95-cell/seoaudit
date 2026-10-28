@@ -225,6 +225,10 @@ export default function AnalyzeContent() {
       ].includes(tabParam)
     ) {
       setActiveTab(tabParam as typeof activeTab);
+      // Auto-scroll so user isn't stuck at the top executive banner
+      setTimeout(() => {
+        scrollToSection("audit-suites-tabs", -100);
+      }, 150);
     }
   }, [searchParams]);
 
@@ -1813,10 +1817,25 @@ export default function AnalyzeContent() {
                     Hierarchy Order
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    <span className="text-base sm:text-lg font-bold text-slate-900">Valid Order</span>
+                    {(data.page.headings.skippedLevelsCount || 0) === 0 ? (
+                      <>
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                        <span className="text-base sm:text-lg font-bold text-slate-900">Valid Order</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                        <span className="text-base sm:text-lg font-bold text-amber-700 font-mono">
+                          {data.page.headings.skippedLevelsCount} Skipped
+                        </span>
+                      </>
+                    )}
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-1">Zero skipped heading tags</div>
+                  <div className="text-[11px] text-slate-500 mt-1">
+                    {(data.page.headings.skippedLevelsCount || 0) === 0
+                      ? "Zero skipped heading tags"
+                      : "Hierarchy gaps detected"}
+                  </div>
                 </div>
 
                 <div className="flat-card p-4 sm:p-5 bg-white border border-slate-200">
@@ -1886,14 +1905,81 @@ export default function AnalyzeContent() {
                       Hierarchical outline representation of crawler content extraction order.
                     </p>
                   </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200">
-                    Depth Tier: 3 Levels
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/tools/document-architecture?url=${encodeURIComponent(data.page.requestedUrl || data.page.finalUrl)}`}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 hover:bg-blue-100"
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      Dedicated Studio &amp; Markdown Exporter ↗
+                    </Link>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                      Depth: {data.page.headings.maxDepth || 3} Levels
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-3 font-sans">
-                  {/* Root H1 Node */}
-                  {data.page.headings.h1Items.length > 0 ? (
+                  {/* Rich full items list if available */}
+                  {data.page.headings.items && data.page.headings.items.length > 0 ? (
+                    <div className="space-y-2">
+                      {data.page.headings.items.map((item, idx) => {
+                        const indentPx = Math.min(60, (item.level - 1) * 20);
+                        return (
+                          <div
+                            key={idx}
+                            style={{ marginLeft: `${indentPx}px` }}
+                            className={`p-3 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-colors ${
+                              item.level === 1
+                                ? "bg-blue-50/80 border-blue-200"
+                                : item.level === 2
+                                ? "bg-white border-slate-200 hover:bg-indigo-50/20"
+                                : "bg-slate-50/70 border-slate-200"
+                            }`}
+                          >
+                            <div className="flex items-start gap-2.5 min-w-0">
+                              <span
+                                className={`px-1.5 py-0.5 text-[11px] font-black rounded uppercase tracking-wider shrink-0 mt-0.5 ${
+                                  item.level === 1
+                                    ? "bg-blue-600 text-white"
+                                    : item.level === 2
+                                    ? "bg-indigo-600 text-white"
+                                    : item.level === 3
+                                    ? "bg-purple-600 text-white"
+                                    : "bg-amber-600 text-white"
+                                }`}
+                              >
+                                &lt;{item.tag.toUpperCase()}&gt;
+                              </span>
+                              <div>
+                                <div className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
+                                  {item.text}
+                                </div>
+                                <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-2">
+                                  <span>Node #{item.order}</span>
+                                  <span>•</span>
+                                  <span>{item.charCount} chars</span>
+                                  {item.isSkipped && (
+                                    <span className="text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded border border-amber-200">
+                                      Skipped Level
+                                    </span>
+                                  )}
+                                  {item.isEmpty && (
+                                    <span className="text-rose-700 font-bold bg-rose-50 px-1 py-0.2 rounded border border-rose-200">
+                                      Empty Heading
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-mono text-slate-400 shrink-0 self-start sm:self-auto">
+                              Level {item.level}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : data.page.headings.h1Items.length > 0 ? (
                     data.page.headings.h1Items.map((h1, idx) => (
                       <div key={idx} className="relative pl-6 before:content-[''] before:absolute before:left-2 before:top-3 before:bottom-0 before:w-0.5 before:bg-blue-300">
                         <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">

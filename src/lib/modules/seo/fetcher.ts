@@ -10,6 +10,26 @@ export interface SecurityHeadersReport {
   permissionsPolicy: boolean;
 }
 
+export interface HeadingNode {
+  tag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+  level: number;
+  text: string;
+  charCount: number;
+  order: number;
+  isSkipped?: boolean;
+  isEmpty?: boolean;
+  isOverLength?: boolean;
+}
+
+export interface HeadingIssue {
+  type: "missing_h1" | "multiple_h1" | "skipped_level" | "empty_heading" | "long_heading";
+  severity: "error" | "warning" | "info";
+  message: string;
+  tag?: string;
+  text?: string;
+  order?: number;
+}
+
 export interface HeadingsAnalysis {
   h1Count: number;
   h1Items: string[];
@@ -20,6 +40,12 @@ export interface HeadingsAnalysis {
   h5Count: number;
   h6Count: number;
   totalHeadings: number;
+  items?: HeadingNode[];
+  issues?: HeadingIssue[];
+  hierarchyScore?: number;
+  skippedLevelsCount?: number;
+  emptyHeadingsCount?: number;
+  maxDepth?: number;
 }
 
 export interface ImagesAnalysis {
@@ -232,19 +258,84 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
     image: $('meta[name="twitter:image" i]').attr("content")?.trim() || null,
   };
 
-  // 4. Headings
+  // 4. Headings & DOM Hierarchy Extraction
   const h1Elements: string[] = [];
-  $("h1").each((_, el) => {
-    const text = $(el).text().trim();
-    if (text) h1Elements.push(text);
-  });
-
   const h2Samples: string[] = [];
-  $("h2").each((idx, el) => {
-    if (idx < 6) {
-      const text = $(el).text().trim();
-      if (text) h2Samples.push(text);
+  const headingItems: HeadingNode[] = [];
+  const headingIssues: HeadingIssue[] = [];
+
+  let prevLevel = 0;
+  let skippedLevelsCount = 0;
+  let emptyHeadingsCount = 0;
+  let maxDepth = 0;
+
+  $("h1, h2, h3, h4, h5, h6").each((idx, el) => {
+    const rawTag = (el.tagName || "").toLowerCase();
+    const tagName = (["h1", "h2", "h3", "h4", "h5", "h6"].includes(rawTag) ? rawTag : "h2") as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+    const level = parseInt(tagName.replace("h", ""), 10);
+    if (level > maxDepth) maxDepth = level;
+
+    const rawText = $(el).text();
+    const text = rawText.replace(/\s+/g, " ").trim();
+    const charCount = text.length;
+    const isEmpty = charCount === 0;
+    const isOverLength = charCount > 70;
+
+    // A skipped level occurs when jumping deeper down hierarchy by more than 1 level (e.g. H1 -> H3 or H2 -> H4)
+    const isSkipped = prevLevel > 0 && level > prevLevel + 1;
+
+    if (tagName === "h1" && text) {
+      h1Elements.push(text);
+    } else if (tagName === "h2" && text && h2Samples.length < 6) {
+      h2Samples.push(text);
     }
+
+    if (isEmpty) {
+      emptyHeadingsCount++;
+      headingIssues.push({
+        type: "empty_heading",
+        severity: "warning",
+        message: `Empty <${tagName.toUpperCase()}> tag found with no text content.`,
+        tag: tagName,
+        order: idx + 1,
+      });
+    }
+
+    if (isOverLength) {
+      headingIssues.push({
+        type: "long_heading",
+        severity: "info",
+        message: `<${tagName.toUpperCase()}> is ${charCount} chars long (recommended: < 70 chars for optimal snippet extraction).`,
+        tag: tagName,
+        text,
+        order: idx + 1,
+      });
+    }
+
+    if (isSkipped) {
+      skippedLevelsCount++;
+      headingIssues.push({
+        type: "skipped_level",
+        severity: "warning",
+        message: `Skipped heading level: jumped from <H${prevLevel}> directly to <H${level}> without intermediate <H${prevLevel + 1}>.`,
+        tag: tagName,
+        text,
+        order: idx + 1,
+      });
+    }
+
+    headingItems.push({
+      tag: tagName,
+      level,
+      text: isEmpty ? "(Empty Heading Tag)" : text,
+      charCount,
+      order: idx + 1,
+      isSkipped,
+      isEmpty,
+      isOverLength,
+    });
+
+    prevLevel = level;
   });
 
   const h2Count = $("h2").length;
@@ -252,6 +343,31 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
   const h4Count = $("h4").length;
   const h5Count = $("h5").length;
   const h6Count = $("h6").length;
+
+  if (h1Elements.length === 0) {
+    headingIssues.unshift({
+      type: "missing_h1",
+      severity: "error",
+      message: "Missing <H1> heading tag. Every crawlable page must have exactly one root H1 tag to establish main subject authority.",
+      tag: "h1",
+    });
+  } else if (h1Elements.length > 1) {
+    headingIssues.unshift({
+      type: "multiple_h1",
+      severity: "warning",
+      message: `Multiple (${h1Elements.length}) <H1> tags detected. Search engines recommend a single H1 to establish primary topic focus.`,
+      tag: "h1",
+    });
+  }
+
+  // Calculate deterministic hierarchy score (0-100)
+  let calcScore = 100;
+  if (h1Elements.length === 0) calcScore -= 30;
+  else if (h1Elements.length > 1) calcScore -= (h1Elements.length - 1) * 10;
+  if (h2Count === 0) calcScore -= 20;
+  calcScore -= Math.min(30, skippedLevelsCount * 8);
+  calcScore -= Math.min(20, emptyHeadingsCount * 10);
+  const hierarchyScore = Math.max(15, Math.min(100, calcScore));
 
   const headings: HeadingsAnalysis = {
     h1Count: h1Elements.length,
@@ -263,6 +379,12 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
     h5Count,
     h6Count,
     totalHeadings: h1Elements.length + h2Count + h3Count + h4Count + h5Count + h6Count,
+    items: headingItems,
+    issues: headingIssues,
+    hierarchyScore,
+    skippedLevelsCount,
+    emptyHeadingsCount,
+    maxDepth,
   };
 
   // 5. Images & Alt Attributes
