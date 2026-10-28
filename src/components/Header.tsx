@@ -199,7 +199,7 @@ export default function Header() {
                             </div>
                           </Link>
 
-                          <Link href="/analyze?tab=headers" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                          <Link href="/tools/security-headers" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                             <div className="flex items-start gap-3">
                               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <Lock className="w-4 h-4" />

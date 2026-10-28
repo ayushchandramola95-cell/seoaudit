@@ -147,7 +147,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/analyze?tab=headers" className="hover:text-white transition-colors">
+                <Link href="/tools/security-headers" className="hover:text-white transition-colors">
                   Security Headers Guard
                 </Link>
               </li>

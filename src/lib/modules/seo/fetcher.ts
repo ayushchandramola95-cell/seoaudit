@@ -1,6 +1,18 @@
 import * as cheerio from "cheerio";
 import { validateUrlForSsrf, SsrfSecurityError } from "@/lib/security/ssrf";
 
+export interface HeaderEvaluation {
+  key: string;
+  name: string;
+  value: string | null;
+  status: "secure" | "warning" | "missing";
+  scoreImpact: number;
+  description: string;
+  recommendation?: string;
+  attackMitigation: string;
+  directives?: Record<string, string | boolean>;
+}
+
 export interface SecurityHeadersReport {
   hsts: boolean;
   csp: boolean;
@@ -8,6 +20,18 @@ export interface SecurityHeadersReport {
   xContentTypeOptions: boolean;
   referrerPolicy: string | null;
   permissionsPolicy: boolean;
+  securityScore?: number;
+  grade?: "A+" | "A" | "B" | "C" | "F";
+  passedCount?: number;
+  warningCount?: number;
+  missingCount?: number;
+  evaluations?: HeaderEvaluation[];
+  rawHeaders?: Record<string, string>;
+  serverHeader?: string | null;
+  xPoweredBy?: string | null;
+  coop?: string | null;
+  coep?: string | null;
+  corp?: string | null;
 }
 
 export interface HeadingNode {
@@ -474,14 +498,101 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
   const bodyText = $("body").text().replace(/\s+/g, " ").trim();
   const wordCount = bodyText ? bodyText.split(" ").length : 0;
 
-  // 9. Security Headers
-  const hsts = Boolean(response.headers.get("strict-transport-security"));
-  const csp = Boolean(response.headers.get("content-security-policy"));
-  const xFrameOptions = response.headers.get("x-frame-options");
-  const xContentTypeOptions =
-    (response.headers.get("x-content-type-options") || "").toLowerCase() === "nosniff";
-  const referrerPolicy = response.headers.get("referrer-policy");
-  const permissionsPolicy = Boolean(response.headers.get("permissions-policy"));
+  // 9. Security Headers & Defense Matrix
+  const hstsRaw = response.headers.get("strict-transport-security");
+  const cspRaw = response.headers.get("content-security-policy");
+  const xfoRaw = response.headers.get("x-frame-options");
+  const xctoRaw = response.headers.get("x-content-type-options");
+  const rpRaw = response.headers.get("referrer-policy");
+  const ppRaw = response.headers.get("permissions-policy") || response.headers.get("feature-policy");
+  const coopRaw = response.headers.get("cross-origin-opener-policy");
+  const coepRaw = response.headers.get("cross-origin-embedder-policy");
+  const corpRaw = response.headers.get("cross-origin-resource-policy");
+  const serverRaw = response.headers.get("server");
+  const xpbRaw = response.headers.get("x-powered-by");
+
+  const hsts = Boolean(hstsRaw);
+  const csp = Boolean(cspRaw);
+  const xFrameOptions = xfoRaw;
+  const xContentTypeOptions = (xctoRaw || "").toLowerCase().includes("nosniff");
+  const referrerPolicy = rpRaw;
+  const permissionsPolicy = Boolean(ppRaw);
+
+  const evaluations: HeaderEvaluation[] = [
+    {
+      key: "strict-transport-security",
+      name: "HTTP Strict Transport Security (HSTS)",
+      value: hstsRaw,
+      status: hsts ? (hstsRaw?.includes("includeSubDomains") ? "secure" : "warning") : "missing",
+      scoreImpact: 25,
+      description: "Forces user agents to communicate exclusively over encrypted HTTPS, preventing SSL stripping.",
+      recommendation: hsts ? undefined : "Add 'Strict-Transport-Security: max-age=63072000; includeSubDomains; preload'.",
+      attackMitigation: "SSL Stripping, Man-in-the-Middle (MITM) Interception",
+    },
+    {
+      key: "content-security-policy",
+      name: "Content Security Policy (CSP)",
+      value: cspRaw,
+      status: csp ? (cspRaw?.includes("unsafe-inline") ? "warning" : "secure") : "missing",
+      scoreImpact: 25,
+      description: "Restricts origins of executable scripts, stylesheets, and iframes to neutralize code injection exploits.",
+      recommendation: csp ? undefined : "Configure a Content-Security-Policy restricting script-src, frame-ancestors, and object-src.",
+      attackMitigation: "Cross-Site Scripting (XSS), Clickjacking, Code Injection",
+    },
+    {
+      key: "x-frame-options",
+      name: "X-Frame-Options (Clickjacking Guard)",
+      value: xfoRaw,
+      status: xfoRaw ? "secure" : "missing",
+      scoreImpact: 15,
+      description: "Instructs browsers whether this page is permitted to be rendered inside an <iframe> or <embed>.",
+      recommendation: xfoRaw ? undefined : "Set 'X-Frame-Options: DENY' or 'SAMEORIGIN' to prevent framing attacks.",
+      attackMitigation: "Clickjacking, Hidden Overlay Attacks, UI Redress Exploits",
+    },
+    {
+      key: "x-content-type-options",
+      name: "X-Content-Type-Options (MIME Sniffing)",
+      value: xctoRaw,
+      status: xContentTypeOptions ? "secure" : "missing",
+      scoreImpact: 15,
+      description: "Prevents browsers from MIME-sniffing a response away from the declared content-type.",
+      recommendation: xContentTypeOptions ? undefined : "Set 'X-Content-Type-Options: nosniff'.",
+      attackMitigation: "MIME Confusion, Drive-By Executable Downloads",
+    },
+    {
+      key: "referrer-policy",
+      name: "Referrer-Policy (Privacy Isolation)",
+      value: rpRaw,
+      status: referrerPolicy ? "secure" : "warning",
+      scoreImpact: 10,
+      description: "Governs which referrer information should be sent when following links to external destinations.",
+      recommendation: referrerPolicy ? undefined : "Set 'Referrer-Policy: strict-origin-when-cross-origin'.",
+      attackMitigation: "Private URL Query Leaks, Auth Token Exfiltration",
+    },
+    {
+      key: "permissions-policy",
+      name: "Permissions-Policy (Hardware Sensor Sandbox)",
+      value: ppRaw,
+      status: permissionsPolicy ? "secure" : "warning",
+      scoreImpact: 10,
+      description: "Restricts embedded third-party frames from accessing device sensors like camera, microphone, or geolocation.",
+      recommendation: permissionsPolicy ? undefined : "Set 'Permissions-Policy: camera=(), microphone=(), geolocation=()'.",
+      attackMitigation: "Unauthorized Camera/Mic Hijacking, Location Fingerprinting",
+    },
+  ];
+
+  let calcSecScore = 0;
+  evaluations.forEach((e) => {
+    if (e.status === "secure") calcSecScore += e.scoreImpact;
+    else if (e.status === "warning") calcSecScore += Math.round(e.scoreImpact * 0.6);
+  });
+  const securityScore = Math.min(100, Math.max(10, calcSecScore));
+  const grade: SecurityHeadersReport["grade"] =
+    securityScore >= 95 ? "A+" : securityScore >= 85 ? "A" : securityScore >= 70 ? "B" : securityScore >= 50 ? "C" : "F";
+
+  const passedCount = evaluations.filter((e) => e.status === "secure").length;
+  const warningCount = evaluations.filter((e) => e.status === "warning").length;
+  const missingCount = evaluations.filter((e) => e.status === "missing").length;
 
   const securityHeaders: SecurityHeadersReport = {
     hsts,
@@ -490,6 +601,18 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
     xContentTypeOptions,
     referrerPolicy,
     permissionsPolicy,
+    securityScore,
+    grade,
+    passedCount,
+    warningCount,
+    missingCount,
+    evaluations,
+    rawHeaders: headersRecord,
+    serverHeader: serverRaw,
+    xPoweredBy: xpbRaw,
+    coop: coopRaw,
+    coep: coepRaw,
+    corp: corpRaw,
   };
 
   // 10. Check robots.txt and sitemap.xml asynchronously (non-blocking)

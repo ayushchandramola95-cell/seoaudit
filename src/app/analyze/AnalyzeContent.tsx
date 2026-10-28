@@ -2663,13 +2663,24 @@ export default function AnalyzeContent() {
 
               {/* 6-Point Critical Security Guard Matrix */}
               <div className="flat-card p-6 bg-white border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  6-Point HTTP Security Defense Matrix
-                </h3>
-                <p className="text-xs text-slate-500 mb-5">
-                  Deterministic inspection of critical response headers protecting modern web applications.
-                </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 mb-0.5 flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      6-Point HTTP Security Defense Matrix
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Deterministic inspection of critical response headers protecting modern web applications.
+                    </p>
+                  </div>
+                  <Link
+                    href={`/tools/security-headers?url=${encodeURIComponent(data.page.requestedUrl || data.page.finalUrl)}`}
+                    className="text-xs font-bold text-emerald-700 hover:text-emerald-900 transition-colors flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 self-start sm:self-auto"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    Dedicated Security Studio &amp; Hardening Generator ↗
+                  </Link>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
                   {/* HSTS */}

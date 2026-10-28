@@ -16,9 +16,9 @@ import {
   ExternalLink,
   Radar,
   Bot,
-  Flame,
   GitCompare,
   ListChecks,
+  Lock,
 } from "lucide-react";
 
 interface ToolCard {
@@ -66,6 +66,16 @@ export default function ToolsHubClient() {
       badge: "Semantic Tree",
       icon: Layers,
       metric: "H1–H6 Hierarchy",
+    },
+    {
+      id: "security-headers",
+      name: "Security Headers Guard & SSL Studio",
+      description: "Audit HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and generate 1-click server hardening configs.",
+      href: "/tools/security-headers",
+      category: "stack",
+      badge: "OWASP Hardened",
+      icon: Lock,
+      metric: "6 Critical Headers",
     },
     {
       id: "schema-validator",
