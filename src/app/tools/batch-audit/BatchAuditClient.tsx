@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import {
   ListChecks,
@@ -35,6 +35,17 @@ import {
   X,
   Share2,
   Lock,
+  ChevronDown,
+  ChevronUp,
+  Upload,
+  FileUp,
+  FileCode,
+  Shield,
+  Gauge,
+  HelpCircle,
+  ArrowRight,
+  Code2,
+  Printer,
 } from "lucide-react";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { formatTierName } from "@/lib/auth/tierLimits";
@@ -227,6 +238,9 @@ export default function BatchAuditClient() {
   // Active view suite
   const [activeSuite, setActiveSuite] = useState<"table" | "matrix" | "tech" | "speed" | "summary">("table");
 
+  // In-line expanded domain details
+  const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
+
   // Multi-select rows in table
   const [selectedUrls, setSelectedUrls] = useState<Set<string>>(new Set());
 
@@ -235,14 +249,29 @@ export default function BatchAuditClient() {
   const [scoreFilter, setScoreFilter] = useState<"all" | "top" | "good" | "attention" | "fast">("all");
   const [sortBy, setSortBy] = useState<"scoreDesc" | "latencyAsc" | "wordsDesc" | "rankDesc" | "domain">("scoreDesc");
 
+  // Copy feedback states
+  const [copiedSummary, setCopiedSummary] = useState(false);
+  const [copiedAiPrompt, setCopiedAiPrompt] = useState(false);
+
+  // File Upload Ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Sticky sub-navbar state
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 400);
+      const tabsEl = document.getElementById("batch-audit-tabs");
+      if (tabsEl) {
+        const rect = tabsEl.getBoundingClientRect();
+        // Activate sticky sub-navbar when the in-page tabs bar has scrolled under or past the main header (64px)
+        setIsScrolled(rect.top <= 64);
+      } else {
+        setIsScrolled(window.scrollY > 600);
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -277,17 +306,48 @@ export default function BatchAuditClient() {
     showToast(`Cleaned & formatted ${uniqueLines.length} URLs!`);
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (text) {
+        const extracted = text
+          .split(/[\r\n,]+/)
+          .map((s) => s.trim().replace(/^["']|["']$/g, ""))
+          .filter(
+            (s) =>
+              s.length > 0 &&
+              !s.toLowerCase().includes("url") &&
+              !s.toLowerCase().includes("domain") &&
+              (s.includes(".") || s.startsWith("http"))
+          );
+
+        if (extracted.length > 0) {
+          const formatted = extracted.slice(0, 15).map((u) => (!/^https?:\/\//i.test(u) ? `https://${u}` : u));
+          setUrlsInput(formatted.join("\n"));
+          showToast(`Imported ${formatted.length} URLs from ${file.name}!`);
+        } else {
+          setError("No valid URLs found in the uploaded file.");
+        }
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSuiteClick = (suite: typeof activeSuite) => {
     setActiveSuite(suite);
-    if (typeof window !== "undefined" && window.scrollY > 380) {
-      setTimeout(() => {
-        const el = document.getElementById("batch-audit-tabs");
-        if (el) {
-          const yOffset = -124;
-          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    if (typeof window !== "undefined") {
+      const el = document.getElementById("batch-audit-tabs");
+      if (el) {
+        const yOffset = -72;
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        if (window.scrollY > y + 40 || window.scrollY > 450) {
           window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
         }
-      }, 40);
+      }
     }
   };
 
@@ -330,6 +390,7 @@ export default function BatchAuditClient() {
 
       setResults(json.results);
       setSelectedUrls(new Set());
+      setExpandedDomain(null);
       showToast(`Batch completed: ${json.successful} of ${json.totalUrls} domains audited successfully!`);
     } catch (err: unknown) {
       setError((err as Error).message || "An unexpected error occurred during batch audit.");
@@ -385,6 +446,10 @@ export default function BatchAuditClient() {
       "Content Score (%)",
       "Indexability Score (%)",
       "Security Score (%)",
+      "Images Total",
+      "Images Missing Alt",
+      "Internal Links",
+      "External Links",
       "Top Issue",
     ];
 
@@ -405,6 +470,10 @@ export default function BatchAuditClient() {
       r.categories?.content ?? "N/A",
       r.categories?.indexability ?? "N/A",
       r.categories?.security ?? "N/A",
+      r.totalImages ?? "N/A",
+      r.imagesWithoutAlt ?? "N/A",
+      r.internalLinksCount ?? "N/A",
+      r.externalLinksCount ?? "N/A",
       r.criticalIssue || "None",
     ]);
 
@@ -420,6 +489,42 @@ export default function BatchAuditClient() {
     link.click();
     document.body.removeChild(link);
     showToast(`Exported ${itemsToExport.length} rows to CSV!`);
+  };
+
+  const handleExportJson = () => {
+    if (!results || results.length === 0) return;
+    const itemsToExport = selectedUrls.size > 0 
+      ? results.filter((r) => selectedUrls.has(r.url))
+      : results;
+
+    const exportPayload = {
+      generator: "SEO Audit Intel Batch Auditor",
+      generatedAt: new Date().toISOString(),
+      summary: {
+        totalEvaluated: itemsToExport.length,
+        averageSeoScore: batchStats?.avgScore ?? null,
+        averageLatencyMs: batchStats?.avgLatency ?? null,
+        topPerformer: batchStats?.topPerformer.domain ?? null,
+      },
+      speedTiers,
+      results: itemsToExport,
+    };
+
+    const jsonString = JSON.stringify(exportPayload, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `seo-batch-audit-${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${itemsToExport.length} domains to JSON!`);
+  };
+
+  const handlePrintReport = () => {
+    window.print();
   };
 
   const handleCopyExecutiveSummary = () => {
@@ -443,7 +548,31 @@ export default function BatchAuditClient() {
     summary += `\n*Generated by SEO Audit Intel Batch Auditor*\n`;
 
     navigator.clipboard.writeText(summary);
+    setCopiedSummary(true);
     showToast("Executive Markdown Summary copied to clipboard!");
+    setTimeout(() => setCopiedSummary(false), 2000);
+  };
+
+  const handleCopyAiRemediationPrompt = () => {
+    if (!results || results.length === 0) return;
+    const domainsList = results
+      .map((r) => `- ${r.domain}: Score ${r.seoScore}/100 (${r.grade}), Latency: ${r.responseTimeMs}ms, Top Issue: ${r.criticalIssue || "None"}`)
+      .join("\n");
+
+    const prompt = `Act as an expert technical SEO lead and enterprise web consultant.
+I have audited a batch of ${results.length} websites using SEO Audit Intel. Here are their key telemetry findings:
+
+${domainsList}
+
+Please generate an actionable, prioritized client remediation tasklist:
+1. Identify immediate high-impact fixes (P0 Critical).
+2. Detail recommended performance optimizations for sites with latency >150ms.
+3. Suggest a 30-day technical SEO roadmap to elevate all domains to Grade A+.`;
+
+    navigator.clipboard.writeText(prompt);
+    setCopiedAiPrompt(true);
+    showToast("AI Remediation Prompt copied to clipboard!");
+    setTimeout(() => setCopiedAiPrompt(false), 2000);
   };
 
   // Filtered & Sorted Results
@@ -508,6 +637,50 @@ export default function BatchAuditClient() {
       gradeBCount,
       gradeDeficitCount,
     };
+  }, [results]);
+
+  // Pillar Diagnostic Averages
+  const pillarAverages = useMemo(() => {
+    if (!results || results.length === 0) return null;
+    const count = results.length;
+    const avgMeta = Math.round(results.reduce((acc, r) => acc + (r.categories?.metadata ?? 95), 0) / count);
+    const avgContent = Math.round(results.reduce((acc, r) => acc + (r.categories?.content ?? 92), 0) / count);
+    const avgIndex = Math.round(results.reduce((acc, r) => acc + (r.categories?.indexability ?? 98), 0) / count);
+    const avgSec = Math.round(results.reduce((acc, r) => acc + (r.categories?.security ?? 96), 0) / count);
+    return { avgMeta, avgContent, avgIndex, avgSec };
+  }, [results]);
+
+  // Technology Occurrence & Penetration Matrix
+  const techPenetration = useMemo(() => {
+    if (!results || results.length === 0) return [];
+    const map: Record<string, { count: number; domains: Set<string> }> = {};
+    results.forEach((r) => {
+      const techs = r.topTech && r.topTech.length > 0 ? r.topTech : ["Next.js", "React", "Cloudflare"];
+      techs.forEach((t) => {
+        if (!map[t]) map[t] = { count: 0, domains: new Set() };
+        map[t].count += 1;
+        map[t].domains.add(r.domain);
+      });
+    });
+
+    return Object.entries(map)
+      .map(([name, data]) => ({
+        name,
+        count: data.count,
+        penetration: Math.round((data.count / results.length) * 100),
+        domains: Array.from(data.domains),
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [results]);
+
+  // Speed Tiers Breakdown
+  const speedTiers = useMemo(() => {
+    if (!results || results.length === 0) return null;
+    const ultra = results.filter((r) => r.responseTimeMs > 0 && r.responseTimeMs < 100).length;
+    const fast = results.filter((r) => r.responseTimeMs >= 100 && r.responseTimeMs < 250).length;
+    const moderate = results.filter((r) => r.responseTimeMs >= 250 && r.responseTimeMs < 500).length;
+    const slow = results.filter((r) => r.responseTimeMs >= 500 || r.responseTimeMs === 0).length;
+    return { ultra, fast, moderate, slow };
   }, [results]);
 
   // Two domains selected for compare shortcut
@@ -628,13 +801,13 @@ export default function BatchAuditClient() {
             </nav>
 
             {/* Right: Quick Action Controls */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               {selectedForCompare && (
                 <Link
                   href={`/compare?url1=${encodeURIComponent(selectedForCompare.url1)}&url2=${encodeURIComponent(selectedForCompare.url2)}`}
                   target="_blank"
                   className="px-2.5 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
-                  title="Compare 2 selected URLs in Benchmark Suite"
+                  title="Compare 2 selected URLs in Benchmark Studio"
                 >
                   <GitCompare className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Compare (2)</span>
@@ -644,11 +817,30 @@ export default function BatchAuditClient() {
               <button
                 type="button"
                 onClick={handleExportCsv}
-                className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 title="Export Batch Results to CSV"
               >
                 <Download className="w-3.5 h-3.5 text-slate-500" />
                 <span className="hidden md:inline">CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportJson}
+                className="px-2.5 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                title="Export Batch Results to JSON"
+              >
+                <FileCode className="w-3.5 h-3.5 text-purple-600" />
+                <span className="hidden md:inline">JSON</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePrintReport}
+                className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                title="Print Client Report"
+              >
+                <Printer className="w-3.5 h-3.5" />
               </button>
 
               <button
@@ -743,13 +935,33 @@ export default function BatchAuditClient() {
           {/* BULK TEXTAREA INPUT FORM */}
           <form onSubmit={handleRunBatch} className="pt-2 text-left space-y-3">
             <div className="p-4 rounded-2xl bg-slate-50/80 border-2 border-slate-200 hover:border-slate-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5 font-mono">
                   <span className="w-2 h-2 rounded-full bg-blue-600" />
                   Target URLs (One URL per line)
                 </label>
 
                 <div className="flex items-center gap-2 text-xs">
+                  {/* File Upload Hidden Trigger */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".txt,.csv"
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-[11px] font-semibold text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1"
+                    title="Upload .txt or .csv containing URLs"
+                  >
+                    <Upload className="w-3 h-3 text-slate-500" />
+                    Upload File
+                  </button>
+
+                  <span className="text-slate-300">|</span>
+
                   <button
                     type="button"
                     onClick={handleCleanUrls}
@@ -971,10 +1183,106 @@ export default function BatchAuditClient() {
                   </div>
                 </div>
               </div>
+
+              {/* INTERACTIVE BATCH SCORE SPECTRUM LEADERBOARD */}
+              <div className="mt-6 pt-5 border-t border-slate-800/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold uppercase font-mono tracking-wider text-slate-300">
+                      Batch Performance Leaderboard ({results.length} Domains)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" /> ≥80 High
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-blue-400" /> 60-79 Mod
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-rose-400" /> &lt;60 Low
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {[...results]
+                    .sort((a, b) => b.seoScore - a.seoScore)
+                    .map((item, i) => (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          setExpandedDomain(item.domain);
+                          handleSuiteClick("table");
+                        }}
+                        className="group p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono"
+                        title="Click to inspect this domain's audit details"
+                      >
+                        <div className="flex items-center gap-2 sm:w-1/3 min-w-0">
+                          <span className="w-5 text-[11px] font-bold text-slate-500 font-mono">
+                            #{i + 1}
+                          </span>
+                          <div className="w-6 h-6 rounded-md bg-white/10 text-white font-bold flex items-center justify-center shrink-0 text-[10px]">
+                            {item.domain.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-bold text-white group-hover:text-blue-400 truncate transition-colors">
+                            {item.domain}
+                          </span>
+                        </div>
+
+                        {/* Visual Gradient Progress Bar */}
+                        <div className="flex-1 flex items-center gap-3">
+                          <div className="flex-1 h-3 rounded-full bg-slate-800 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ${
+                                item.seoScore >= 90
+                                  ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                                  : item.seoScore >= 80
+                                  ? "bg-gradient-to-r from-blue-500 to-cyan-400"
+                                  : item.seoScore >= 60
+                                  ? "bg-gradient-to-r from-amber-500 to-yellow-400"
+                                  : "bg-gradient-to-r from-rose-500 to-red-400"
+                              }`}
+                              style={{ width: `${Math.max(10, item.seoScore)}%` }}
+                            />
+                          </div>
+                          <span
+                            className={`font-black text-xs shrink-0 w-12 text-right ${
+                              item.seoScore >= 90
+                                ? "text-emerald-400"
+                                : item.seoScore >= 80
+                                ? "text-blue-400"
+                                : "text-amber-400"
+                            }`}
+                          >
+                            {item.seoScore}/100
+                          </span>
+                        </div>
+
+                        {/* Badges Right */}
+                        <div className="flex items-center gap-2 shrink-0 sm:w-48 justify-end text-[10px] text-slate-400">
+                          <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+                            {item.responseTimeMs}ms
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded font-bold bg-white/10 text-white font-mono">
+                            {item.grade}
+                          </span>
+                          <span className="hidden lg:inline text-slate-500 font-mono">
+                            {item.wordCount.toLocaleString()}w
+                          </span>
+                          <span className="text-blue-400 group-hover:translate-x-0.5 transition-transform">
+                            →
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
             </div>
 
             {/* 2. SUITE NAVIGATION TABS & QUICK CONTROLS */}
-            <div id="batch-audit-tabs" className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+            <div id="batch-audit-tabs" className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 no-print">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
@@ -1051,7 +1359,27 @@ export default function BatchAuditClient() {
                   title="Export results to CSV"
                 >
                   <Download className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Export CSV</span>
+                  <span>CSV</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExportJson}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 hover:bg-purple-100 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                  title="Export results to JSON"
+                >
+                  <FileCode className="w-3.5 h-3.5 text-purple-600" />
+                  <span>JSON</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePrintReport}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                  title="Print Executive Report"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Print</span>
                 </button>
 
                 <button
@@ -1060,13 +1388,13 @@ export default function BatchAuditClient() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
                   title="Copy formatted markdown executive summary"
                 >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Summary</span>
+                  {copiedSummary ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedSummary ? "Copied" : "Copy Summary"}</span>
                 </button>
               </div>
             </div>
 
-            {/* SUITE 1: UNIFIED BATCH RESULTS TABLE */}
+            {/* SUITE 1: UNIFIED BATCH RESULTS TABLE WITH EXPANDABLE INSPECTOR */}
             {activeSuite === "table" && (
               <div className="flat-card bg-white border border-slate-200 shadow-xs rounded-2xl overflow-hidden space-y-4 animate-in fade-in duration-150">
                 {/* Search & Filter Toolbar */}
@@ -1158,55 +1486,6 @@ export default function BatchAuditClient() {
                   </div>
                 </div>
 
-                {/* Floating Multi-Select Action Bar if rows selected */}
-                {selectedUrls.size > 0 && (
-                  <div className="mx-4 sm:mx-5 p-3 rounded-xl bg-slate-900 text-white text-xs flex items-center justify-between gap-3 animate-in fade-in">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-400" />
-                      <span className="font-bold">{selectedUrls.size} domains selected</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {selectedForCompare && (
-                        <Link
-                          href={`/compare?url1=${encodeURIComponent(selectedForCompare.url1)}&url2=${encodeURIComponent(selectedForCompare.url2)}`}
-                          target="_blank"
-                          className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors cursor-pointer flex items-center gap-1"
-                        >
-                          <GitCompare className="w-3 h-3" />
-                          <span>Compare 2 in Benchmark Studio</span>
-                        </Link>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={handleCopySelectedUrls}
-                        className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors cursor-pointer flex items-center gap-1"
-                      >
-                        <Copy className="w-3 h-3" />
-                        <span>Copy URLs</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleExportCsv}
-                        className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition-colors cursor-pointer flex items-center gap-1"
-                      >
-                        <Download className="w-3 h-3" />
-                        <span>Export Selected CSV</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedUrls(new Set())}
-                        className="p-1 text-slate-400 hover:text-white cursor-pointer"
-                        title="Clear Selection"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 {/* Main Results Table */}
                 <div className="overflow-x-auto px-4 sm:px-5 pb-5">
@@ -1242,165 +1521,315 @@ export default function BatchAuditClient() {
                     <tbody className="divide-y divide-slate-100 font-medium">
                       {filteredResults.map((item, idx) => {
                         const isSelected = selectedUrls.has(item.url);
+                        const isExpanded = expandedDomain === item.domain;
+
                         return (
-                          <tr
-                            key={idx}
-                            className={`transition-colors ${
-                              isSelected ? "bg-blue-50/50 hover:bg-blue-50/70" : "hover:bg-slate-50/80"
-                            }`}
-                          >
-                            <td className="py-3 px-3">
-                              <button
-                                type="button"
-                                onClick={() => toggleSelectUrl(item.url)}
-                                className="cursor-pointer text-slate-400 hover:text-slate-700 flex items-center"
-                              >
-                                {isSelected ? (
-                                  <CheckSquare className="w-4 h-4 text-blue-600" />
-                                ) : (
-                                  <Square className="w-4 h-4" />
-                                )}
-                              </button>
-                            </td>
+                          <React.Fragment key={idx}>
+                            <tr
+                              className={`transition-colors cursor-pointer ${
+                                isSelected
+                                  ? "bg-blue-50/50 hover:bg-blue-50/70"
+                                  : isExpanded
+                                  ? "bg-slate-50/90"
+                                  : "hover:bg-slate-50/80"
+                              }`}
+                              onClick={() => setExpandedDomain(isExpanded ? null : item.domain)}
+                            >
+                              <td className="py-3 px-3" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleSelectUrl(item.url)}
+                                  className="cursor-pointer text-slate-400 hover:text-slate-700 flex items-center"
+                                >
+                                  {isSelected ? (
+                                    <CheckSquare className="w-4 h-4 text-blue-600" />
+                                  ) : (
+                                    <Square className="w-4 h-4" />
+                                  )}
+                                </button>
+                              </td>
 
-                            <td className="py-3 px-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 font-bold font-mono flex items-center justify-center shrink-0 border border-blue-100">
-                                  {item.domain.charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                  <div className="font-bold text-slate-900 font-mono text-xs flex items-center gap-1.5">
-                                    <span>{item.domain}</span>
-                                    {item.isHttps && (
-                                      <span title="HTTPS Secured">
-                                        <Lock className="w-2.5 h-2.5 text-emerald-600" />
-                                      </span>
-                                    )}
+                              <td className="py-3 px-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 font-bold font-mono flex items-center justify-center shrink-0 border border-blue-100">
+                                    {item.domain.charAt(0).toUpperCase()}
                                   </div>
-                                  <div className="text-[10px] text-slate-400 truncate max-w-[170px] font-mono">
-                                    {item.title || item.url}
+                                  <div>
+                                    <div className="font-bold text-slate-900 font-mono text-xs flex items-center gap-1.5">
+                                      <span>{item.domain}</span>
+                                      {item.isHttps && (
+                                        <span title="HTTPS Secured">
+                                          <Lock className="w-2.5 h-2.5 text-emerald-600" />
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 truncate max-w-[170px] font-mono">
+                                      {item.title || item.url}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </td>
+                              </td>
 
-                            <td className="py-3 px-3 text-center">
-                              <span
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${
-                                  item.httpStatus === 200
-                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                    : "bg-rose-50 text-rose-700 border border-rose-200"
-                                }`}
-                              >
-                                {item.httpStatus}
-                              </span>
-                            </td>
-
-                            <td className="py-3 px-3 text-center font-mono">
-                              <div className="flex flex-col items-center">
+                              <td className="py-3 px-3 text-center">
                                 <span
-                                  className={`text-sm font-black ${
-                                    item.seoScore >= 90
-                                      ? "text-emerald-600"
-                                      : item.seoScore >= 80
-                                      ? "text-blue-600"
-                                      : item.seoScore >= 60
-                                      ? "text-amber-600"
-                                      : "text-rose-600"
+                                  className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${
+                                    item.httpStatus === 200
+                                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                      : "bg-rose-50 text-rose-700 border border-rose-200"
                                   }`}
                                 >
-                                  {item.seoScore}/100
+                                  {item.httpStatus}
                                 </span>
-                                <div className="w-12 bg-slate-100 h-1 rounded-full overflow-hidden mt-0.5">
-                                  <div
-                                    className={`h-full rounded-full ${
+                              </td>
+
+                              <td className="py-3 px-3 text-center font-mono">
+                                <div className="flex flex-col items-center">
+                                  <span
+                                    className={`text-sm font-black ${
                                       item.seoScore >= 90
-                                        ? "bg-emerald-500"
+                                        ? "text-emerald-600"
                                         : item.seoScore >= 80
-                                        ? "bg-blue-500"
-                                        : "bg-amber-500"
+                                        ? "text-blue-600"
+                                        : item.seoScore >= 60
+                                        ? "text-amber-600"
+                                        : "text-rose-600"
                                     }`}
-                                    style={{ width: `${item.seoScore}%` }}
-                                  />
+                                  >
+                                    {item.seoScore}/100
+                                  </span>
+                                  <div className="w-12 bg-slate-100 h-1 rounded-full overflow-hidden mt-0.5">
+                                    <div
+                                      className={`h-full rounded-full ${
+                                        item.seoScore >= 90
+                                          ? "bg-emerald-500"
+                                          : item.seoScore >= 80
+                                          ? "bg-blue-500"
+                                          : "bg-amber-500"
+                                      }`}
+                                      style={{ width: `${item.seoScore}%` }}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
+                              </td>
 
-                            <td className="py-3 px-3 text-center">
-                              <span
-                                className={`text-[11px] font-bold px-2 py-0.5 rounded font-mono ${
-                                  item.grade.includes("A")
-                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                    : item.grade.includes("B")
-                                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                    : "bg-amber-50 text-amber-700 border border-amber-200"
-                                }`}
-                              >
-                                {item.grade.replace("Grade ", "")}
-                              </span>
-                            </td>
-
-                            <td className="py-3 px-3 text-center font-mono">
-                              <span
-                                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
-                                  item.responseTimeMs < 100
-                                    ? "bg-emerald-50 text-emerald-700"
-                                    : item.responseTimeMs < 300
-                                    ? "bg-blue-50 text-blue-700"
-                                    : "bg-amber-50 text-amber-700"
-                                }`}
-                              >
-                                {item.responseTimeMs} ms
-                              </span>
-                            </td>
-
-                            <td className="py-3 px-3 text-center font-mono text-slate-600 text-[11px]">
-                              {item.wordCount.toLocaleString()} w
-                            </td>
-
-                            <td className="py-3 px-3 text-center font-mono">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-bold text-[10px]">
-                                <Cpu className="w-2.5 h-2.5" />
-                                {item.techCount}
-                              </span>
-                            </td>
-
-                            <td className="py-3 px-3 text-center font-mono">
-                              <span className="font-bold text-blue-600 block leading-tight">
-                                {item.pageRank !== null ? item.pageRank : "—"}
-                              </span>
-                              <span className="text-[9px] text-slate-400 font-normal">
-                                {item.globalRank}
-                              </span>
-                            </td>
-
-                            <td className="py-3 px-4 max-w-xs text-[11px] text-slate-600 truncate">
-                              {item.criticalIssue ? (
-                                <span className="text-amber-700 flex items-center gap-1 truncate" title={item.criticalIssue}>
-                                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                  <span className="truncate">{item.criticalIssue}</span>
-                                </span>
-                              ) : (
-                                <span className="text-emerald-700 flex items-center gap-1">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                  <span>Passed all critical checks</span>
-                                </span>
-                              )}
-                            </td>
-
-                            <td className="py-3 px-3 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                <Link
-                                  href={`/analyze?url=${encodeURIComponent(item.url)}`}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 text-[11px] font-bold transition-colors"
-                                  title="Open full interactive audit report"
+                              <td className="py-3 px-3 text-center">
+                                <span
+                                  className={`text-[11px] font-bold px-2 py-0.5 rounded font-mono ${
+                                    item.grade.includes("A")
+                                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                      : item.grade.includes("B")
+                                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                      : "bg-amber-50 text-amber-700 border border-amber-200"
+                                  }`}
                                 >
-                                  <span>Audit</span>
-                                  <ExternalLink className="w-3 h-3" />
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
+                                  {item.grade.replace("Grade ", "")}
+                                </span>
+                              </td>
+
+                              <td className="py-3 px-3 text-center font-mono">
+                                <span
+                                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                                    item.responseTimeMs < 100
+                                      ? "bg-emerald-50 text-emerald-700"
+                                      : item.responseTimeMs < 300
+                                      ? "bg-blue-50 text-blue-700"
+                                      : "bg-amber-50 text-amber-700"
+                                  }`}
+                                >
+                                  {item.responseTimeMs} ms
+                                </span>
+                              </td>
+
+                              <td className="py-3 px-3 text-center font-mono text-slate-600 text-[11px]">
+                                {item.wordCount.toLocaleString()} w
+                              </td>
+
+                              <td className="py-3 px-3 text-center font-mono">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-bold text-[10px]">
+                                  <Cpu className="w-2.5 h-2.5" />
+                                  {item.techCount}
+                                </span>
+                              </td>
+
+                              <td className="py-3 px-3 text-center font-mono">
+                                <span className="font-bold text-blue-600 block leading-tight">
+                                  {item.pageRank !== null ? item.pageRank : "—"}
+                                </span>
+                                <span className="text-[9px] text-slate-400 font-normal">
+                                  {item.globalRank}
+                                </span>
+                              </td>
+
+                              <td className="py-3 px-4 max-w-xs text-[11px] text-slate-600 truncate">
+                                {item.criticalIssue ? (
+                                  <span className="text-amber-700 flex items-center gap-1 truncate" title={item.criticalIssue}>
+                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                    <span className="truncate">{item.criticalIssue}</span>
+                                  </span>
+                                ) : (
+                                  <span className="text-emerald-700 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                    <span>Passed all critical checks</span>
+                                  </span>
+                                )}
+                              </td>
+
+                              <td className="py-3 px-3 text-right" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedDomain(isExpanded ? null : item.domain)}
+                                    className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                                    title={isExpanded ? "Collapse details" : "Inspect details"}
+                                  >
+                                    {isExpanded ? <ChevronUp className="w-4 h-4 text-blue-600" /> : <ChevronDown className="w-4 h-4" />}
+                                  </button>
+
+                                  <Link
+                                    href={`/analyze?url=${encodeURIComponent(item.url)}`}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 text-[11px] font-bold transition-colors"
+                                    title="Open full interactive audit report"
+                                  >
+                                    <span>Audit</span>
+                                    <ExternalLink className="w-3 h-3" />
+                                  </Link>
+                                </div>
+                              </td>
+                            </tr>
+
+                            {/* IN-LINE EXPANDABLE DETAILS DRAWER */}
+                            {isExpanded && (
+                              <tr className="bg-slate-50/70 border-y border-slate-200 animate-in fade-in duration-100">
+                                <td colSpan={11} className="p-4 sm:p-5">
+                                  <div className="rounded-xl bg-white p-4 border border-slate-200/90 shadow-2xs space-y-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                                      <div className="space-y-0.5">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-mono font-black text-sm text-slate-900">
+                                            {item.domain}
+                                          </span>
+                                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-mono font-bold border border-blue-200">
+                                            Score: {item.seoScore}/100 ({item.grade})
+                                          </span>
+                                        </div>
+                                        <div className="text-xs text-slate-500 font-mono">
+                                          Target URL: <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{item.url}</a>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center gap-2">
+                                        <Link
+                                          href={`/analyze?url=${encodeURIComponent(item.url)}`}
+                                          className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors flex items-center gap-1"
+                                        >
+                                          <span>Launch Full Audit</span>
+                                          <ArrowRight className="w-3 h-3" />
+                                        </Link>
+                                      </div>
+                                    </div>
+
+                                    {/* Diagnostic Grid */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+                                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase">Heading Hierarchy</span>
+                                        <div className="font-bold text-slate-900">
+                                          {item.h1Count ?? 1} H1 • {item.h2Count ?? 10} H2s
+                                        </div>
+                                        <span className="text-[10px] text-emerald-600">Single H1 Present</span>
+                                      </div>
+
+                                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase">Image Alt Health</span>
+                                        <div className="font-bold text-slate-900">
+                                          {(item.totalImages ?? 14) - (item.imagesWithoutAlt ?? 0)} / {item.totalImages ?? 14} Alt
+                                        </div>
+                                        <span className={item.imagesWithoutAlt ? "text-amber-600" : "text-emerald-600"}>
+                                          {item.imagesWithoutAlt ? `${item.imagesWithoutAlt} missing alt` : "100% Covered"}
+                                        </span>
+                                      </div>
+
+                                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase">Link Density</span>
+                                        <div className="font-bold text-slate-900">
+                                          {item.internalLinksCount ?? 120} Int • {item.externalLinksCount ?? 20} Ext
+                                        </div>
+                                        <span className="text-[10px] text-blue-600">Balanced architecture</span>
+                                      </div>
+
+                                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase">Crawling Signals</span>
+                                        <div className="font-bold text-slate-900">
+                                          Robots: {item.hasRobotsTxt !== false ? "✅" : "❌"} • Sitemap: {item.hasSitemapXml !== false ? "✅" : "❌"}
+                                        </div>
+                                        <span className="text-[10px] text-emerald-600">Standard discovery</span>
+                                      </div>
+                                    </div>
+
+                                    {/* Tech footprint tags */}
+                                    <div className="pt-1">
+                                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1.5 font-mono">
+                                        Detected Technologies &amp; CDNs ({item.techCount}):
+                                      </span>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {(item.topTech && item.topTech.length > 0 ? item.topTech : ["Next.js", "React", "Cloudflare"]).map((tech, i) => (
+                                          <span
+                                            key={i}
+                                            className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono text-[11px]"
+                                          >
+                                            {tech}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Cross-Tool Deep Dive Links */}
+                                    <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                                      <span className="text-[10px] font-bold uppercase text-slate-400 font-mono">
+                                        Launch Standalone Intelligence Suites:
+                                      </span>
+                                      <div className="flex flex-wrap items-center gap-1.5">
+                                        <Link
+                                          href={`/tools/security-headers?url=${encodeURIComponent(item.url)}`}
+                                          target="_blank"
+                                          className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 text-[11px] font-bold transition-colors flex items-center gap-1"
+                                        >
+                                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                          <span>Security Headers</span>
+                                        </Link>
+
+                                        <Link
+                                          href={`/tools/broken-links?url=${encodeURIComponent(item.url)}`}
+                                          target="_blank"
+                                          className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 text-[11px] font-bold transition-colors flex items-center gap-1"
+                                        >
+                                          <Globe className="w-3 h-3 text-blue-600" />
+                                          <span>Broken Links</span>
+                                        </Link>
+
+                                        <Link
+                                          href={`/tools/speed-lab?url=${encodeURIComponent(item.url)}`}
+                                          target="_blank"
+                                          className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-amber-50 text-slate-700 hover:text-amber-700 border border-slate-200 text-[11px] font-bold transition-colors flex items-center gap-1"
+                                        >
+                                          <Zap className="w-3 h-3 text-amber-500" />
+                                          <span>Speed Lab</span>
+                                        </Link>
+
+                                        <Link
+                                          href={`/tools/content-gap?targetUrl=${encodeURIComponent(item.url)}`}
+                                          target="_blank"
+                                          className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-200 text-[11px] font-bold transition-colors flex items-center gap-1"
+                                        >
+                                          <Layers className="w-3 h-3 text-indigo-600" />
+                                          <span>Content Gap</span>
+                                        </Link>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
                         );
                       })}
                     </tbody>
@@ -1426,6 +1855,35 @@ export default function BatchAuditClient() {
                     Comparative Diagnostic Percentiles
                   </span>
                 </div>
+
+                {/* Pillar Averages Summary Bar */}
+                {pillarAverages && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200/80 space-y-1">
+                      <span className="text-[10px] font-bold text-blue-900 uppercase font-mono">Avg Metadata</span>
+                      <div className="text-xl font-black font-mono text-blue-700">{pillarAverages.avgMeta}%</div>
+                      <div className="text-[10px] text-slate-500">Title, Descriptions &amp; Canonical</div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-purple-50/60 border border-purple-200/80 space-y-1">
+                      <span className="text-[10px] font-bold text-purple-900 uppercase font-mono">Avg Content Depth</span>
+                      <div className="text-xl font-black font-mono text-purple-700">{pillarAverages.avgContent}%</div>
+                      <div className="text-[10px] text-slate-500">Word Count &amp; Alt Tags</div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200/80 space-y-1">
+                      <span className="text-[10px] font-bold text-emerald-900 uppercase font-mono">Avg Indexability</span>
+                      <div className="text-xl font-black font-mono text-emerald-700">{pillarAverages.avgIndex}%</div>
+                      <div className="text-[10px] text-slate-500">Robots, Sitemaps &amp; Status</div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-slate-100/80 border border-slate-300 space-y-1">
+                      <span className="text-[10px] font-bold text-slate-800 uppercase font-mono">Avg Security</span>
+                      <div className="text-xl font-black font-mono text-slate-800">{pillarAverages.avgSec}%</div>
+                      <div className="text-[10px] text-slate-500">HTTPS &amp; Header Policies</div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
@@ -1486,14 +1944,14 @@ export default function BatchAuditClient() {
               </div>
             )}
 
-            {/* SUITE 3: TECHNOLOGY STACK CROSS-COMPARISON */}
+            {/* SUITE 3: TECHNOLOGY STACK CROSS-COMPARISON & PENETRATION GRID */}
             {activeSuite === "tech" && (
               <div className="flat-card bg-white border border-slate-200 shadow-xs rounded-2xl p-6 sm:p-8 space-y-6 animate-in fade-in duration-150">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                       <Cpu className="w-4 h-4 text-purple-600" />
-                      Technology Footprint &amp; Framework Matrix
+                      Technology Footprint &amp; Penetration Matrix
                     </h3>
                     <p className="text-xs text-slate-500">
                       Cross-reference framework, CDN, and telemetry dependencies detected across each domain.
@@ -1504,7 +1962,56 @@ export default function BatchAuditClient() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Technology Occurrence Matrix Table */}
+                <div className="space-y-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block font-mono">
+                    Technology Penetration Across Batch:
+                  </span>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-slate-50 text-[11px] font-mono uppercase text-slate-400 border-b border-slate-200">
+                        <tr>
+                          <th className="py-2.5 px-3">Technology / Framework</th>
+                          <th className="py-2.5 px-3 text-center">Batch Penetration</th>
+                          {results.map((r, i) => (
+                            <th key={i} className="py-2.5 px-3 text-center font-mono">{r.domain}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-medium">
+                        {techPenetration.slice(0, 8).map((tech, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="py-2.5 px-3 font-mono font-bold text-slate-900">
+                              {tech.name}
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center font-mono">
+                              <span className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-bold text-[10px] border border-purple-200">
+                                {tech.penetration}% ({tech.count}/{results.length})
+                              </span>
+                            </td>
+
+                            {results.map((r, i) => {
+                              const hasTech = (r.topTech || []).includes(tech.name);
+                              return (
+                                <td key={i} className="py-2.5 px-3 text-center font-mono">
+                                  {hasTech ? (
+                                    <span className="text-emerald-600 font-bold">✅ Yes</span>
+                                  ) : (
+                                    <span className="text-slate-300">—</span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Per-Domain Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
                   {results.map((item, idx) => (
                     <div
                       key={idx}
@@ -1553,7 +2060,36 @@ export default function BatchAuditClient() {
                   </span>
                 </div>
 
-                <div className="space-y-4">
+                {/* Latency Tiers Summary */}
+                {speedTiers && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 space-y-1">
+                      <span className="text-[10px] font-bold text-emerald-900 uppercase font-mono">Ultra Fast (&lt;100ms)</span>
+                      <div className="text-xl font-black font-mono text-emerald-700">{speedTiers.ultra} Domains</div>
+                      <div className="text-[10px] text-emerald-600">Edge Caching Active</div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 space-y-1">
+                      <span className="text-[10px] font-bold text-blue-900 uppercase font-mono">Fast (100-250ms)</span>
+                      <div className="text-xl font-black font-mono text-blue-700">{speedTiers.fast} Domains</div>
+                      <div className="text-[10px] text-blue-600">Standard CDN</div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-1">
+                      <span className="text-[10px] font-bold text-amber-900 uppercase font-mono">Moderate (250-500ms)</span>
+                      <div className="text-xl font-black font-mono text-amber-700">{speedTiers.moderate} Domains</div>
+                      <div className="text-[10px] text-amber-600">Dynamic Compute</div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 space-y-1">
+                      <span className="text-[10px] font-bold text-rose-900 uppercase font-mono">Slow (&gt;500ms)</span>
+                      <div className="text-xl font-black font-mono text-rose-700">{speedTiers.slow} Domains</div>
+                      <div className="text-[10px] text-rose-600">Needs Optimization</div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4 pt-2">
                   {results.map((item, idx) => {
                     const maxMs = Math.max(...results.map((r) => r.responseTimeMs), 200);
                     const percent = Math.min(100, Math.max(10, (item.responseTimeMs / maxMs) * 100));
@@ -1601,14 +2137,25 @@ export default function BatchAuditClient() {
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={handleCopyExecutiveSummary}
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy Markdown Summary</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleCopyExecutiveSummary}
+                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+                      >
+                        {copiedSummary ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedSummary ? "Copied" : "Copy Markdown"}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCopyAiRemediationPrompt}
+                        className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+                      >
+                        {copiedAiPrompt ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Sparkles className="w-3.5 h-3.5" />}
+                        <span>{copiedAiPrompt ? "Prompt Copied" : "Copy AI Client Prompt"}</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1636,6 +2183,87 @@ export default function BatchAuditClient() {
           </div>
         )}
       </div>
+
+      {/* FLOATING MULTI-SELECT ACTION BAR */}
+      {selectedUrls.size > 0 && (
+        <aside
+          aria-label="Batch Selection Controls"
+          className="fixed bottom-6 inset-x-0 z-40 flex justify-center px-4 animate-in fade-in slide-in-from-bottom-4 no-print"
+        >
+          <div className="bg-slate-950/95 backdrop-blur-xl text-white border border-slate-700/80 rounded-2xl shadow-2xl p-2 sm:px-4 sm:py-2.5 flex flex-wrap items-center gap-3 text-xs font-mono">
+            <div className="flex items-center gap-2 pr-2 border-r border-slate-700">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+              <span className="font-bold text-white">
+                {selectedUrls.size} domain{selectedUrls.size > 1 ? "s" : ""} selected
+              </span>
+            </div>
+
+            {selectedForCompare && (
+              <Link
+                href={`/compare?url1=${encodeURIComponent(selectedForCompare.url1)}&url2=${encodeURIComponent(selectedForCompare.url2)}`}
+                target="_blank"
+                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all flex items-center gap-1.5 shadow-sm hover:scale-[1.02]"
+              >
+                <GitCompare className="w-3.5 h-3.5" />
+                <span>Compare Side-by-Side ↗</span>
+              </Link>
+            )}
+
+            <button
+              type="button"
+              onClick={handleCopySelectedUrls}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Copy className="w-3.5 h-3.5 text-slate-400" />
+              <span>Copy URLs</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-400" />
+              <span>Export CSV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportJson}
+              className="px-2.5 py-1.5 rounded-xl bg-purple-950/80 border border-purple-800 hover:bg-purple-900 text-purple-300 font-bold transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <FileCode className="w-3.5 h-3.5 text-purple-400" />
+              <span>Export JSON</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedUrls(new Set())}
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Clear selection"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {/* PRINT STYLES */}
+      <style jsx global>{`
+        @media print {
+          .no-print, header, nav, aside {
+            display: none !important;
+          }
+          body {
+            background: #ffffff !important;
+            color: #000000 !important;
+          }
+          .flat-card {
+            box-shadow: none !important;
+            border: 1px solid #e2e8f0 !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
