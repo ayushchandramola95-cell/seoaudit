@@ -14,6 +14,9 @@ export interface LinkAuditItem {
   timingMs: number;
   health: "healthy" | "redirect" | "broken" | "timeout";
   redirectUrl?: string;
+  isHttps: boolean;
+  isAnchorEmpty: boolean;
+  isGenericAnchor: boolean;
 }
 
 export interface LinkCrawlerReport {
@@ -26,6 +29,10 @@ export interface LinkCrawlerReport {
     linkHealthScore: number;
     internalCount: number;
     externalCount: number;
+    insecureHttpCount: number;
+    emptyAnchorCount: number;
+    genericAnchorCount: number;
+    avgLatencyMs: number;
   };
   items: LinkAuditItem[];
 }
@@ -127,29 +134,55 @@ export async function auditLinksHealth(
         health = "broken";
       }
 
+      const rawLocation = res.headers.get("location");
+      let resolvedRedirectUrl: string | undefined = undefined;
+      if (rawLocation) {
+        try {
+          resolvedRedirectUrl = new URL(rawLocation, link.url).href;
+        } catch {
+          resolvedRedirectUrl = rawLocation;
+        }
+      }
+
+      const isHttps = link.url.startsWith("https://");
+      const cleanAnchor = (link.anchorText || "").trim();
+      const isAnchorEmpty = !cleanAnchor || cleanAnchor.toLowerCase() === "(no anchor text)";
+      const isGenericAnchor = ["click here", "read more", "here", "learn more", "link", "more", "details", "website"].includes(cleanAnchor.toLowerCase());
+
       items.push({
         url: link.url,
         originalHref: link.originalHref,
-        anchorText: link.anchorText,
+        anchorText: cleanAnchor || "(No anchor text)",
         isInternal: link.isInternal,
         statusCode: code,
         statusText: res.statusText || `${code}`,
         timingMs,
         health,
-        redirectUrl: res.headers.get("location") || undefined,
+        redirectUrl: resolvedRedirectUrl,
+        isHttps,
+        isAnchorEmpty,
+        isGenericAnchor,
       });
     } catch (err: unknown) {
       clearTimeout(timeout);
       const isTimeout = (err as Error)?.name === "AbortError";
+      const isHttps = link.url.startsWith("https://");
+      const cleanAnchor = (link.anchorText || "").trim();
+      const isAnchorEmpty = !cleanAnchor || cleanAnchor.toLowerCase() === "(no anchor text)";
+      const isGenericAnchor = ["click here", "read more", "here", "learn more", "link", "more", "details", "website"].includes(cleanAnchor.toLowerCase());
+
       items.push({
         url: link.url,
         originalHref: link.originalHref,
-        anchorText: link.anchorText,
+        anchorText: cleanAnchor || "(No anchor text)",
         isInternal: link.isInternal,
         statusCode: isTimeout ? 408 : 0,
         statusText: isTimeout ? "Request Timeout" : "Connection Refused / Failed",
         timingMs: Date.now() - startTime,
         health: isTimeout ? "timeout" : "broken",
+        isHttps,
+        isAnchorEmpty,
+        isGenericAnchor,
       });
     }
   });
@@ -165,6 +198,11 @@ export async function auditLinksHealth(
   const internalCount = items.filter((i) => i.isInternal).length;
   const externalCount = items.filter((i) => !i.isInternal).length;
 
+  const insecureHttpCount = items.filter((i) => !i.isHttps).length;
+  const emptyAnchorCount = items.filter((i) => i.isAnchorEmpty).length;
+  const genericAnchorCount = items.filter((i) => i.isGenericAnchor).length;
+  const avgLatencyMs = totalChecked > 0 ? Math.round(items.reduce((acc, i) => acc + i.timingMs, 0) / totalChecked) : 0;
+
   const linkHealthScore =
     totalChecked > 0 ? Math.round(((healthyCount + redirectCount * 0.8) / totalChecked) * 100) : 100;
 
@@ -178,6 +216,10 @@ export async function auditLinksHealth(
       linkHealthScore,
       internalCount,
       externalCount,
+      insecureHttpCount,
+      emptyAnchorCount,
+      genericAnchorCount,
+      avgLatencyMs,
     },
     items,
   };

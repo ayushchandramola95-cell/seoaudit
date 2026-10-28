@@ -156,8 +156,8 @@ export function extractLinkAnalysis(
     sponsoredCount,
     emptyAnchorCount,
     uniqueExternalDomains: Array.from(externalDomainsSet),
-    internalLinksSample: internalLinks.slice(0, 15),
-    externalLinksSample: externalLinks.slice(0, 15),
+    internalLinksSample: internalLinks.slice(0, 30),
+    externalLinksSample: externalLinks.slice(0, 30),
     linkEquityRatio: {
       internalPercent: Math.round(internalRatio),
       externalPercent: Math.round(externalRatio),
