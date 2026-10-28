@@ -40,6 +40,12 @@ import {
   Clock,
   Code2,
   Filter,
+  Monitor,
+  Smartphone,
+  Target,
+  Swords,
+  ChevronRight,
+  CheckSquare,
 } from "lucide-react";
 import { ComparisonReport } from "@/lib/modules/compare/comparator";
 import { exportKeywordGapCsv } from "@/lib/utils/csvExport";
@@ -72,14 +78,16 @@ export default function CompareContent() {
   const [reportId, setReportId] = useState<string | null>(null);
   const [copiedShare, setCopiedShare] = useState(false);
   const [copiedMarkdown, setCopiedMarkdown] = useState(false);
+  const [copiedPlan, setCopiedPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Active view tab
-  const [activeTab, setActiveTab] = useState<"overview" | "categories" | "vitals" | "tech" | "keywords">("overview");
+  // Active view tab (6 suites)
+  const [activeTab, setActiveTab] = useState<"overview" | "serp" | "categories" | "vitals" | "tech" | "keywords">("overview");
   const [winnerFilter, setWinnerFilter] = useState<"all" | "siteA" | "siteB" | "tie">("all");
   const [keywordSearch, setKeywordSearch] = useState("");
   const [hoveredRadarAxis, setHoveredRadarAxis] = useState<number | null>(null);
+  const [serpMode, setSerpMode] = useState<"desktop" | "mobile" | "social">("desktop");
 
   // Sticky sub-navbar state
   const [isScrolled, setIsScrolled] = useState(false);
@@ -88,6 +96,8 @@ export default function CompareContent() {
     { a: "github.com", b: "gitlab.com" },
     { a: "vercel.com", b: "netlify.com" },
     { a: "stripe.com", b: "paypal.com" },
+    { a: "notion.so", b: "linear.app" },
+    { a: "airbnb.com", b: "booking.com" },
   ];
 
   const showToast = (msg: string) => {
@@ -262,13 +272,15 @@ export default function CompareContent() {
   // Handle Tab Click with smooth scrolling when stuck
   const handleTabClick = (tab: typeof activeTab) => {
     setActiveTab(tab);
-    if (isScrolled && typeof window !== "undefined") {
-      const el = document.getElementById("compare-tab-content");
-      if (el) {
-        const yOffset = -128; // 64px header + 48px subnavbar + 16px buffer
-        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
+    if (typeof window !== "undefined" && window.scrollY > 280) {
+      setTimeout(() => {
+        const el = document.getElementById("compare-tab-content");
+        if (el) {
+          const yOffset = -124; // 64px main header + 48px sticky subnavbar + 12px margin
+          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+        }
+      }, 40);
     }
   };
 
@@ -291,7 +303,7 @@ export default function CompareContent() {
     md += `| **Largest Contentful Paint (LCP)** | ${data.vitalsComparison.lcpA} | ${data.vitalsComparison.lcpB} | ${data.siteA.performance.vitals.lcp.numericValue < data.siteB.performance.vitals.lcp.numericValue ? `${data.siteA.page.domain} Faster` : data.siteB.performance.vitals.lcp.numericValue < data.siteA.performance.vitals.lcp.numericValue ? `${data.siteB.page.domain} Faster` : "Tied"} |\n`;
     md += `| **Open PageRank Authority** | ${data.trafficComparison?.pageRankA ?? "N/A"}/10 | ${data.trafficComparison?.pageRankB ?? "N/A"}/10 | ${(data.trafficComparison?.pageRankA ?? 0) > (data.trafficComparison?.pageRankB ?? 0) ? data.siteA.page.domain : (data.trafficComparison?.pageRankB ?? 0) > (data.trafficComparison?.pageRankA ?? 0) ? data.siteB.page.domain : "Tied"} |\n`;
     md += `| **Estimated Monthly Visits** | ${data.siteA.traffic.formattedRange} | ${data.siteB.traffic.formattedRange} | ${data.siteA.traffic.monthlyVisitsMidpoint > data.siteB.traffic.monthlyVisitsMidpoint ? data.siteA.page.domain : data.siteB.traffic.monthlyVisitsMidpoint > data.siteA.traffic.monthlyVisitsMidpoint ? data.siteB.page.domain : "Tied"} |\n`;
-    md += `| **Word Count Volume** | ${data.siteA.page.wordCount.toLocaleString()} words | ${data.siteB.page.wordCount.toLocaleString()} words | ${data.siteA.page.wordCount > data.siteB.page.wordCount ? `${data.siteA.page.domain} Deeper Copy` : `${data.siteB.page.domain} Deeper Copy`} |\n`;
+    md += `| **Document Word Count** | ${data.siteA.page.wordCount.toLocaleString()} words | ${data.siteB.page.wordCount.toLocaleString()} words | ${data.siteA.page.wordCount > data.siteB.page.wordCount ? `${data.siteA.page.domain} Deeper Copy` : `${data.siteB.page.domain} Deeper Copy`} |\n`;
     md += `| **Internal Links** | ${data.siteA.page.links.internalLinks} links | ${data.siteB.page.links.internalLinks} links | ${data.siteA.page.links.internalLinks > data.siteB.page.links.internalLinks ? data.siteA.page.domain : data.siteB.page.links.internalLinks > data.siteA.page.links.internalLinks ? data.siteB.page.domain : "Tied"} |\n`;
     md += `| **Server Response (TTFB)** | ${data.vitalsComparison.ttfbA} | ${data.vitalsComparison.ttfbB} | ${data.siteA.page.responseTimeMs < data.siteB.page.responseTimeMs ? `${data.siteA.page.domain} (${data.siteA.page.responseTimeMs}ms)` : `${data.siteB.page.domain} (${data.siteB.page.responseTimeMs}ms)`} |\n\n`;
     md += `*Generated by SEO Audit Intel Competitive Benchmarking Suite*\n`;
@@ -300,6 +312,88 @@ export default function CompareContent() {
     setCopiedMarkdown(true);
     showToast("Comparative Markdown Table copied to clipboard!");
     setTimeout(() => setCopiedMarkdown(false), 2000);
+  };
+
+  // Strategic Action Plan Generation
+  const strategicPlaybook = useMemo(() => {
+    if (!data) return { offensiveExploits: [], defensiveMoats: [] };
+
+    const offensive: Array<{ title: string; desc: string; impact: "High" | "Critical" | "Medium" }> = [];
+    const defensive: Array<{ title: string; desc: string; impact: "High" | "Critical" | "Medium" }> = [];
+
+    // Check Speed
+    if (data.siteA.performance.scores.performance > data.siteB.performance.scores.performance) {
+      defensive.push({
+        title: "Speed Advantage",
+        desc: `${data.siteA.page.domain} renders ${data.vitalsComparison.lcpA} vs ${data.siteB.page.domain}'s ${data.vitalsComparison.lcpB}. Maintain lightweight bundle delivery to protect Google Mobile Core Web Vitals rankings.`,
+        impact: "High",
+      });
+    } else if (data.siteB.performance.scores.performance > data.siteA.performance.scores.performance) {
+      offensive.push({
+        title: "Close the Core Web Vitals Gap",
+        desc: `${data.siteB.page.domain} loads faster (${data.vitalsComparison.lcpB} vs ${data.vitalsComparison.lcpA}). Optimizing hero image compression and deferring non-critical JS could yield a +${Math.abs(data.deltas.performanceScoreDiff)} pts performance surge.`,
+        impact: "Critical",
+      });
+    }
+
+    // Check Keywords
+    if (data.keywordGap && data.keywordGap.uniqueToB.length > 0) {
+      const topB = data.keywordGap.uniqueToB.slice(0, 3).map((k) => `"${k.phrase}"`).join(", ");
+      offensive.push({
+        title: "Target Missing Semantic Topics",
+        desc: `${data.siteB.page.domain} heavily ranks for keywords missing on your page: ${topB}. Incorporating these semantic themes into landing page copy directly captures uncompeted search volume.`,
+        impact: "High",
+      });
+    }
+
+    // Check Schema
+    if (data.siteA.page.structuredData.count < data.siteB.page.structuredData.count) {
+      offensive.push({
+        title: "Deploy Missing Schema Rich Snippets",
+        desc: `${data.siteB.page.domain} uses ${data.siteB.page.structuredData.count} JSON-LD schemas vs your ${data.siteA.page.structuredData.count}. Adding FAQPage, Organization, and BreadcrumbList schemas increases SERP CTR real estate.`,
+        impact: "Medium",
+      });
+    } else {
+      defensive.push({
+        title: "Structured Data Superiority",
+        desc: `You deploy ${data.siteA.page.structuredData.count} structured data blocks compared to ${data.siteB.page.structuredData.count} on ${data.siteB.page.domain}, ensuring higher eligibility for Google Rich Results.`,
+        impact: "Medium",
+      });
+    }
+
+    // Check Word Count / Depth
+    if (data.siteA.page.wordCount < data.siteB.page.wordCount) {
+      offensive.push({
+        title: "Expand Long-Tail Content Depth",
+        desc: `${data.siteB.page.domain} features ${data.siteB.page.wordCount.toLocaleString()} words vs your ${data.siteA.page.wordCount.toLocaleString()} words. Deepening topical subheadings (H2/H3) helps satisfy complex informational search intent.`,
+        impact: "Medium",
+      });
+    } else {
+      defensive.push({
+        title: "Content & Copy Volume Moat",
+        desc: `Your page has ${data.siteA.page.wordCount.toLocaleString()} words vs ${data.siteB.page.wordCount.toLocaleString()} words on ${data.siteB.page.domain}. Deeper topical coverage helps protect long-tail phrase ownership.`,
+        impact: "High",
+      });
+    }
+
+    return { offensiveExploits: offensive, defensiveMoats: defensive };
+  }, [data]);
+
+  const handleCopyPlaybook = () => {
+    if (!data) return;
+    let pb = `# Competitive Battle Strategy: ${data.siteA.page.domain} vs ${data.siteB.page.domain}\n\n`;
+    pb += `### Offensive Vulnerabilities in ${data.siteB.page.domain} (Opportunities to Win):\n`;
+    strategicPlaybook.offensiveExploits.forEach((item, idx) => {
+      pb += `${idx + 1}. **${item.title}** [${item.impact} Impact]\n   ${item.desc}\n\n`;
+    });
+    pb += `### Defensive Moats to Protect on ${data.siteA.page.domain}:\n`;
+    strategicPlaybook.defensiveMoats.forEach((item, idx) => {
+      pb += `${idx + 1}. **${item.title}** [${item.impact} Impact]\n   ${item.desc}\n\n`;
+    });
+    navigator.clipboard.writeText(pb);
+    setCopiedPlan(true);
+    showToast("Competitive Battle Plan copied to clipboard!");
+    setTimeout(() => setCopiedPlan(false), 2000);
   };
 
   // 5-Axis Spider / Radar Chart Data
@@ -465,7 +559,7 @@ export default function CompareContent() {
               </div>
             </div>
 
-            {/* Middle: 5 Sleek Tabs (Zero scrollbars) */}
+            {/* Middle: 6 Sleek Tabs (Zero scrollbars) */}
             <nav
               className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-semibold overflow-x-auto no-scrollbar"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -485,6 +579,19 @@ export default function CompareContent() {
 
               <button
                 type="button"
+                onClick={() => handleTabClick("serp")}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+                  activeTab === "serp"
+                    ? "bg-white text-slate-900 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                }`}
+              >
+                <Monitor className="w-3.5 h-3.5 text-blue-600" />
+                <span>SERP Previews</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => handleTabClick("categories")}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
                   activeTab === "categories"
@@ -492,7 +599,7 @@ export default function CompareContent() {
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-blue-600" />
+                <Layers className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Categories</span>
               </button>
 
@@ -531,7 +638,7 @@ export default function CompareContent() {
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                 }`}
               >
-                <Hash className="w-3.5 h-3.5 text-indigo-600" />
+                <Hash className="w-3.5 h-3.5 text-rose-600" />
                 <span>Topic Gap</span>
               </button>
             </nav>
@@ -1016,10 +1123,10 @@ export default function CompareContent() {
               </div>
             </div>
 
-            {/* IN-PAGE NAVIGATION TABS (5 COMPARATIVE SUITES) */}
+            {/* IN-PAGE NAVIGATION TABS (6 COMPARATIVE SUITES) */}
             <div id="compare-tab-content" className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
               <button
-                onClick={() => setActiveTab("overview")}
+                onClick={() => handleTabClick("overview")}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   activeTab === "overview"
                     ? "bg-slate-900 text-white shadow-xs"
@@ -1031,50 +1138,62 @@ export default function CompareContent() {
               </button>
 
               <button
-                onClick={() => setActiveTab("categories")}
+                onClick={() => handleTabClick("serp")}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                  activeTab === "serp"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                <Monitor className="w-3.5 h-3.5 text-blue-600" />
+                <span>Google SERP &amp; Snippets</span>
+              </button>
+
+              <button
+                onClick={() => handleTabClick("categories")}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   activeTab === "categories"
                     ? "bg-slate-900 text-white shadow-xs"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
-                <Layers className="w-3.5 h-3.5" />
+                <Layers className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Diagnostic Matrix (4 Pillars)</span>
               </button>
 
               <button
-                onClick={() => setActiveTab("vitals")}
+                onClick={() => handleTabClick("vitals")}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   activeTab === "vitals"
                     ? "bg-slate-900 text-white shadow-xs"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
-                <Gauge className="w-3.5 h-3.5" />
+                <Gauge className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Core Web Vitals &amp; Speed</span>
               </button>
 
               <button
-                onClick={() => setActiveTab("tech")}
+                onClick={() => handleTabClick("tech")}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   activeTab === "tech"
                     ? "bg-slate-900 text-white shadow-xs"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
-                <Code2 className="w-3.5 h-3.5" />
+                <Code2 className="w-3.5 h-3.5 text-purple-600" />
                 <span>Tech Stack Diff ({data.techComparison.shared.length + data.techComparison.uniqueToA.length + data.techComparison.uniqueToB.length})</span>
               </button>
 
               <button
-                onClick={() => setActiveTab("keywords")}
+                onClick={() => handleTabClick("keywords")}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   activeTab === "keywords"
                     ? "bg-slate-900 text-white shadow-xs"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
-                <Hash className="w-3.5 h-3.5" />
+                <Hash className="w-3.5 h-3.5 text-rose-600" />
                 <span>Topic &amp; Content Gap</span>
               </button>
             </div>
@@ -1476,6 +1595,97 @@ export default function CompareContent() {
                   </div>
                 </div>
 
+                {/* STRATEGIC BATTLE PLAYBOOK: ATTACK & DEFEND */}
+                <div className="flat-card p-6 bg-gradient-to-br from-white via-slate-50 to-blue-50/20 border border-slate-200 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Swords className="w-4 h-4 text-indigo-600" />
+                        <h3 className="text-sm font-extrabold text-slate-900">
+                          Competitive Battle Strategy Playbook
+                        </h3>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        High-leverage SEO opportunities to exploit weaknesses on {data.siteB.page.domain} and fortify {data.siteA.page.domain}&apos;s moats.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={handleCopyPlaybook}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs self-start sm:self-auto cursor-pointer"
+                    >
+                      {copiedPlan ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
+                      <span>Copy Playbook</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Offensive Opportunities */}
+                    <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5 font-mono">
+                          <Flame className="w-3.5 h-3.5 text-amber-600" />
+                          Offensive Exploits (Win Factors)
+                        </span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-200/80 text-amber-950 font-mono">
+                          {strategicPlaybook.offensiveExploits.length} Opportunities
+                        </span>
+                      </div>
+
+                      {strategicPlaybook.offensiveExploits.length > 0 ? (
+                        <div className="space-y-2.5">
+                          {strategicPlaybook.offensiveExploits.map((item, idx) => (
+                            <div key={idx} className="p-3 rounded-lg bg-white border border-amber-200/80 shadow-2xs">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-bold text-xs text-slate-900">{item.title}</span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                                  item.impact === "Critical" ? "bg-rose-50 text-rose-700 border border-rose-200" : "bg-amber-100 text-amber-800"
+                                }`}>
+                                  {item.impact}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-600 leading-relaxed">{item.desc}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 italic">No critical exploits identified.</p>
+                      )}
+                    </div>
+
+                    {/* Defensive Moats */}
+                    <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5 font-mono">
+                          <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                          Defensive Moats (Protect &amp; Hold)
+                        </span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-200/80 text-blue-950 font-mono">
+                          {strategicPlaybook.defensiveMoats.length} Moats
+                        </span>
+                      </div>
+
+                      {strategicPlaybook.defensiveMoats.length > 0 ? (
+                        <div className="space-y-2.5">
+                          {strategicPlaybook.defensiveMoats.map((item, idx) => (
+                            <div key={idx} className="p-3 rounded-lg bg-white border border-blue-200/80 shadow-2xs">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-bold text-xs text-slate-900">{item.title}</span>
+                                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 uppercase">
+                                  {item.impact}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-600 leading-relaxed">{item.desc}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 italic">No significant moats established.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Executive AI Comparative Analysis */}
                 <div className="flat-card p-6 bg-white border border-purple-200 shadow-xs">
                   <div className="flex items-center justify-between gap-2 mb-3">
@@ -1533,7 +1743,469 @@ export default function CompareContent() {
               </div>
             )}
 
-            {/* TAB 2: DIAGNOSTIC CATEGORY MATRIX */}
+            {/* TAB 2: GOOGLE SERP & SNIPPET PREVIEW CLASH */}
+            {activeTab === "serp" && (
+              <div className="flat-card p-6 bg-white border border-slate-200 shadow-xs space-y-8 animate-in fade-in duration-150">
+                {/* Header with SERP Mode Toggle */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <Monitor className="w-4 h-4 text-blue-600" />
+                      SERP &amp; Social Snippet Clash Studio
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Simulates authentic Google Search result listings (Desktop &amp; Mobile) and Social Share Cards (OpenGraph/Twitter) side-by-side.
+                    </p>
+                  </div>
+
+                  {/* View Mode Toggle */}
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setSerpMode("desktop")}
+                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                        serpMode === "desktop"
+                          ? "bg-white text-slate-900 shadow-xs font-bold"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <Monitor className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Google Desktop</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSerpMode("mobile")}
+                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                        serpMode === "mobile"
+                          ? "bg-white text-slate-900 shadow-xs font-bold"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <Smartphone className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Google Mobile</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSerpMode("social")}
+                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                        serpMode === "social"
+                          ? "bg-white text-slate-900 shadow-xs font-bold"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-purple-600" />
+                      <span>Social Share (OG)</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 1. Side-by-Side Snippet Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Site A Card */}
+                  <div className="p-5 rounded-2xl bg-white border-2 border-blue-100 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <span className="font-mono text-xs font-extrabold text-blue-700 flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5" />
+                        {data.siteA.page.domain}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400 capitalize">
+                        {serpMode === "desktop" ? "Google Desktop SERP" : serpMode === "mobile" ? "Google Mobile SERP" : "OpenGraph Card"}
+                      </span>
+                    </div>
+
+                    {/* Mode-specific preview Site A */}
+                    {serpMode === "desktop" && (
+                      <div className="p-4 rounded-xl bg-white border border-slate-200 font-sans space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold">
+                            {data.siteA.page.domain.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="text-[12px] text-[#202124] leading-none">
+                            <span className="font-bold">{data.siteA.page.domain}</span>
+                            <span className="text-[#5f6368] text-[11px] ml-1">› https://{data.siteA.page.domain}</span>
+                          </div>
+                        </div>
+
+                        <div className="text-lg text-[#1a0dab] hover:underline font-normal cursor-pointer leading-tight pt-0.5 line-clamp-2">
+                          {data.siteA.page.title || "Untitled Document"}
+                        </div>
+
+                        <p className="text-xs text-[#4d5156] leading-relaxed line-clamp-2">
+                          {data.siteA.page.metaDescription || "No meta description provided. Google will extract an automated snippet from page body text."}
+                        </p>
+                      </div>
+                    )}
+
+                    {serpMode === "mobile" && (
+                      <div className="max-w-xs mx-auto p-4 rounded-2xl bg-slate-50 border-2 border-slate-300 font-sans space-y-2 shadow-xs">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pb-1 border-b border-slate-200">
+                          <span>Google Mobile</span>
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
+                            {data.siteA.page.domain.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <span className="font-bold text-xs text-[#202124] block">{data.siteA.page.domain}</span>
+                            <span className="text-[10px] text-[#5f6368]">https://{data.siteA.page.domain}</span>
+                          </div>
+                        </div>
+                        <div className="text-base text-[#1a0dab] font-medium leading-tight line-clamp-2">
+                          {data.siteA.page.title || "Untitled Document"}
+                        </div>
+                        <p className="text-xs text-[#4d5156] leading-snug line-clamp-3">
+                          {data.siteA.page.metaDescription || "No meta description provided. Google will extract an automated snippet from page body text."}
+                        </p>
+                      </div>
+                    )}
+
+                    {serpMode === "social" && (
+                      <div className="rounded-xl overflow-hidden border border-slate-200 font-sans bg-white shadow-2xs">
+                        {data.siteA.page.openGraph?.image ? (
+                          <div className="h-32 bg-slate-100 flex items-center justify-center overflow-hidden border-b border-slate-200">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={data.siteA.page.openGraph.image}
+                              alt="OG Preview"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-28 bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-900 flex flex-col items-center justify-center text-white p-4 text-center">
+                            <span className="font-mono text-xs font-bold tracking-wider uppercase text-blue-200">
+                              {data.siteA.page.domain}
+                            </span>
+                            <span className="text-sm font-black mt-1 line-clamp-1">
+                              {data.siteA.page.openGraph?.title || data.siteA.page.title || data.siteA.page.domain}
+                            </span>
+                          </div>
+                        )}
+                        <div className="p-3 space-y-1">
+                          <span className="text-[10px] uppercase font-mono text-slate-400 block font-bold">
+                            {data.siteA.page.domain}
+                          </span>
+                          <div className="font-bold text-xs text-slate-900 line-clamp-1">
+                            {data.siteA.page.openGraph?.title || data.siteA.page.title || "Untitled Social Card"}
+                          </div>
+                          <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                            {data.siteA.page.openGraph?.description || data.siteA.page.metaDescription || "No description tags specified."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Optimization Telemetry Site A */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="text-[10px] text-slate-500 font-semibold uppercase">Title Length</div>
+                        <div className="font-bold text-slate-900 mt-0.5 font-mono">
+                          {data.siteA.page.title?.length || 0} / 60 chars
+                        </div>
+                        <span className={`text-[10px] font-bold ${
+                          (data.siteA.page.title?.length || 0) >= 35 && (data.siteA.page.title?.length || 0) <= 60
+                            ? "text-emerald-600"
+                            : "text-amber-600"
+                        }`}>
+                          {(data.siteA.page.title?.length || 0) >= 35 && (data.siteA.page.title?.length || 0) <= 60 ? "✓ Optimal Length" : "Needs Review"}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="text-[10px] text-slate-500 font-semibold uppercase">Description Length</div>
+                        <div className="font-bold text-slate-900 mt-0.5 font-mono">
+                          {data.siteA.page.metaDescription?.length || 0} / 160 chars
+                        </div>
+                        <span className={`text-[10px] font-bold ${
+                          (data.siteA.page.metaDescription?.length || 0) >= 120 && (data.siteA.page.metaDescription?.length || 0) <= 160
+                            ? "text-emerald-600"
+                            : "text-amber-600"
+                        }`}>
+                          {(data.siteA.page.metaDescription?.length || 0) >= 120 && (data.siteA.page.metaDescription?.length || 0) <= 160 ? "✓ Optimal Length" : "Needs Review"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Site B Card */}
+                  <div className="p-5 rounded-2xl bg-white border-2 border-purple-100 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <span className="font-mono text-xs font-extrabold text-purple-700 flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5" />
+                        {data.siteB.page.domain}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400 capitalize">
+                        {serpMode === "desktop" ? "Google Desktop SERP" : serpMode === "mobile" ? "Google Mobile SERP" : "OpenGraph Card"}
+                      </span>
+                    </div>
+
+                    {/* Mode-specific preview Site B */}
+                    {serpMode === "desktop" && (
+                      <div className="p-4 rounded-xl bg-white border border-slate-200 font-sans space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-bold">
+                            {data.siteB.page.domain.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="text-[12px] text-[#202124] leading-none">
+                            <span className="font-bold">{data.siteB.page.domain}</span>
+                            <span className="text-[#5f6368] text-[11px] ml-1">› https://{data.siteB.page.domain}</span>
+                          </div>
+                        </div>
+
+                        <div className="text-lg text-[#1a0dab] hover:underline font-normal cursor-pointer leading-tight pt-0.5 line-clamp-2">
+                          {data.siteB.page.title || "Untitled Document"}
+                        </div>
+
+                        <p className="text-xs text-[#4d5156] leading-relaxed line-clamp-2">
+                          {data.siteB.page.metaDescription || "No meta description provided. Google will extract an automated snippet from page body text."}
+                        </p>
+                      </div>
+                    )}
+
+                    {serpMode === "mobile" && (
+                      <div className="max-w-xs mx-auto p-4 rounded-2xl bg-slate-50 border-2 border-slate-300 font-sans space-y-2 shadow-xs">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pb-1 border-b border-slate-200">
+                          <span>Google Mobile</span>
+                          <span className="w-2 h-2 rounded-full bg-purple-500" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px] font-bold">
+                            {data.siteB.page.domain.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <span className="font-bold text-xs text-[#202124] block">{data.siteB.page.domain}</span>
+                            <span className="text-[10px] text-[#5f6368]">https://{data.siteB.page.domain}</span>
+                          </div>
+                        </div>
+                        <div className="text-base text-[#1a0dab] font-medium leading-tight line-clamp-2">
+                          {data.siteB.page.title || "Untitled Document"}
+                        </div>
+                        <p className="text-xs text-[#4d5156] leading-snug line-clamp-3">
+                          {data.siteB.page.metaDescription || "No meta description provided. Google will extract an automated snippet from page body text."}
+                        </p>
+                      </div>
+                    )}
+
+                    {serpMode === "social" && (
+                      <div className="rounded-xl overflow-hidden border border-slate-200 font-sans bg-white shadow-2xs">
+                        {data.siteB.page.openGraph?.image ? (
+                          <div className="h-32 bg-slate-100 flex items-center justify-center overflow-hidden border-b border-slate-200">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={data.siteB.page.openGraph.image}
+                              alt="OG Preview"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-28 bg-gradient-to-br from-purple-600 via-indigo-600 to-slate-900 flex flex-col items-center justify-center text-white p-4 text-center">
+                            <span className="font-mono text-xs font-bold tracking-wider uppercase text-purple-200">
+                              {data.siteB.page.domain}
+                            </span>
+                            <span className="text-sm font-black mt-1 line-clamp-1">
+                              {data.siteB.page.openGraph?.title || data.siteB.page.title || data.siteB.page.domain}
+                            </span>
+                          </div>
+                        )}
+                        <div className="p-3 space-y-1">
+                          <span className="text-[10px] uppercase font-mono text-slate-400 block font-bold">
+                            {data.siteB.page.domain}
+                          </span>
+                          <div className="font-bold text-xs text-slate-900 line-clamp-1">
+                            {data.siteB.page.openGraph?.title || data.siteB.page.title || "Untitled Social Card"}
+                          </div>
+                          <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                            {data.siteB.page.openGraph?.description || data.siteB.page.metaDescription || "No description tags specified."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Optimization Telemetry Site B */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="text-[10px] text-slate-500 font-semibold uppercase">Title Length</div>
+                        <div className="font-bold text-slate-900 mt-0.5 font-mono">
+                          {data.siteB.page.title?.length || 0} / 60 chars
+                        </div>
+                        <span className={`text-[10px] font-bold ${
+                          (data.siteB.page.title?.length || 0) >= 35 && (data.siteB.page.title?.length || 0) <= 60
+                            ? "text-emerald-600"
+                            : "text-amber-600"
+                        }`}>
+                          {(data.siteB.page.title?.length || 0) >= 35 && (data.siteB.page.title?.length || 0) <= 60 ? "✓ Optimal Length" : "Needs Review"}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="text-[10px] text-slate-500 font-semibold uppercase">Description Length</div>
+                        <div className="font-bold text-slate-900 mt-0.5 font-mono">
+                          {data.siteB.page.metaDescription?.length || 0} / 160 chars
+                        </div>
+                        <span className={`text-[10px] font-bold ${
+                          (data.siteB.page.metaDescription?.length || 0) >= 120 && (data.siteB.page.metaDescription?.length || 0) <= 160
+                            ? "text-emerald-600"
+                            : "text-amber-600"
+                        }`}>
+                          {(data.siteB.page.metaDescription?.length || 0) >= 120 && (data.siteB.page.metaDescription?.length || 0) <= 160 ? "✓ Optimal Length" : "Needs Review"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. STRUCTURED DATA & SCHEMA RICH SNIPPETS CLASH */}
+                <div className="p-5 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5 font-mono">
+                        <Code2 className="w-3.5 h-3.5 text-blue-600" />
+                        Structured Data &amp; Schema Rich Snippet Clash
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        JSON-LD schemas empower Google to render rich snippets (FAQ accordions, breadcrumbs, organizational knowledge graphs).
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200">
+                      {data.siteA.page.structuredData.count} vs {data.siteB.page.structuredData.count} Schemas
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Domain A Schemas */}
+                    <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="font-bold text-blue-700">{data.siteA.page.domain}</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 font-bold">
+                          {data.siteA.page.structuredData.types.length} types detected
+                        </span>
+                      </div>
+                      {data.siteA.page.structuredData.types.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {data.siteA.page.structuredData.types.map((type, i) => (
+                            <span key={i} className="flat-badge bg-blue-50 text-blue-800 border-blue-200 font-mono text-[11px]">
+                              ✓ {type}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">No JSON-LD schemas detected on this page.</p>
+                      )}
+                    </div>
+
+                    {/* Domain B Schemas */}
+                    <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="font-bold text-purple-700">{data.siteB.page.domain}</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-50 text-purple-700 border border-purple-200 font-bold">
+                          {data.siteB.page.structuredData.types.length} types detected
+                        </span>
+                      </div>
+                      {data.siteB.page.structuredData.types.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {data.siteB.page.structuredData.types.map((type, i) => (
+                            <span key={i} className="flat-badge bg-purple-50 text-purple-800 border-purple-200 font-mono text-[11px]">
+                              ✓ {type}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">No JSON-LD schemas detected on this page.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. ON-PAGE CONTENT & MEDIA TOPOLOGY DUEL */}
+                <div className="p-5 rounded-2xl bg-white border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5 font-mono">
+                      <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                      On-Page Content &amp; Media Topology Duel
+                    </h4>
+                    <span className="text-[10px] font-mono text-slate-400">Structural Cross-Audit</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {/* 1. Copy Depth */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Document Word Count</div>
+                      <div className="flex items-center justify-between font-mono text-xs font-bold">
+                        <span className="text-blue-700">{data.siteA.page.wordCount.toLocaleString()} w</span>
+                        <span className="text-slate-400">vs</span>
+                        <span className="text-purple-700">{data.siteB.page.wordCount.toLocaleString()} w</span>
+                      </div>
+                      <div className="mt-2 text-[10px] font-bold text-emerald-700">
+                        {data.siteA.page.wordCount > data.siteB.page.wordCount
+                          ? `✓ ${data.siteA.page.domain} is ${(data.siteA.page.wordCount / (data.siteB.page.wordCount || 1)).toFixed(1)}x deeper`
+                          : `✓ ${data.siteB.page.domain} is ${(data.siteB.page.wordCount / (data.siteA.page.wordCount || 1)).toFixed(1)}x deeper`}
+                      </div>
+                    </div>
+
+                    {/* 2. Headings Distribution */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Heading Hierarchy</div>
+                      <div className="text-[11px] font-mono space-y-0.5">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">H1:</span>
+                          <span><span className="text-blue-700 font-bold">{data.siteA.page.headings.h1Count}</span> vs <span className="text-purple-700 font-bold">{data.siteB.page.headings.h1Count}</span></span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">H2:</span>
+                          <span><span className="text-blue-700 font-bold">{data.siteA.page.headings.h2Count}</span> vs <span className="text-purple-700 font-bold">{data.siteB.page.headings.h2Count}</span></span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">H3:</span>
+                          <span><span className="text-blue-700 font-bold">{data.siteA.page.headings.h3Count}</span> vs <span className="text-purple-700 font-bold">{data.siteB.page.headings.h3Count}</span></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. Image Alt Accessibility */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Image Accessibility</div>
+                      <div className="text-[11px] font-mono space-y-0.5">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Total:</span>
+                          <span><span className="text-blue-700 font-bold">{data.siteA.page.images.totalImages}</span> vs <span className="text-purple-700 font-bold">{data.siteB.page.images.totalImages}</span></span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Missing Alt:</span>
+                          <span>
+                            <span className={data.siteA.page.images.missingAlt === 0 ? "text-emerald-700 font-bold" : "text-amber-700 font-bold"}>{data.siteA.page.images.missingAlt}</span>
+                            {" vs "}
+                            <span className={data.siteB.page.images.missingAlt === 0 ? "text-emerald-700 font-bold" : "text-amber-700 font-bold"}>{data.siteB.page.images.missingAlt}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4. Link Topology */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Link Topology</div>
+                      <div className="text-[11px] font-mono space-y-0.5">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Internal:</span>
+                          <span><span className="text-blue-700 font-bold">{data.siteA.page.links.internalLinks}</span> vs <span className="text-purple-700 font-bold">{data.siteB.page.links.internalLinks}</span></span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">External:</span>
+                          <span><span className="text-blue-700 font-bold">{data.siteA.page.links.externalLinks}</span> vs <span className="text-purple-700 font-bold">{data.siteB.page.links.externalLinks}</span></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: DIAGNOSTIC CATEGORY MATRIX */}
             {activeTab === "categories" && (
               <div className="flat-card p-6 bg-white border border-slate-200 shadow-xs space-y-5 animate-in fade-in duration-150">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -1648,7 +2320,7 @@ export default function CompareContent() {
               </div>
             )}
 
-            {/* TAB 3: CORE WEB VITALS & SPEED LAB */}
+            {/* TAB 4: CORE WEB VITALS & SPEED LAB */}
             {activeTab === "vitals" && (
               <div className="flat-card p-6 bg-white border border-slate-200 shadow-xs space-y-5 animate-in fade-in duration-150">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -1707,7 +2379,7 @@ export default function CompareContent() {
                       </div>
                     </div>
                     <div className="text-[11px] font-bold text-center text-emerald-700 pt-1">
-                      {data.siteA.performance.vitals.fcp.numericValue < data.siteB.performance.vitals.fcp.numericValue
+                      {data.siteA.performance.vitals.fcp.numericValue < data.siteB.performance.vitals.lcp.numericValue
                         ? `✓ ${data.siteA.page.domain} First Render`
                         : `✓ ${data.siteB.page.domain} First Render`}
                     </div>
@@ -1808,7 +2480,7 @@ export default function CompareContent() {
               </div>
             )}
 
-            {/* TAB 4: TECH STACK CROSS-DIFF */}
+            {/* TAB 5: TECH STACK CROSS-DIFF */}
             {activeTab === "tech" && (
               <div className="flat-card p-6 bg-white border border-slate-200 shadow-xs space-y-5 animate-in fade-in duration-150">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -1902,7 +2574,7 @@ export default function CompareContent() {
               </div>
             )}
 
-            {/* TAB 5: ON-PAGE SEMANTIC TOPIC & KEYWORD GAP */}
+            {/* TAB 6: ON-PAGE SEMANTIC TOPIC & KEYWORD GAP */}
             {activeTab === "keywords" && data.keywordGap && (
               <div className="flat-card p-6 bg-white border border-slate-200 shadow-xs space-y-5 animate-in fade-in duration-150">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
