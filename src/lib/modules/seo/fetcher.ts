@@ -90,6 +90,8 @@ export interface StructuredDataReport {
   detected: boolean;
   count: number;
   types: string[];
+  raw?: string;
+  items?: any[];
 }
 
 export interface ScrapedPageData {
@@ -469,9 +471,16 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
 
   // 7. Structured Data (JSON-LD)
   const schemaTypes: string[] = [];
+  const rawSchemas: any[] = [];
+  let firstRawScript = "";
   $('script[type="application/ld+json"]').each((_, el) => {
+    const scriptContent = ($(el).html() || "").trim();
+    if (scriptContent && !firstRawScript) {
+      firstRawScript = scriptContent;
+    }
     try {
-      const parsed = JSON.parse($(el).html() || "{}");
+      const parsed = JSON.parse(scriptContent || "{}");
+      rawSchemas.push(parsed);
       if (Array.isArray(parsed)) {
         parsed.forEach((item) => {
           if (item["@type"]) schemaTypes.push(String(item["@type"]));
@@ -492,6 +501,8 @@ export async function scrapeWebsite(targetUrl: string): Promise<ScrapedPageData>
     detected: schemaTypes.length > 0,
     count: schemaTypes.length,
     types: Array.from(new Set(schemaTypes)),
+    raw: firstRawScript || (rawSchemas.length > 0 ? JSON.stringify(rawSchemas.length === 1 ? rawSchemas[0] : { "@context": "https://schema.org", "@graph": rawSchemas }, null, 2) : undefined),
+    items: rawSchemas,
   };
 
   // 8. Word Count estimate
