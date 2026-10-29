@@ -56,6 +56,66 @@ export default function ToolsHubClient() {
 
   const tools: ToolCard[] = [
     {
+      id: "google-hub",
+      name: "Google Search Console & GA4 Multi-Site Hub",
+      description:
+        "Manage, switch between, and audit all your verified Google Search Console and GA4 properties. Track impressions, clicks, keyword rankings, and active user channels in one unified console.",
+      href: "/tools/google-hub",
+      category: "ai",
+      badge: "Command Center",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+      icon: Globe,
+      iconColor: "text-blue-600",
+      iconBg: "bg-blue-50 border-blue-200",
+      metric: "Multi-Domain Sync",
+      features: ["Zero Auto-Fetch Privacy", "Domain & URL Properties", "Real-Time Query Rankings"],
+    },
+    {
+      id: "robots-sitemap",
+      name: "Robots.txt & XML Sitemap Inspector",
+      description:
+        "Audit crawler directives, check AI bot permissions (GPTBot, ClaudeBot, PerplexityBot, Applebot), validate XML sitemaps, and compute your Generative Engine Optimization (GEO) AI readiness score.",
+      href: "/tools/robots-sitemap",
+      category: "crawl",
+      badge: "GEO AI Ready",
+      badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
+      icon: Bot,
+      iconColor: "text-purple-600",
+      iconBg: "bg-purple-50 border-purple-200",
+      metric: "AI Crawler Rules",
+      features: ["AI Bot Permissions", "Sitemap Index Parser", "GEO Readiness 0-100"],
+    },
+    {
+      id: "keyword-research",
+      name: "Keyword Density & Frequency Matrix",
+      description:
+        "Extract 1-word, 2-word, and 3-word n-gram keywords, compute TF-IDF semantic density, verify heading presence (Title, H1), and prevent keyword stuffing penalties.",
+      href: "/tools/keyword-research",
+      category: "meta",
+      badge: "N-Gram Tokenizer",
+      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      icon: FileText,
+      iconColor: "text-emerald-600",
+      iconBg: "bg-emerald-50 border-emerald-200",
+      metric: "1/2/3-Grams",
+      features: ["Semantic Density %", "Title & H1 Alignment", "CSV Matrix Export"],
+    },
+    {
+      id: "traffic-estimator",
+      name: "Organic Traffic & Reach Estimator",
+      description:
+        "Predict monthly search traffic volumes, model SERP click-through rates (CTR), and estimate channel distributions (Organic, Direct, Referral, Social) powered by Open PageRank.",
+      href: "/tools/traffic-estimator",
+      category: "speed",
+      badge: "Predictive Reach",
+      badgeColor: "bg-indigo-100 text-indigo-800 border-indigo-200",
+      icon: BarChart3,
+      iconColor: "text-indigo-600",
+      iconBg: "bg-indigo-50 border-indigo-200",
+      metric: "Monthly Footprint",
+      features: ["Channel Inflow Model", "SERP CTR Curves", "Open PageRank Anchor"],
+    },
+    {
       id: "brand-radar",
       name: "Brand Radar AI & AEO Studio",
       description:
@@ -322,7 +382,7 @@ export default function ToolsHubClient() {
             The Complete SEO Intelligence Suite
           </h1>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            11 specialized growth and diagnostic engines engineered for sub-second crawl speed, competitive intelligence, Core Web Vitals benchmarking, and AI Search visibility.
+            15 specialized growth and diagnostic engines engineered for sub-second crawl speed, competitive intelligence, Core Web Vitals benchmarking, and AI Search visibility.
           </p>
 
           {/* Universal Quick Launch Bar */}
@@ -347,6 +407,10 @@ export default function ToolsHubClient() {
                 onChange={(e) => setSelectedToolForLaunch(e.target.value)}
                 className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-800 border-none focus:ring-2 focus:ring-blue-600 cursor-pointer"
               >
+                <option value="/tools/google-hub">Google GSC &amp; GA4 Hub</option>
+                <option value="/tools/robots-sitemap">Robots.txt &amp; XML Sitemap</option>
+                <option value="/tools/keyword-research">Keyword Density Explorer</option>
+                <option value="/tools/traffic-estimator">Organic Traffic Estimator</option>
                 <option value="/tools/broken-links">Broken Links Crawler</option>
                 <option value="/tools/speed-lab">Core Web Vitals Lab</option>
                 <option value="/tools/brand-radar">Brand Radar AI</option>

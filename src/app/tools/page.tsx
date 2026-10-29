@@ -12,7 +12,7 @@ export default function ToolsHubPage() {
   return (
     <AuthGuard
       fallbackTitle="Sign In to Access SEO Tools Hub"
-      fallbackMessage="Access all 9 specialized SEO utility engines, Core Web Vitals lab, SERP simulators, and AI brand scanners with your account."
+      fallbackMessage="Access all 15 specialized SEO utility engines, Core Web Vitals lab, SERP simulators, and AI brand scanners with your account."
     >
       <ToolsHubClient />
     </AuthGuard>

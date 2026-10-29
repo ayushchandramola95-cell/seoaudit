@@ -33,6 +33,7 @@ import {
   CheckCircle2,
   User as UserIcon,
   LogOut,
+  Bot,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlan } from "@/lib/auth/PlanContext";
@@ -287,6 +288,22 @@ export default function Header() {
                             </div>
                           </Link>
 
+                          <Link href="/tools/google-hub" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Globe className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                  Google Search &amp; GA4 Hub
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Multi-site GSC clicks, rankings &amp; GA4 traffic.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
                           <Link href="/dashboard?tab=connected" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                             <div className="flex items-start gap-3">
                               <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -312,10 +329,58 @@ export default function Header() {
                             Specialized SEO Engines
                           </span>
                           <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[11px] font-bold text-blue-600 hover:underline">
-                            All 9 Engines →
+                            All 15 Engines →
                           </Link>
                         </div>
                         <div className="space-y-1">
+                          <Link href="/tools/robots-sitemap" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Bot className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                                  Robots.txt &amp; XML Sitemap
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  AI bot rules (GPTBot, Claude) &amp; GEO score.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/keyword-research" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <FileText className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                                  Keyword Density Matrix
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  1/2/3-gram frequencies &amp; heading alignment.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/traffic-estimator" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <TrendingUp className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                  Organic Traffic Estimator
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Predict monthly reach &amp; channel distribution.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
                           <Link href="/tools/tech-detector" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                             <div className="flex items-start gap-3">
                               <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -390,7 +455,7 @@ export default function Header() {
                                   Full SEO Suite Hub
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
-                                  Complete suite of 9 specialized SEO engines with live runners.
+                                  Complete suite of 15 specialized SEO engines with live runners.
                                 </div>
                               </div>
                             </div>
@@ -665,7 +730,7 @@ export default function Header() {
                           onClick={() => setResourcesOpen(false)}
                           className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center justify-between pt-3 border-t border-slate-200"
                         >
-                          <span>Explore All 9 Standalone Tools</span>
+                          <span>Explore All 15 Standalone Tools</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       </div>
@@ -1005,7 +1070,14 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(false)}
               className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
             >
-              9 Standalone Free Tools
+              15 Standalone SEO Tools
+            </Link>
+            <Link
+              href="/tools/google-hub"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-semibold rounded-lg text-blue-600 hover:bg-blue-50"
+            >
+              Google GSC &amp; GA4 Hub
             </Link>
             <Link
               href="/compare"

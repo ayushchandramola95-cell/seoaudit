@@ -61,13 +61,17 @@ const SEARCH_BOTS = [
  */
 export async function analyzeRobotsAndSitemap(
   origin: string,
-  structuredDataCount: number,
-  h1Count: number,
-  h2Count: number,
-  wordCount: number
+  structuredDataCount: number = 2,
+  h1Count: number = 1,
+  h2Count: number = 4,
+  wordCount: number = 800
 ): Promise<DeepRobotsSitemapReport> {
-  const robotsUrl = `${origin}/robots.txt`;
-  let sitemapUrl = `${origin}/sitemap.xml`;
+  const normalizedOrigin = origin.startsWith("http://") || origin.startsWith("https://")
+    ? origin.replace(/\/+$/, "")
+    : `https://${origin.replace(/\/+$/, "")}`;
+
+  const robotsUrl = `${normalizedOrigin}/robots.txt`;
+  let sitemapUrl = `${normalizedOrigin}/sitemap.xml`;
 
   let hasRobotsTxt = false;
   let rawRobotsText = "";
