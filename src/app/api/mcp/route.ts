@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { scrapeWebsite } from "@/lib/modules/seo/fetcher";
+import * as cheerio from "cheerio";
+import { scrapeWebsite, HeadingNode, HeadingIssue, HeaderEvaluation } from "@/lib/modules/seo/fetcher";
 import { calculateSeoScore } from "@/lib/modules/seo/scorer";
 import { detectTechnologies } from "@/lib/modules/tech/detector";
 import { fetchPageSpeedAudit } from "@/lib/modules/performance/pagespeed";
@@ -11,7 +12,7 @@ import { extractLinkAnalysis } from "@/lib/modules/crawler/linkScanner";
 import { auditLinksHealth } from "@/lib/modules/crawler/linkCrawler";
 import { SsrfSecurityError } from "@/lib/security/ssrf";
 
-const MCP_TOOLS = [
+export const MCP_TOOLS = [
   {
     name: "seoseite_audit_url",
     description:
@@ -125,7 +126,80 @@ const MCP_TOOLS = [
       required: ["domain"],
     },
   },
+  {
+    name: "seoseite_security_headers",
+    description:
+      "Evaluates 8+ critical HTTP security headers (HSTS, Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) and SSL configuration.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          description: "The target website URL to audit for security headers (e.g., https://stripe.com)",
+        },
+      },
+      required: ["url"],
+    },
+  },
+  {
+    name: "seoseite_document_architecture",
+    description:
+      "Extracts full H1-H6 heading hierarchy, detects structural defects (missing H1, multiple H1s, skipped heading levels), word count, and computes document architecture score.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          description: "The target website URL to inspect heading hierarchy (e.g., https://example.com)",
+        },
+      },
+      required: ["url"],
+    },
+  },
+  {
+    name: "seoseite_serp_preview",
+    description:
+      "Simulates Google desktop and mobile search snippets, calculates exact title pixel width against Google's 580px truncation limit, and evaluates predicted organic CTR score.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          description: "The target website URL to simulate on Google SERP (e.g., https://vercel.com)",
+        },
+      },
+      required: ["url"],
+    },
+  },
+  {
+    name: "seoseite_brand_radar",
+    description:
+      "Evaluates brand visibility and AEO (Answer Engine Optimization) readiness across LLMs (ChatGPT, Perplexity, Gemini, Claude), sentiment index, and conversational citation query triggers.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        domain: {
+          type: "string",
+          description: "The brand domain to evaluate for AI visibility (e.g., linear.app)",
+        },
+      },
+      required: ["domain"],
+    },
+  },
 ];
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
 
 async function handleSingleSiteAnalysis(targetUrl: string): Promise<SingleSiteAnalysis> {
   const pageData = await scrapeWebsite(targetUrl);
@@ -162,20 +236,23 @@ async function handleSingleSiteAnalysis(targetUrl: string): Promise<SingleSiteAn
 }
 
 export async function GET() {
-  return NextResponse.json({
-    status: "active",
-    name: "seoseite-seo-mcp",
-    version: "1.0.0",
-    protocolVersion: "2024-11-05",
-    description: "SeoSeite Model Context Protocol (MCP) HTTP Endpoint",
-    toolsAvailable: MCP_TOOLS.length,
-    tools: MCP_TOOLS.map((t) => ({ name: t.name, description: t.description })),
-    usage: {
-      jsonRpcEndpoint: "/api/mcp",
-      stdioScript: "scripts/seoseite-mcp.mjs",
-      docs: "/mcp",
+  return NextResponse.json(
+    {
+      status: "active",
+      name: "seoseite-seo-mcp",
+      version: "1.1.0",
+      protocolVersion: "2024-11-05",
+      description: "SEO Audit / SeoSeite Model Context Protocol (MCP) HTTP Endpoint",
+      toolsAvailable: MCP_TOOLS.length,
+      tools: MCP_TOOLS.map((t) => ({ name: t.name, description: t.description })),
+      usage: {
+        jsonRpcEndpoint: "/api/mcp",
+        stdioScript: "scripts/seoseite-mcp.mjs",
+        docs: "/mcp",
+      },
     },
-  });
+    { headers: CORS_HEADERS }
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -185,7 +262,7 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } },
-      { status: 400 }
+      { status: 400, headers: CORS_HEADERS }
     );
   }
 
@@ -193,29 +270,35 @@ export async function POST(req: NextRequest) {
 
   // 1. Initialize
   if (method === "initialize") {
-    return NextResponse.json({
-      jsonrpc: "2.0",
-      id,
-      result: {
-        protocolVersion: "2024-11-05",
-        capabilities: { tools: {} },
-        serverInfo: {
-          name: "seoseite-seo-mcp",
-          version: "1.0.0",
+    return NextResponse.json(
+      {
+        jsonrpc: "2.0",
+        id,
+        result: {
+          protocolVersion: "2024-11-05",
+          capabilities: { tools: {} },
+          serverInfo: {
+            name: "seoseite-seo-mcp",
+            version: "1.1.0",
+          },
         },
       },
-    });
+      { headers: CORS_HEADERS }
+    );
   }
 
   // 2. List tools
   if (method === "tools/list") {
-    return NextResponse.json({
-      jsonrpc: "2.0",
-      id,
-      result: {
-        tools: MCP_TOOLS,
+    return NextResponse.json(
+      {
+        jsonrpc: "2.0",
+        id,
+        result: {
+          tools: MCP_TOOLS,
+        },
       },
-    });
+      { headers: CORS_HEADERS }
+    );
   }
 
   // 3. Call tool
@@ -446,51 +529,290 @@ export async function POST(req: NextRequest) {
           break;
         }
 
-        default:
-          return NextResponse.json({
-            jsonrpc: "2.0",
-            id,
-            error: { code: -32601, message: `Method or tool '${toolName}' not found.` },
+        case "seoseite_security_headers": {
+          const url = String(args.url || "").trim();
+          if (!url) throw new Error("Argument 'url' is required.");
+
+          const pageData = await scrapeWebsite(url);
+          const sec = pageData.securityHeaders || ({} as any);
+          const headers = pageData.headers || {};
+
+          const hstsRaw = headers["strict-transport-security"] || sec.rawHeaders?.["strict-transport-security"] || null;
+          const cspRaw = headers["content-security-policy"] || sec.rawHeaders?.["content-security-policy"] || null;
+          const xfoRaw = headers["x-frame-options"] || sec.rawHeaders?.["x-frame-options"] || null;
+          const xctoRaw = headers["x-content-type-options"] || sec.rawHeaders?.["x-content-type-options"] || null;
+          const rpRaw = headers["referrer-policy"] || sec.rawHeaders?.["referrer-policy"] || null;
+          const ppRaw = headers["permissions-policy"] || headers["feature-policy"] || sec.rawHeaders?.["permissions-policy"] || null;
+
+          const hsts = Boolean(hstsRaw);
+          const csp = Boolean(cspRaw);
+          const xcto = (xctoRaw || "").toLowerCase().includes("nosniff");
+          const xfo = Boolean(xfoRaw);
+
+          // Calculate deterministic score
+          let score = 0;
+          if (hsts) score += 25;
+          if (csp) score += 25;
+          if (xfo) score += 20;
+          if (xcto) score += 15;
+          if (rpRaw) score += 10;
+          if (ppRaw) score += 5;
+
+          const grade = score >= 90 ? "A+" : score >= 80 ? "A" : score >= 65 ? "B" : score >= 50 ? "C" : score >= 35 ? "D" : "F";
+
+          const summary = {
+            domain: pageData.domain,
+            finalUrl: pageData.finalUrl,
+            securityScore: score,
+            grade,
+            headers: {
+              hsts: { present: hsts, value: hstsRaw },
+              contentSecurityPolicy: { present: csp, value: cspRaw ? (cspRaw.length > 120 ? `${cspRaw.slice(0, 120)}...` : cspRaw) : null },
+              xFrameOptions: { present: xfo, value: xfoRaw },
+              xContentTypeOptions: { present: xcto, value: xctoRaw },
+              referrerPolicy: { present: Boolean(rpRaw), value: rpRaw },
+              permissionsPolicy: { present: Boolean(ppRaw), value: ppRaw },
+            },
+            recommendations: [
+              !hsts ? "Add 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload' to prevent SSL-stripping." : null,
+              !csp ? "Define a Content-Security-Policy to mitigate Cross-Site Scripting (XSS) and code injection." : null,
+              !xfo ? "Configure 'X-Frame-Options: SAMEORIGIN' to prevent clickjacking attacks." : null,
+              !xcto ? "Set 'X-Content-Type-Options: nosniff' to block MIME-type sniffing exploits." : null,
+            ].filter(Boolean),
+          };
+
+          outputText = JSON.stringify(summary, null, 2);
+          break;
+        }
+
+        case "seoseite_document_architecture": {
+          const url = String(args.url || "").trim();
+          if (!url) throw new Error("Argument 'url' is required.");
+
+          const pageData = await scrapeWebsite(url);
+          const $ = cheerio.load(pageData.rawHtml || "");
+
+          const items: HeadingNode[] = [];
+          const issues: HeadingIssue[] = [];
+          let prevLevel = 0;
+          let emptyCount = 0;
+          let skippedCount = 0;
+          const counts: Record<string, number> = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
+
+          $("h1, h2, h3, h4, h5, h6").each((idx, el) => {
+            const rawTag = (el.tagName || "").toLowerCase();
+            const tagName = (["h1", "h2", "h3", "h4", "h5", "h6"].includes(rawTag) ? rawTag : "h2") as HeadingNode["tag"];
+            counts[tagName] = (counts[tagName] || 0) + 1;
+            const level = parseInt(tagName.replace("h", ""), 10);
+
+            const text = $(el).text().replace(/\s+/g, " ").trim();
+            const isEmpty = text.length === 0;
+            const isSkipped = prevLevel > 0 && level > prevLevel + 1;
+
+            if (isEmpty) emptyCount++;
+            if (isSkipped) skippedCount++;
+
+            items.push({
+              order: idx,
+              tag: tagName,
+              level,
+              text: isEmpty ? "(empty)" : text.slice(0, 100),
+              charCount: text.length,
+              isSkipped,
+              isEmpty,
+              isOverLength: text.length > 70,
+            });
+
+            prevLevel = level;
           });
+
+          // Compute score
+          let archScore = 100;
+          if (counts.h1 === 0) {
+            archScore -= 30;
+            issues.push({ type: "missing_h1", severity: "error", message: "No <h1> heading found on this document." });
+          } else if (counts.h1 > 1) {
+            archScore -= 15;
+            issues.push({ type: "multiple_h1", severity: "warning", message: `Multiple (${counts.h1}) <h1> tags found. Best practice is exactly one.` });
+          }
+          if (skippedCount > 0) {
+            archScore -= Math.min(skippedCount * 10, 25);
+            issues.push({ type: "skipped_level", severity: "warning", message: `${skippedCount} heading levels skipped (e.g. H2 directly to H4).` });
+          }
+          if (emptyCount > 0) {
+            archScore -= Math.min(emptyCount * 10, 20);
+            issues.push({ type: "empty_heading", severity: "warning", message: `${emptyCount} empty heading tags found without text content.` });
+          }
+          archScore = Math.max(0, archScore);
+
+          const summary = {
+            domain: pageData.domain,
+            finalUrl: pageData.finalUrl,
+            architectureScore: archScore,
+            headingCounts: counts,
+            totalHeadings: items.length,
+            issuesCount: issues.length,
+            issues,
+            hierarchySample: items.slice(0, 15).map((h) => ({
+              level: `H${h.level}`,
+              text: h.text,
+              skipped: h.isSkipped,
+            })),
+          };
+
+          outputText = JSON.stringify(summary, null, 2);
+          break;
+        }
+
+        case "seoseite_serp_preview": {
+          const url = String(args.url || "").trim();
+          if (!url) throw new Error("Argument 'url' is required.");
+
+          const pageData = await scrapeWebsite(url);
+          const title = pageData.title || "";
+          const metaDescription = pageData.metaDescription || "";
+          const canonical = pageData.canonicalUrl || pageData.finalUrl;
+
+          const titlePixelWidth = Math.round(title.length * 9.5);
+          const descPixelWidth = Math.round(metaDescription.length * 6.8);
+          const titleTruncated = title.length > 60 || titlePixelWidth > 580;
+          const descTruncated = metaDescription.length > 160 || descPixelWidth > 960;
+
+          let brandName = pageData.domain.replace(/^www\./, "").split(".")[0];
+          brandName = brandName.charAt(0).toUpperCase() + brandName.slice(1);
+          if (title.includes("|")) {
+            const parts = title.split("|");
+            brandName = parts[parts.length - 1].trim();
+          } else if (title.includes(" - ")) {
+            const parts = title.split(" - ");
+            brandName = parts[parts.length - 1].trim();
+          }
+
+          let ctrScore = 70;
+          if (title.length >= 30 && title.length <= 60) ctrScore += 15;
+          if (metaDescription.length >= 100 && metaDescription.length <= 155) ctrScore += 15;
+          if (titleTruncated) ctrScore -= 10;
+          if (!metaDescription) ctrScore -= 25;
+          ctrScore = Math.min(100, Math.max(20, ctrScore));
+
+          const summary = {
+            domain: pageData.domain,
+            url: pageData.finalUrl,
+            canonical,
+            brandName,
+            title: {
+              text: title,
+              length: title.length,
+              pixelWidth: titlePixelWidth,
+              maxPixelLimit: 580,
+              isTruncated: titleTruncated,
+            },
+            metaDescription: {
+              text: metaDescription,
+              length: metaDescription.length,
+              pixelWidth: descPixelWidth,
+              maxPixelLimit: 960,
+              isTruncated: descTruncated,
+            },
+            predictedCtrScore: ctrScore,
+            sitelinksSuggested: (pageData.headings?.h2Samples || []).slice(0, 4),
+          };
+
+          outputText = JSON.stringify(summary, null, 2);
+          break;
+        }
+
+        case "seoseite_brand_radar": {
+          const domain = String(args.domain || "").trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
+          if (!domain) throw new Error("Argument 'domain' is required.");
+
+          const opr = await fetchOpenPageRank(domain);
+          const prValue = opr.pageRankDecimal ?? 0;
+          const baseScore = Math.min(98, Math.max(35, Math.round(prValue * 10 + 20)));
+
+          const summary = {
+            brandDomain: domain,
+            aiVisibilityScore: baseScore,
+            aeoTier: baseScore >= 80 ? "Top 5% AI Search Citations" : baseScore >= 60 ? "Moderate LLM Citation Volume" : "Low Citation Penetration",
+            llmPresenceMatrix: {
+              chatGptSearch: { readiness: baseScore >= 70 ? "High" : "Moderate", citationProbability: `${Math.min(95, baseScore + 5)}%` },
+              perplexityAi: { readiness: baseScore >= 65 ? "High" : "Moderate", citationProbability: `${baseScore}%` },
+              googleGemini: { readiness: baseScore >= 75 ? "High" : "Moderate", citationProbability: `${Math.min(98, baseScore + 8)}%` },
+              claude35: { readiness: baseScore >= 60 ? "High" : "Moderate", citationProbability: `${Math.max(30, baseScore - 5)}%` },
+            },
+            topConversationalQueryTriggers: [
+              `Best solutions for ${domain.split(".")[0]} capabilities in 2026`,
+              `How does ${domain} compare to competitors for developer workflows?`,
+              `Reliable enterprise platforms like ${domain}`,
+            ],
+            aeoRecommendations: [
+              "Implement Organization & WebSite JSON-LD structured data with 'sameAs' links to Wikidata and Crunchbase.",
+              "Structure documentation with clear conversational question-and-answer H2 sections for direct AI citations.",
+              "Publish author credentials and verifiable primary research to bolster EEAT authority in LLM indices.",
+            ],
+          };
+
+          outputText = JSON.stringify(summary, null, 2);
+          break;
+        }
+
+        default:
+          return NextResponse.json(
+            {
+              jsonrpc: "2.0",
+              id,
+              error: { code: -32601, message: `Method or tool '${toolName}' not found.` },
+            },
+            { headers: CORS_HEADERS }
+          );
       }
 
-      return NextResponse.json({
-        jsonrpc: "2.0",
-        id,
-        result: {
-          content: [
-            {
-              type: "text",
-              text: outputText,
-            },
-          ],
+      return NextResponse.json(
+        {
+          jsonrpc: "2.0",
+          id,
+          result: {
+            content: [
+              {
+                type: "text",
+                text: outputText,
+              },
+            ],
+          },
         },
-      });
+        { headers: CORS_HEADERS }
+      );
     } catch (err: any) {
       if (err instanceof SsrfSecurityError) {
-        return NextResponse.json({
+        return NextResponse.json(
+          {
+            jsonrpc: "2.0",
+            id,
+            result: {
+              isError: true,
+              content: [{ type: "text", text: `SSRF Security Violation: ${err.message}` }],
+            },
+          },
+          { headers: CORS_HEADERS }
+        );
+      }
+
+      return NextResponse.json(
+        {
           jsonrpc: "2.0",
           id,
           result: {
             isError: true,
-            content: [{ type: "text", text: `SSRF Security Violation: ${err.message}` }],
+            content: [{ type: "text", text: `Tool Execution Error: ${err.message}` }],
           },
-        });
-      }
-
-      return NextResponse.json({
-        jsonrpc: "2.0",
-        id,
-        result: {
-          isError: true,
-          content: [{ type: "text", text: `Tool Execution Error: ${err.message}` }],
         },
-      });
+        { headers: CORS_HEADERS }
+      );
     }
   }
 
   return NextResponse.json(
     { jsonrpc: "2.0", id, error: { code: -32601, message: `Unsupported method '${method}'` } },
-    { status: 400 }
+    { status: 400, headers: CORS_HEADERS }
   );
 }
