@@ -20,7 +20,9 @@
 }
 
 /* Ensure clean light mode default across all screens */
+html,
 body {
+  overflow-x: clip;
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
