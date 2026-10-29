@@ -34,6 +34,8 @@ import {
   User as UserIcon,
   LogOut,
   Bot,
+  BarChart3,
+  Repeat,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlan } from "@/lib/auth/PlanContext";
@@ -322,28 +324,28 @@ export default function Header() {
                         </div>
                       </div>
 
-                      {/* Column 3: Specialized SEO Engines */}
+                      {/* Column 3: Specialized SEO Engines (Scrollable Vertical List) */}
                       <div className="col-span-3 p-6 lg:p-7 space-y-4">
                         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                           <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
                             Specialized SEO Engines
                           </span>
                           <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[11px] font-bold text-blue-600 hover:underline">
-                            All 15 Engines →
+                            All 17 Engines →
                           </Link>
                         </div>
-                        <div className="space-y-1">
-                          <Link href="/tools/robots-sitemap" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                        <div className="space-y-1 max-h-[380px] overflow-y-auto pr-1.5 custom-scrollbar">
+                          <Link href="/tools/traffic-estimator" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                             <div className="flex items-start gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
-                                <Bot className="w-4 h-4" />
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <TrendingUp className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
-                                  Robots.txt &amp; XML Sitemap
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                  Organic Traffic Estimator
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
-                                  AI bot rules (GPTBot, Claude) &amp; GEO score.
+                                  Predict monthly reach, countries &amp; PPC value.
                                 </div>
                               </div>
                             </div>
@@ -359,23 +361,71 @@ export default function Header() {
                                   Keyword Density Matrix
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
-                                  1/2/3-gram frequencies &amp; heading alignment.
+                                  1/2/3-gram frequencies, KD% &amp; search intent.
                                 </div>
                               </div>
                             </div>
                           </Link>
 
-                          <Link href="/tools/traffic-estimator" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                          <Link href="/tools/robots-sitemap" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                             <div className="flex items-start gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
-                                <TrendingUp className="w-4 h-4" />
+                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Bot className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                                  Organic Traffic Estimator
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                                  Robots.txt &amp; XML Sitemap
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
-                                  Predict monthly reach &amp; channel distribution.
+                                  Live path tester, AI bot firewall &amp; GEO score.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/backlink-checker" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Link2 className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                  Backlink Profile &amp; Anchors
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Referring domains, follow ratio &amp; anchor text.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/redirect-tracer" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Repeat className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                                  HTTP Redirect Chain Tracer
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Trace 301/302 hops, loops &amp; SSL downgrades.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/google-hub" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Globe className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-sky-600 transition-colors">
+                                  Google Search &amp; GA4 Hub
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Multi-site GSC clicks, rankings &amp; GA4 traffic.
                                 </div>
                               </div>
                             </div>
@@ -391,7 +441,7 @@ export default function Header() {
                                   50+ Tech Stack Profiler
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
-                                  Identifies frameworks, CMS &amp; CDNs.
+                                  Identifies frameworks, CMS, CDNs &amp; servers.
                                 </div>
                               </div>
                             </div>
@@ -407,7 +457,7 @@ export default function Header() {
                                   Open PageRank Lookup
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
-                                  Common Crawl PageRank data.
+                                  Common Crawl PageRank decimal (0–10).
                                 </div>
                               </div>
                             </div>
@@ -445,6 +495,70 @@ export default function Header() {
                             </div>
                           </Link>
 
+                          <Link href="/tools/speed-lab" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Zap className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                                  Core Web Vitals Lab
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Lighthouse LCP, CLS, FCP &amp; TTFB metrics.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/broken-links" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Link2 className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                                  Broken Link &amp; 404 Crawler
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Deep internal &amp; outbound link validation.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/document-architecture" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Layers className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                  Document Architecture
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  H1–H6 heading hierarchy &amp; DOM tree inspection.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/security-headers" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Lock className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                                  Security Headers Guard
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  HSTS, CSP, X-Frame-Options validation.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
                           <Link href="/tools" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                             <div className="flex items-start gap-3">
                               <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 mt-0.5">
@@ -455,7 +569,7 @@ export default function Header() {
                                   Full SEO Suite Hub
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
-                                  Complete suite of 15 specialized SEO engines with live runners.
+                                  Complete suite of 17 specialized SEO engines.
                                 </div>
                               </div>
                             </div>
@@ -730,7 +844,7 @@ export default function Header() {
                           onClick={() => setResourcesOpen(false)}
                           className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center justify-between pt-3 border-t border-slate-200"
                         >
-                          <span>Explore All 15 Standalone Tools</span>
+                          <span>Explore All 17 Standalone Tools</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       </div>
@@ -1070,7 +1184,7 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(false)}
               className="block px-3 py-2 text-sm font-semibold rounded-lg text-slate-900 hover:bg-slate-50"
             >
-              15 Standalone SEO Tools
+              17 Standalone SEO Tools
             </Link>
             <Link
               href="/tools/google-hub"

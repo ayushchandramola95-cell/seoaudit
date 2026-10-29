@@ -30,6 +30,7 @@ import {
   BarChart3,
   Flame,
   ArrowUpRight,
+  Repeat,
 } from "lucide-react";
 
 interface ToolCard {
@@ -114,6 +115,36 @@ export default function ToolsHubClient() {
       iconBg: "bg-indigo-50 border-indigo-200",
       metric: "Monthly Footprint",
       features: ["Channel Inflow Model", "SERP CTR Curves", "Open PageRank Anchor"],
+    },
+    {
+      id: "backlink-checker",
+      name: "Backlink Profile & Anchor Text Checker",
+      description:
+        "Analyze external link footprints, evaluate referring root domains, inspect dofollow vs nofollow citation equity, and benchmark anchor text distributions.",
+      href: "/tools/backlink-checker",
+      category: "crawl",
+      badge: "Link Equity",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+      icon: Link2,
+      iconColor: "text-blue-600",
+      iconBg: "bg-blue-50 border-blue-200",
+      metric: "Referring Domains",
+      features: ["Dofollow Ratio", "Anchor Diversity", "Spam Risk Index"],
+    },
+    {
+      id: "redirect-tracer",
+      name: "HTTP Redirect & Status Code Chain Tracer",
+      description:
+        "Inspect sequential 301, 302, 307, and 308 redirect hops in real time. Detect redirect loops, measure network latency at each jump, and prevent SSL downgrades.",
+      href: "/tools/redirect-tracer",
+      category: "stack",
+      badge: "Chain Inspector",
+      badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
+      icon: Repeat,
+      iconColor: "text-amber-600",
+      iconBg: "bg-amber-50 border-amber-200",
+      metric: "Hop Latency",
+      features: ["Hop-by-Hop Trace", "Loop Detection", "SSL Integrity Guard"],
     },
     {
       id: "brand-radar",
@@ -382,7 +413,7 @@ export default function ToolsHubClient() {
             The Complete SEO Intelligence Suite
           </h1>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            15 specialized growth and diagnostic engines engineered for sub-second crawl speed, competitive intelligence, Core Web Vitals benchmarking, and AI Search visibility.
+            17 specialized growth and diagnostic engines engineered for sub-second crawl speed, competitive intelligence, Core Web Vitals benchmarking, and AI Search visibility.
           </p>
 
           {/* Universal Quick Launch Bar */}
@@ -408,9 +439,11 @@ export default function ToolsHubClient() {
                 className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-800 border-none focus:ring-2 focus:ring-blue-600 cursor-pointer"
               >
                 <option value="/tools/google-hub">Google GSC &amp; GA4 Hub</option>
+                <option value="/tools/traffic-estimator">Organic Traffic Estimator</option>
+                <option value="/tools/backlink-checker">Backlink Profile &amp; Anchors</option>
+                <option value="/tools/redirect-tracer">HTTP Redirect Chain Tracer</option>
                 <option value="/tools/robots-sitemap">Robots.txt &amp; XML Sitemap</option>
                 <option value="/tools/keyword-research">Keyword Density Explorer</option>
-                <option value="/tools/traffic-estimator">Organic Traffic Estimator</option>
                 <option value="/tools/broken-links">Broken Links Crawler</option>
                 <option value="/tools/speed-lab">Core Web Vitals Lab</option>
                 <option value="/tools/brand-radar">Brand Radar AI</option>
