@@ -829,6 +829,17 @@ export default function Header() {
                             </Link>
                           </li>
                           <li>
+                            <Link href="/tools/database-manager" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                              <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
+                                Custom PostgreSQL
+                                <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-700">Live</span>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                                In-site database engine &amp; DDL migrations.
+                              </p>
+                            </Link>
+                          </li>
+                          <li>
                             <Link href="/dashboard?tab=connected" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
                               <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                 Mode A vs Mode B

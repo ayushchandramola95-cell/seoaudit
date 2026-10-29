@@ -20,7 +20,8 @@ import {
   Sparkles,
   ExternalLink,
   CreditCard,
-  Building
+  Building,
+  Database,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlan } from "@/lib/auth/PlanContext";
@@ -360,6 +361,78 @@ export default function AccountClient() {
               >
                 <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2.5: PostgreSQL Database Engine */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                Data Layer &amp; Persistence
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mt-0.5 flex items-center gap-2">
+                <Database className="w-4 h-4 text-blue-600" />
+                <span>PostgreSQL Database Engine</span>
+              </h3>
+            </div>
+            <Link
+              href="/tools/database-manager"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <span>Manage Connection</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+            <div className="space-y-0.5">
+              <div className="font-bold text-slate-800">Custom Database Support Active</div>
+              <p className="text-[11px] text-slate-500">
+                Connect any local PostgreSQL, Supabase, Neon, or Cloud SQL instance directly from the in-site console.
+              </p>
+            </div>
+            <Link
+              href="/tools/database-manager"
+              className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors shrink-0"
+            >
+              Open Database Console →
+            </Link>
+          </div>
+        </div>
+
+        {/* Section 2.6: Stripe Webhooks & Billing Gateway */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                Payment Infrastructure
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mt-0.5 flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-indigo-600" />
+                <span>Stripe Billing &amp; Webhooks</span>
+              </h3>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Webhook Active
+            </span>
+          </div>
+
+          <div className="space-y-2 text-xs">
+            <p className="text-slate-500">
+              Configure your Stripe dashboard to send webhook notifications to the endpoint below for real-time tier synchronization:
+            </p>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 font-mono text-[11px] bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-800 truncate">
+                /api/webhook/stripe
+              </div>
+              <Link
+                href="/api-docs"
+                className="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs"
+              >
+                Docs
+              </Link>
             </div>
           </div>
         </div>

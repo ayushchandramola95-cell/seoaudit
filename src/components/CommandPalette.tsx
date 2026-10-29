@@ -25,6 +25,7 @@ import {
   Cpu,
   X,
   Command,
+  Database,
 } from "lucide-react";
 
 interface CommandItem {
@@ -64,6 +65,7 @@ const COMMAND_ITEMS: CommandItem[] = [
   { id: "tool-content-gap", title: "Semantic Content Gap & Keyword Matrix", subtitle: "Uncover missing competitor keywords, N-grams & heading gaps", href: "/tools/content-gap", category: "Specialized SEO Engines", badge: "Keywords", icon: GitCompare, keywords: "content gap semantic keywords matrix density n-grams" },
   { id: "tool-batch-audit", title: "Multi-URL Batch SEO Auditor", subtitle: "Audit up to 15 URLs simultaneously in a unified comparison matrix", href: "/tools/batch-audit", category: "Specialized SEO Engines", badge: "Bulk 15 URLs", icon: ListChecks, keywords: "batch bulk multi url audit matrix csv" },
   { id: "tool-google-hub", title: "Google Search Console & GA4 Hub", subtitle: "Multi-property GSC clicks, CTR, rankings & GA4 live traffic", href: "/tools/google-hub", category: "Specialized SEO Engines", badge: "Google API", icon: Globe, keywords: "google search console gsc ga4 analytics clicks ctr" },
+  { id: "tool-database-manager", title: "Custom PostgreSQL Database Engine", subtitle: "Connect custom PostgreSQL, run DDL migrations, and inspect audit records", href: "/tools/database-manager", category: "Specialized SEO Engines", badge: "Database", icon: Database, keywords: "database postgres postgresql custom sql migrations tables" },
 
   // Developer & Docs
   { id: "doc-mcp", title: "MCP Server for Claude & Cursor IDE", subtitle: "Connect SEO Audit tools directly to AI coding agents via stdio/REST", href: "/mcp", category: "Developer & Docs", badge: "AI Agent", icon: Terminal, keywords: "mcp model context protocol claude cursor ide agent" },

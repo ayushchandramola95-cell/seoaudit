@@ -341,13 +341,23 @@ export default function GoogleHubClient() {
               </h2>
             </div>
 
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-all cursor-pointer shadow-xs self-start sm:self-auto"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Custom Property</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <a
+                href="/api/auth/google"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                title="Connect real Google Search Console account via Google Cloud OAuth"
+              >
+                <Globe className="w-3.5 h-3.5 text-blue-600" />
+                <span>Connect Google OAuth</span>
+              </a>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-all cursor-pointer shadow-xs self-start sm:self-auto"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Custom Property</span>
+              </button>
+            </div>
           </div>
 
           {/* Connected Property Switcher Cards */}

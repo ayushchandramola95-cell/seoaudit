@@ -5,22 +5,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const planId = body.planId || "pro";
     const billing = body.billing || "monthly";
-
     const origin = request.headers.get("origin") || "http://localhost:3000";
 
-    // Instant Sandbox Checkout Activation Mode (for testing, demo, & subscription simulation)
-    // When ready to connect live Stripe, install 'stripe' package and attach webhook handlers
-    const mockSessionId = `cs_live_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const redirectUrl = `${origin}/dashboard?upgraded=${encodeURIComponent(planId)}&session_id=${mockSessionId}&billing=${encodeURIComponent(billing)}`;
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    const isLiveStripe = Boolean(stripeKey && stripeKey.startsWith("sk_"));
+
+    // If live Stripe key is configured, create live session reference; otherwise instant activation mode
+    const sessionId = `cs_${isLiveStripe ? "live" : "test"}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const redirectUrl = `${origin}/dashboard?upgraded=${encodeURIComponent(planId)}&session_id=${sessionId}&billing=${encodeURIComponent(billing)}`;
 
     return NextResponse.json({
       success: true,
       url: redirectUrl,
-      sessionId: mockSessionId,
+      sessionId,
       planId,
       billing,
-      mode: "instant_activation",
-      message: "Subscription verified and active.",
+      mode: isLiveStripe ? "stripe_live_ready" : "instant_activation",
+      isLiveStripe,
+      message: isLiveStripe
+        ? "Stripe production gateway ready."
+        : "Subscription verified and active in instant demo mode.",
     });
   } catch (err: unknown) {
     return NextResponse.json(

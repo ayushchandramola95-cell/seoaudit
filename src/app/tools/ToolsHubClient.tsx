@@ -32,6 +32,7 @@ import {
   Flame,
   ArrowUpRight,
   Repeat,
+  Database,
 } from "lucide-react";
 
 interface ToolCard {
@@ -378,6 +379,21 @@ export default function ToolsHubClient() {
       iconBg: "bg-amber-50 border-amber-200",
       metric: "Next-Gen Adoption",
       features: ["Alt Text Guard", "AVIF / WebP Savings", "Explicit Dimensions"],
+    },
+    {
+      id: "database-manager",
+      name: "Custom PostgreSQL Database Engine",
+      description:
+        "Connect, test, and manage custom self-hosted or cloud PostgreSQL databases (Supabase, Neon, GCP Cloud SQL, AWS RDS). Run migrations and inspect live audit records.",
+      href: "/tools/database-manager",
+      category: "stack",
+      badge: "Database Engine",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+      icon: Database,
+      iconColor: "text-blue-600",
+      iconBg: "bg-blue-50 border-blue-200",
+      metric: "Live Telemetry & DDL",
+      features: ["Custom PostgreSQL URI", "1-Click Migrations", "In-Memory Auto Fallback"],
     },
   ];
 
