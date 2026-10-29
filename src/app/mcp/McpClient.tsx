@@ -857,82 +857,104 @@ console.log("Audit Output:", result.content[0].text);`;
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-24">
       {/* 1. DOCKED STICKY SUBNAVBAR ON SCROLL */}
-      <header className="sticky top-16 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
-          {/* Left: Engine Identity & Live Pulse */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
+      <header className="sticky top-16 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] py-2 px-4 sm:px-6 lg:px-8 transition-all">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          {/* Left: Unified Status Capsule & Telemetry Chips */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Dark Pill Capsule */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-mono shadow-xs border border-slate-800 whitespace-nowrap">
+              <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
-              <span className="text-xs font-bold text-slate-900 font-mono tracking-tight hidden sm:inline">
-                MCP Gateway (JSON-RPC 2.0)
-              </span>
+              <span className="font-bold tracking-tight">MCP Gateway</span>
+              <span className="text-slate-500 text-[10px]">•</span>
+              <span className="text-blue-400 font-semibold text-[11px]">JSON-RPC 2.0</span>
             </div>
 
-            <div className="hidden md:flex items-center gap-1.5 pl-3 border-l border-slate-200 text-[11px] font-mono text-slate-600">
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 font-semibold border border-slate-200">
+            {/* Telemetry Chips (Always Single Line) */}
+            <div className="hidden sm:flex items-center gap-1.5 whitespace-nowrap">
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-semibold border border-slate-200/80">
                 11 Active Engines
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200">
+              <span className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-200/70">
                 Stdio + HTTP
               </span>
               {diagnosticStages.ping.latencyMs !== undefined && (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 flex items-center gap-1">
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200/70 flex items-center gap-1">
                   <Zap className="w-3 h-3 text-emerald-600" />
-                  {diagnosticStages.ping.latencyMs}ms
+                  <span>{diagnosticStages.ping.latencyMs}ms</span>
                 </span>
               )}
             </div>
           </div>
 
-          {/* Quick Subnav Shortcuts */}
-          <div className="hidden lg:flex items-center gap-4 text-xs font-semibold text-slate-600">
-            <a href="#diagnostics" className="hover:text-blue-600 transition-colors">
-              Diagnostics
+          {/* Center: Segmented Navigation Dock */}
+          <nav className="hidden xl:flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 text-xs font-semibold text-slate-600">
+            <a
+              href="#diagnostics"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+            >
+              <Activity className="w-3.5 h-3.5 text-slate-400" />
+              <span>Diagnostics</span>
             </a>
-            <a href="#live-tester" className="hover:text-blue-600 transition-colors">
-              Playground
+            <a
+              href="#live-tester"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+            >
+              <Play className="w-3.5 h-3.5 text-slate-400" />
+              <span>Playground</span>
             </a>
-            <a href="#chat-simulation" className="hover:text-blue-600 transition-colors">
-              AI Simulation
+            <a
+              href="#chat-simulation"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+              <span>AI Simulation</span>
             </a>
-            <a href="#install-guide" className="hover:text-blue-600 transition-colors">
-              Config Studio
+            <a
+              href="#install-guide"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+            >
+              <Sliders className="w-3.5 h-3.5 text-slate-400" />
+              <span>Config Studio</span>
             </a>
-            <a href="#schema-catalog" className="hover:text-blue-600 transition-colors">
-              Schema Specs
+            <a
+              href="#schema-catalog"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+            >
+              <Code2 className="w-3.5 h-3.5 text-slate-400" />
+              <span>Schemas</span>
             </a>
-          </div>
+          </nav>
 
-          {/* Right: Quick Actions */}
-          <div className="flex items-center gap-2">
+          {/* Right: Focused Action Controls (No Redundant Links) */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={runFullDiagnostics}
               disabled={diagnosticRunning}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors cursor-pointer whitespace-nowrap"
               title="Run 4-stage protocol handshake diagnostic"
             >
-              <Activity className={`w-3.5 h-3.5 ${diagnosticRunning ? "animate-spin text-blue-600" : "text-emerald-600"}`} />
-              <span className="hidden sm:inline">Diagnostics</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${diagnosticRunning ? "animate-spin text-blue-600" : "text-slate-500"}`} />
+              <span className="hidden sm:inline">Handshake Test</span>
             </button>
 
             <a
               href="#live-tester"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs whitespace-nowrap"
             >
               <Play className="w-3.5 h-3.5 fill-white" />
-              <span>Playground</span>
+              <span>Test Tools</span>
             </a>
 
             <button
               onClick={handleDownloadConfigFile}
-              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
               title="Download client configuration file"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Download Config</span>
+              <span className="hidden md:inline">Download Config</span>
             </button>
           </div>
         </div>
@@ -1233,24 +1255,28 @@ console.log("Audit Output:", result.content[0].text);`;
             {filteredTools.map((t) => {
               const isSelected = t.id === selectedToolId;
               const ToolIcon = t.icon;
+              const shortName = t.name.replace("seoseite_", "");
               return (
                 <button
                   key={t.id}
                   onClick={() => handleToolChange(t.id)}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[92px] ${
                     isSelected
-                      ? "bg-blue-50/80 border-blue-600 text-blue-950 font-bold shadow-xs ring-2 ring-blue-500/20"
+                      ? "bg-blue-50/90 border-blue-600 text-blue-950 font-bold shadow-xs ring-2 ring-blue-500/20"
                       : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <ToolIcon className={`w-4 h-4 ${isSelected ? "text-blue-600" : "text-slate-400"}`} />
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200 uppercase">
+                      <ToolIcon className={`w-4 h-4 shrink-0 ${isSelected ? "text-blue-600" : "text-slate-400"}`} />
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200/80 uppercase font-semibold">
                         {t.category}
                       </span>
                     </div>
-                    <div className="text-xs font-mono font-bold leading-tight break-all">{t.name}</div>
+                    <div className="text-xs font-mono font-bold leading-tight truncate text-slate-900" title={t.name}>
+                      {shortName}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono truncate mt-0.5">{t.name}</div>
                   </div>
                 </button>
               );
@@ -1280,7 +1306,7 @@ console.log("Audit Output:", result.content[0].text);`;
                       key={preset.label}
                       type="button"
                       onClick={() => handleApplyPreset(preset)}
-                      className="px-2 py-0.5 rounded-md bg-white hover:bg-blue-50 hover:text-blue-700 text-slate-700 border border-slate-200 text-[11px] font-mono transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-white hover:bg-blue-50 hover:text-blue-700 text-slate-700 border border-slate-200 text-xs font-mono font-semibold transition-colors cursor-pointer shadow-2xs"
                     >
                       {preset.label}
                     </button>
