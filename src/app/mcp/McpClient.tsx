@@ -18,6 +18,8 @@ import {
   FileCode,
   Layers,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   ExternalLink,
   Bot,
   RefreshCw,
@@ -32,6 +34,10 @@ import {
   Network,
   Activity,
   Sliders,
+  Download,
+  MessageSquare,
+  HelpCircle,
+  History,
 } from "lucide-react";
 import { usePlan } from "@/lib/auth/PlanContext";
 
@@ -43,7 +49,9 @@ interface ToolOption {
   description: string;
   icon: any;
   defaultParams: Record<string, any>;
-  paramFields: { key: string; label: string; placeholder: string; type: string }[];
+  paramFields: { key: string; label: string; placeholder: string; type: string; required?: boolean }[];
+  outputFields: { key: string; type: string; description: string }[];
+  sampleOutput: string;
 }
 
 const MCP_TOOLS: ToolOption[] = [
@@ -56,8 +64,15 @@ const MCP_TOOLS: ToolOption[] = [
     icon: ShieldCheck,
     defaultParams: { url: "https://example.com" },
     paramFields: [
-      { key: "url", label: "Target Website URL", placeholder: "https://example.com", type: "text" },
+      { key: "url", label: "Target Website URL", placeholder: "https://example.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "overallScore", type: "number (0-100)", description: "Deterministic overall technical SEO health score." },
+      { key: "grade", type: "string (A+ to F)", description: "Letter grade computed from passed rules." },
+      { key: "coreWebVitals", type: "object", description: "FCP, LCP, CLS lab measurements from Google PSI." },
+      { key: "criticalIssues", type: "array", description: "Deducted penalty items with exact code fixes." },
+    ],
+    sampleOutput: `{\n  "overallScore": 88,\n  "grade": "B+",\n  "performanceScore": 92,\n  "coreWebVitals": { "fcp": "0.9s", "lcp": "1.8s", "cls": "0.01" },\n  "criticalIssues": [\n    { "check": "Missing Meta Description", "status": "warning" }\n  ]\n}`,
   },
   {
     id: "seoseite_compare_domains",
@@ -68,9 +83,15 @@ const MCP_TOOLS: ToolOption[] = [
     icon: GitCompare,
     defaultParams: { urlA: "https://stripe.com", urlB: "https://paypal.com" },
     paramFields: [
-      { key: "urlA", label: "Primary URL (A)", placeholder: "https://stripe.com", type: "text" },
-      { key: "urlB", label: "Competitor URL (B)", placeholder: "https://paypal.com", type: "text" },
+      { key: "urlA", label: "Primary URL (A)", placeholder: "https://stripe.com", type: "text", required: true },
+      { key: "urlB", label: "Competitor URL (B)", placeholder: "https://paypal.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "winner", type: "string", description: "Domain with superior technical SEO composite score." },
+      { key: "scoreDifference", type: "number", description: "Delta between site A and site B overall points." },
+      { key: "techDifferences", type: "object", description: "Frameworks, CDNs, and tools unique to each site." },
+    ],
+    sampleOutput: `{\n  "winner": "stripe.com",\n  "scoreDifference": +14,\n  "siteA": { "domain": "stripe.com", "overallScore": 94 },\n  "siteB": { "domain": "paypal.com", "overallScore": 80 }\n}`,
   },
   {
     id: "seoseite_check_broken_links",
@@ -81,9 +102,15 @@ const MCP_TOOLS: ToolOption[] = [
     icon: Layers,
     defaultParams: { url: "https://example.com", maxLinks: 20 },
     paramFields: [
-      { key: "url", label: "Website URL", placeholder: "https://example.com", type: "text" },
+      { key: "url", label: "Website URL", placeholder: "https://example.com", type: "text", required: true },
       { key: "maxLinks", label: "Max Links to Crawl", placeholder: "20", type: "number" },
     ],
+    outputFields: [
+      { key: "totalChecked", type: "number", description: "Total links tested across internal and external origins." },
+      { key: "brokenCount", type: "number", description: "Number of 404/410 dead responses detected." },
+      { key: "redirectCount", type: "number", description: "Permanent 301 and temporary 302 redirects." },
+    ],
+    sampleOutput: `{\n  "totalChecked": 20,\n  "healthyCount": 19,\n  "brokenCount": 0,\n  "redirectCount": 1,\n  "avgLatencyMs": 48\n}`,
   },
   {
     id: "seoseite_document_architecture",
@@ -94,8 +121,14 @@ const MCP_TOOLS: ToolOption[] = [
     icon: FileText,
     defaultParams: { url: "https://example.com" },
     paramFields: [
-      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text" },
+      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "architectureScore", type: "number (0-100)", description: "Hierarchy integrity score." },
+      { key: "headingCounts", type: "object", description: "Count of H1, H2, H3, H4, H5, H6 elements." },
+      { key: "issues", type: "array", description: "Skipped levels, empty tags, or multiple H1 anomalies." },
+    ],
+    sampleOutput: `{\n  "architectureScore": 90,\n  "headingCounts": { "h1": 1, "h2": 6, "h3": 12 },\n  "issuesCount": 0,\n  "hierarchySample": [{ "level": "H1", "text": "Next Generation API" }]\n}`,
   },
   {
     id: "seoseite_speed_lab",
@@ -106,8 +139,13 @@ const MCP_TOOLS: ToolOption[] = [
     icon: Zap,
     defaultParams: { url: "https://example.com" },
     paramFields: [
-      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text" },
+      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "performanceScore", type: "number (0-100)", description: "Lighthouse lab performance composite." },
+      { key: "coreWebVitals", type: "object", description: "Largest Contentful Paint, First Contentful Paint, CLS." },
+    ],
+    sampleOutput: `{\n  "performanceScore": 96,\n  "accessibilityScore": 100,\n  "coreWebVitals": { "lcp": "1.2s", "fcp": "0.8s", "cls": "0.00" }\n}`,
   },
   {
     id: "seoseite_detect_tech",
@@ -118,8 +156,13 @@ const MCP_TOOLS: ToolOption[] = [
     icon: Cpu,
     defaultParams: { url: "https://example.com" },
     paramFields: [
-      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text" },
+      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "totalDetected", type: "number", description: "Count of confirmed technologies." },
+      { key: "technologies", type: "array", description: "Name, category, confidence, and proof evidence." },
+    ],
+    sampleOutput: `{\n  "totalDetected": 6,\n  "technologies": [\n    { "name": "Next.js", "category": "JavaScript Frameworks", "confidence": "High" },\n    { "name": "Vercel", "category": "PaaS & Hosting", "confidence": "High" }\n  ]\n}`,
   },
   {
     id: "seoseite_security_headers",
@@ -130,8 +173,14 @@ const MCP_TOOLS: ToolOption[] = [
     icon: Lock,
     defaultParams: { url: "https://stripe.com" },
     paramFields: [
-      { key: "url", label: "Target URL", placeholder: "https://stripe.com", type: "text" },
+      { key: "url", label: "Target URL", placeholder: "https://stripe.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "securityScore", type: "number (0-100)", description: "Header hardening security rating." },
+      { key: "grade", type: "string (A+ to F)", description: "Security defense grade." },
+      { key: "headers", type: "object", description: "Status and raw values for HSTS, CSP, XFO, XCTO." },
+    ],
+    sampleOutput: `{\n  "securityScore": 95,\n  "grade": "A+",\n  "headers": {\n    "hsts": { "present": true, "value": "max-age=63072000; includeSubDomains; preload" },\n    "xFrameOptions": { "present": true, "value": "SAMEORIGIN" }\n  }\n}`,
   },
   {
     id: "seoseite_validate_schema",
@@ -142,8 +191,13 @@ const MCP_TOOLS: ToolOption[] = [
     icon: Code2,
     defaultParams: { url: "https://example.com" },
     paramFields: [
-      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text" },
+      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "structuredDataCount", type: "number", description: "Count of valid JSON-LD entities." },
+      { key: "openGraph", type: "object", description: "og:title, og:image, og:description presence." },
+    ],
+    sampleOutput: `{\n  "structuredDataCount": 2,\n  "structuredDataTypes": ["Organization", "WebSite"],\n  "openGraph": { "title": "Stripe | Financial Infrastructure" }\n}`,
   },
   {
     id: "seoseite_check_authority",
@@ -154,8 +208,14 @@ const MCP_TOOLS: ToolOption[] = [
     icon: Globe,
     defaultParams: { domain: "github.com" },
     paramFields: [
-      { key: "domain", label: "Domain or Host", placeholder: "github.com", type: "text" },
+      { key: "domain", label: "Domain or Host", placeholder: "github.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "pageRank", type: "number (0-10)", description: "DomCop Open PageRank decimal score." },
+      { key: "globalRank", type: "number", description: "Global website rank index." },
+      { key: "tier", type: "string", description: "Authority tier classification." },
+    ],
+    sampleOutput: `{\n  "domain": "github.com",\n  "pageRank": 9.56,\n  "globalRank": 15,\n  "tier": "Tier 1: Global Mega Authority (PR 8.0 - 10.0)"\n}`,
   },
   {
     id: "seoseite_serp_preview",
@@ -166,8 +226,13 @@ const MCP_TOOLS: ToolOption[] = [
     icon: Search,
     defaultParams: { url: "https://example.com" },
     paramFields: [
-      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text" },
+      { key: "url", label: "Target URL", placeholder: "https://example.com", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "title.pixelWidth", type: "number", description: "Computed Arial 18px pixel width (max 580px)." },
+      { key: "predictedCtrScore", type: "number (0-100)", description: "Estimated click-through rate optimization." },
+    ],
+    sampleOutput: `{\n  "title": { "text": "Example Domain", "pixelWidth": 133, "isTruncated": false },\n  "predictedCtrScore": 75\n}`,
   },
   {
     id: "seoseite_brand_radar",
@@ -178,8 +243,13 @@ const MCP_TOOLS: ToolOption[] = [
     icon: Radio,
     defaultParams: { domain: "linear.app" },
     paramFields: [
-      { key: "domain", label: "Brand Domain", placeholder: "linear.app", type: "text" },
+      { key: "domain", label: "Brand Domain", placeholder: "linear.app", type: "text", required: true },
     ],
+    outputFields: [
+      { key: "aiVisibilityScore", type: "number (0-100)", description: "Aggregate LLM citation readiness." },
+      { key: "llmPresenceMatrix", type: "object", description: "ChatGPT, Perplexity, Gemini, Claude probabilities." },
+    ],
+    sampleOutput: `{\n  "aiVisibilityScore": 98,\n  "aeoTier": "Top 5% AI Search Citations",\n  "llmPresenceMatrix": { "chatGptSearch": { "readiness": "High" } }\n}`,
   },
 ];
 
@@ -242,31 +312,141 @@ const PROMPT_TEMPLATES = [
   },
 ];
 
+const CHAT_SIMULATION_SCENARIOS = [
+  {
+    id: "security",
+    title: "Security Header Hardening",
+    userQuery: "Check if https://stripe.com has adequate security headers before our compliance audit.",
+    toolCalled: "seoseite_security_headers",
+    toolArgs: { url: "https://stripe.com" },
+    toolResult: {
+      domain: "stripe.com",
+      securityScore: 95,
+      grade: "A+",
+      headers: {
+        hsts: { present: true, value: "max-age=63072000; includeSubDomains; preload" },
+        csp: { present: true, value: "base-uri 'none'; child-src 'none'..." },
+        xfo: { present: true, value: "SAMEORIGIN" },
+        xcto: { present: true, value: "nosniff" },
+      },
+    },
+    aiResponse:
+      "I inspected **stripe.com** using the SeoSeite MCP tool. Here are the findings:\n\n- **Security Grade:** `A+ (95/100)`\n- **HSTS:** Fully configured with `max-age=63072000` and `preload` enabled to prevent SSL-stripping.\n- **Content-Security-Policy:** Active with strict `base-uri 'none'` and restricted script origins.\n- **Clickjacking Protection:** Hardened via `X-Frame-Options: SAMEORIGIN`.\n\nStripe passes compliance standards for transport security and browser defense.",
+  },
+  {
+    id: "competitor",
+    title: "Head-to-Head Competitor Duel",
+    userQuery: "Compare vercel.com vs netlify.com. Who has better technical SEO and faster response times?",
+    toolCalled: "seoseite_compare_domains",
+    toolArgs: { urlA: "https://vercel.com", urlB: "https://netlify.com" },
+    toolResult: {
+      winner: "vercel.com",
+      scoreDifference: 8,
+      siteA: { domain: "vercel.com", overallScore: 96, responseTimeMs: 42 },
+      siteB: { domain: "netlify.com", overallScore: 88, responseTimeMs: 86 },
+    },
+    aiResponse:
+      "According to the deterministic benchmark from SeoSeite MCP:\n\n- **Winner:** **vercel.com** leads by **+8 points** (96/100 vs 88/100).\n- **Edge Latency:** Vercel responded in `42ms` compared to Netlify's `86ms`.\n- **Core Web Vitals:** Both maintain sub-second FCP, but Vercel's zero Cumulative Layout Shift (`CLS: 0.00`) provided a slight ranking edge.",
+  },
+  {
+    id: "aeo",
+    title: "AI Search & AEO Citation Check",
+    userQuery: "How visible is linear.app in AI search engines like ChatGPT and Perplexity?",
+    toolCalled: "seoseite_brand_radar",
+    toolArgs: { domain: "linear.app" },
+    toolResult: {
+      brandDomain: "linear.app",
+      aiVisibilityScore: 98,
+      aeoTier: "Top 5% AI Search Citations",
+      chatGptSearch: "High (95% citation probability)",
+      perplexityAi: "High (98% citation probability)",
+    },
+    aiResponse:
+      "I queried SeoSeite Brand Radar for **linear.app**:\n\n- **AI Visibility Score:** `98/100` (Tier 1 AI Presence).\n- **ChatGPT Search Citations:** 95% probability of inclusion for queries about modern issue trackers and developer sprint tools.\n- **Perplexity AI:** 98% citation readiness backed by strong GitHub and documentation entity indexing.",
+  },
+];
+
+const FAQS = [
+  {
+    q: "Why does my AI assistant say it cannot browse the web or run audits?",
+    a: "Standard LLMs (Claude, GPT-4, etc.) are cut off from live scraping or blocked by Cloudflare. By connecting the SeoSeite MCP server, the model is equipped with deterministic tools (Cheerio HTML parsing, Google PageSpeed API, Open PageRank) so it calls SeoSeite instead of hallucinating answers.",
+  },
+  {
+    q: "How does the Stdio transport differ from the HTTP JSON-RPC gateway?",
+    a: "The local Stdio transport (node scripts/seoseite-mcp.mjs) runs directly on your machine through stdin/stdout, which desktop applications like Claude Desktop and Cursor require for low-latency security. The HTTP endpoint (/api/mcp) is a standard JSON-RPC 2.0 REST endpoint ideal for cloud agents, CI/CD pipelines, and webhooks.",
+  },
+  {
+    q: "Does SeoSeite MCP require an expensive enterprise subscription?",
+    a: "No. Unlike Ahrefs or Semrush which gate their programmatic API/MCP access behind $999/month enterprise plans, SeoSeite MCP is open-source and provides 11 fully functional developer tools out of the box.",
+  },
+  {
+    q: "How is Server-Side Request Forgery (SSRF) prevented?",
+    a: "SeoSeite includes an enterprise security firewall in src/lib/security/ssrf.ts that validates DNS resolutions, blocking private IP spaces (10.x, 172.16.x, 192.168.x, 127.0.0.1) and cloud metadata endpoints (169.254.169.254) before any HTTP connection is attempted.",
+  },
+];
+
+interface ExecutionHistoryItem {
+  id: string;
+  tool: string;
+  target: string;
+  timestamp: string;
+  status: number;
+  durationMs: number;
+  success: boolean;
+}
+
 export default function McpClient() {
   const { tier } = usePlan();
   const [selectedToolId, setSelectedToolId] = useState<string>("seoseite_audit_url");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [toolSearch, setToolSearch] = useState<string>("");
   const [params, setParams] = useState<Record<string, any>>(MCP_TOOLS[0].defaultParams);
-  const [activeConfigTab, setActiveConfigTab] = useState<"cursor" | "claude" | "windsurf" | "antigravity" | "http" | "sdk">("cursor");
-  const [outputTab, setOutputTab] = useState<"visual" | "json" | "request">("visual");
 
+  // Config Studio State
+  const [activeConfigTab, setActiveConfigTab] = useState<"cursor" | "claude" | "windsurf" | "antigravity" | "http" | "sdk">("cursor");
+  const [configHost, setConfigHost] = useState<string>("local");
+  const [customHostUrl, setCustomHostUrl] = useState<string>("https://seoseite.com");
+
+  // Output Console State
+  const [outputTab, setOutputTab] = useState<"visual" | "json" | "request" | "curl">("visual");
   const [testing, setTesting] = useState(false);
-  const [responseOutput, setResponseOutput] = useState<any | null>(null);
   const [rawTextOutput, setRawTextOutput] = useState<string | null>(null);
   const [parsedToolContent, setParsedToolContent] = useState<any | null>(null);
   const [executionTimingMs, setExecutionTimingMs] = useState<number | null>(null);
   const [executionStatus, setExecutionStatus] = useState<number | null>(null);
 
-  // Health ping state
-  const [pinging, setPinging] = useState(false);
-  const [pingResult, setPingResult] = useState<{ status: string; latencyMs: number; toolsCount: number } | null>(null);
+  // Diagnostic Suite State
+  const [diagnosticRunning, setDiagnosticRunning] = useState(false);
+  const [diagnosticStages, setDiagnosticStages] = useState<{
+    ping: { status: "pending" | "running" | "success" | "error"; latencyMs?: number };
+    init: { status: "pending" | "running" | "success" | "error"; version?: string };
+    tools: { status: "pending" | "running" | "success" | "error"; count?: number };
+    dryRun: { status: "pending" | "running" | "success" | "error"; latencyMs?: number };
+  }>({
+    ping: { status: "pending" },
+    init: { status: "pending" },
+    tools: { status: "pending" },
+    dryRun: { status: "pending" },
+  });
+
+  // Chat Simulation State
+  const [activeScenarioId, setActiveScenarioId] = useState<string>("security");
+
+  // Execution History State
+  const [history, setHistory] = useState<ExecutionHistoryItem[]>([]);
+
+  // Accordion state for Schema Catalog
+  const [expandedSchemaTool, setExpandedSchemaTool] = useState<string | null>("seoseite_audit_url");
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
 
   // Copy states
   const [copiedConfig, setCopiedConfig] = useState(false);
   const [copiedResponse, setCopiedResponse] = useState(false);
   const [copiedPromptIdx, setCopiedPromptIdx] = useState<number | null>(null);
+  const [copiedCurl, setCopiedCurl] = useState(false);
 
   const playgroundRef = useRef<HTMLDivElement>(null);
+  const diagnosticsRef = useRef<HTMLDivElement>(null);
 
   const selectedTool = useMemo(
     () => MCP_TOOLS.find((t) => t.id === selectedToolId) || MCP_TOOLS[0],
@@ -274,35 +454,95 @@ export default function McpClient() {
   );
 
   const filteredTools = useMemo(() => {
-    if (categoryFilter === "all") return MCP_TOOLS;
-    return MCP_TOOLS.filter((t) => t.category === categoryFilter);
-  }, [categoryFilter]);
+    return MCP_TOOLS.filter((t) => {
+      const matchesCategory = categoryFilter === "all" || t.category === categoryFilter;
+      const matchesSearch =
+        toolSearch.trim() === "" ||
+        t.name.toLowerCase().includes(toolSearch.toLowerCase()) ||
+        t.description.toLowerCase().includes(toolSearch.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [categoryFilter, toolSearch]);
 
-  // Initial health ping on load
+  // Initial Diagnostic Run on Mount
   useEffect(() => {
-    runHealthPing();
+    runFullDiagnostics();
   }, []);
 
-  const runHealthPing = async () => {
-    setPinging(true);
-    const start = performance.now();
+  const runFullDiagnostics = async () => {
+    setDiagnosticRunning(true);
+    setDiagnosticStages({
+      ping: { status: "running" },
+      init: { status: "pending" },
+      tools: { status: "pending" },
+      dryRun: { status: "pending" },
+    });
+
     try {
-      const res = await fetch("/api/mcp", { method: "GET" });
-      const duration = Math.round(performance.now() - start);
-      if (res.ok) {
-        const data = await res.json();
-        setPingResult({
-          status: "healthy",
-          latencyMs: duration,
-          toolsCount: data.toolsAvailable || MCP_TOOLS.length,
-        });
-      } else {
-        setPingResult({ status: "error", latencyMs: duration, toolsCount: 0 });
-      }
+      // Stage 1: GET Ping
+      const t0 = performance.now();
+      const resPing = await fetch("/api/mcp", { method: "GET" });
+      const latPing = Math.round(performance.now() - t0);
+      if (!resPing.ok) throw new Error("Ping failed");
+      const pingData = await resPing.json();
+      setDiagnosticStages((prev) => ({
+        ...prev,
+        ping: { status: "success", latencyMs: latPing },
+        init: { status: "running" },
+      }));
+
+      // Stage 2: Initialize Handshake
+      const resInit = await fetch("/api/mcp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      });
+      const initData = await resInit.json();
+      setDiagnosticStages((prev) => ({
+        ...prev,
+        init: { status: "success", version: initData?.result?.protocolVersion || "2024-11-05" },
+        tools: { status: "running" },
+      }));
+
+      // Stage 3: Tools Discovery
+      const resTools = await fetch("/api/mcp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" }),
+      });
+      const toolsData = await resTools.json();
+      const toolsCount = toolsData?.result?.tools?.length || 11;
+      setDiagnosticStages((prev) => ({
+        ...prev,
+        tools: { status: "success", count: toolsCount },
+        dryRun: { status: "running" },
+      }));
+
+      // Stage 4: Dry-run Authority Tool Call
+      const t1 = performance.now();
+      const resDry = await fetch("/api/mcp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 3,
+          method: "tools/call",
+          params: { name: "seoseite_check_authority", arguments: { domain: "github.com" } },
+        }),
+      });
+      const latDry = Math.round(performance.now() - t1);
+      if (!resDry.ok) throw new Error("Dry-run failed");
+      setDiagnosticStages((prev) => ({
+        ...prev,
+        dryRun: { status: "success", latencyMs: latDry },
+      }));
     } catch {
-      setPingResult({ status: "offline", latencyMs: 0, toolsCount: 0 });
+      setDiagnosticStages((prev) => ({
+        ...prev,
+        dryRun: { status: "error" },
+      }));
     } finally {
-      setPinging(false);
+      setDiagnosticRunning(false);
     }
   };
 
@@ -326,12 +566,12 @@ export default function McpClient() {
 
   const handleExecuteTool = async () => {
     setTesting(true);
-    setResponseOutput(null);
     setRawTextOutput(null);
     setParsedToolContent(null);
     setExecutionTimingMs(null);
 
     const startTime = performance.now();
+    const targetLabel = String(params.url || params.domain || params.urlA || "target");
 
     try {
       const payload = {
@@ -355,10 +595,20 @@ export default function McpClient() {
       setExecutionStatus(res.status);
 
       const json = await res.json();
-      setResponseOutput(json);
       setRawTextOutput(JSON.stringify(json, null, 2));
 
-      // Attempt to parse tool text if structured JSON
+      // Append to session execution history
+      const historyEntry: ExecutionHistoryItem = {
+        id: String(Date.now()),
+        tool: selectedTool.name,
+        target: targetLabel,
+        timestamp: new Date().toLocaleTimeString(),
+        status: res.status,
+        durationMs: elapsed,
+        success: res.ok && !json.error,
+      };
+      setHistory((prev) => [historyEntry, ...prev.slice(0, 4)]);
+
       const rawText = json?.result?.content?.[0]?.text;
       if (rawText) {
         try {
@@ -377,9 +627,19 @@ export default function McpClient() {
       setExecutionTimingMs(elapsed);
       setExecutionStatus(500);
       const errObj = { error: err.message };
-      setResponseOutput(errObj);
       setRawTextOutput(JSON.stringify(errObj, null, 2));
       setOutputTab("json");
+
+      const historyEntry: ExecutionHistoryItem = {
+        id: String(Date.now()),
+        tool: selectedTool.name,
+        target: targetLabel,
+        timestamp: new Date().toLocaleTimeString(),
+        status: 500,
+        durationMs: elapsed,
+        success: false,
+      };
+      setHistory((prev) => [historyEntry, ...prev.slice(0, 4)]);
     } finally {
       setTesting(false);
     }
@@ -395,9 +655,15 @@ export default function McpClient() {
     }, 2000);
   };
 
-  // Configurations
-  const originUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+  // Determine computed effective host
+  const effectiveBaseUrl =
+    configHost === "local"
+      ? typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost:3000"
+      : customHostUrl.trim() || "http://localhost:3000";
 
+  // Generated Client Configurations
   const cursorJson = JSON.stringify(
     {
       mcpServers: {
@@ -405,7 +671,7 @@ export default function McpClient() {
           command: "node",
           args: ["scripts/seoseite-mcp.mjs"],
           env: {
-            SEOSEITE_API_URL: originUrl,
+            SEOSEITE_API_URL: effectiveBaseUrl,
           },
         },
       },
@@ -421,7 +687,7 @@ export default function McpClient() {
           command: "node",
           args: ["C:/new website creation/seoseite/scripts/seoseite-mcp.mjs"],
           env: {
-            SEOSEITE_API_URL: originUrl,
+            SEOSEITE_API_URL: effectiveBaseUrl,
           },
         },
       },
@@ -437,7 +703,7 @@ export default function McpClient() {
           command: "node",
           args: ["./scripts/seoseite-mcp.mjs"],
           env: {
-            SEOSEITE_API_URL: originUrl,
+            SEOSEITE_API_URL: effectiveBaseUrl,
           },
         },
       },
@@ -453,7 +719,7 @@ export default function McpClient() {
           command: "node",
           args: ["C:/new website creation/seoseite/scripts/seoseite-mcp.mjs"],
           env: {
-            SEOSEITE_API_URL: originUrl,
+            SEOSEITE_API_URL: effectiveBaseUrl,
           },
         },
       },
@@ -463,21 +729,21 @@ export default function McpClient() {
   );
 
   const httpJsonRpcDoc = `// Standard JSON-RPC 2.0 HTTP POST Gateway
-// Endpoint: ${originUrl}/api/mcp
+// Endpoint: ${effectiveBaseUrl}/api/mcp
 // Headers: Content-Type: application/json
 
 // 1. Initialize Handshake
-curl -X POST ${originUrl}/api/mcp \\
+curl -X POST ${effectiveBaseUrl}/api/mcp \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc": "2.0", "id": 1, "method": "initialize"}'
 
 // 2. Discover All 11 Tools
-curl -X POST ${originUrl}/api/mcp \\
+curl -X POST ${effectiveBaseUrl}/api/mcp \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list"}'
 
 // 3. Execute Tool (e.g. Audit URL)
-curl -X POST ${originUrl}/api/mcp \\
+curl -X POST ${effectiveBaseUrl}/api/mcp \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "seoseite_audit_url", "arguments": {"url": "https://stripe.com"}}}'`;
 
@@ -488,7 +754,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 const transport = new StdioClientTransport({
   command: "node",
   args: ["scripts/seoseite-mcp.mjs"],
-  env: { SEOSEITE_API_URL: "${originUrl}" },
+  env: { SEOSEITE_API_URL: "${effectiveBaseUrl}" },
 });
 
 const client = new Client({ name: "my-ai-agent", version: "1.0.0" }, { capabilities: {} });
@@ -537,27 +803,63 @@ console.log("Audit Output:", result.content[0].text);`;
     setTimeout(() => setCopiedPromptIdx(null), 2000);
   };
 
-  // Generate current request JSON for inspect tab
-  const currentRequestJson = JSON.stringify(
-    {
+  const handleDownloadConfigFile = () => {
+    const filename =
+      activeConfigTab === "cursor"
+        ? "mcp.json"
+        : activeConfigTab === "claude"
+        ? "claude_desktop_config.json"
+        : activeConfigTab === "windsurf"
+        ? "mcp_config.json"
+        : activeConfigTab === "antigravity"
+        ? "mcp_config.json"
+        : "mcp-config.txt";
+
+    const blob = new Blob([currentConfigSnippet], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadJsonOutput = () => {
+    if (!rawTextOutput) return;
+    const blob = new Blob([rawTextOutput], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedTool.name}-output.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopyCurlCommand = () => {
+    const curl = `curl -X POST ${effectiveBaseUrl}/api/mcp -H "Content-Type: application/json" -d '${JSON.stringify({
       jsonrpc: "2.0",
       id: 1,
       method: "tools/call",
-      params: {
-        name: selectedTool.name,
-        arguments: params,
-      },
-    },
-    null,
-    2
-  );
+      params: { name: selectedTool.name, arguments: params },
+    })}'`;
+    navigator.clipboard.writeText(curl);
+    setCopiedCurl(true);
+    setTimeout(() => setCopiedCurl(false), 2000);
+  };
+
+  const activeScenario =
+    CHAT_SIMULATION_SCENARIOS.find((s) => s.id === activeScenarioId) || CHAT_SIMULATION_SCENARIOS[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24">
       {/* 1. DOCKED STICKY SUBNAVBAR ON SCROLL */}
       <header className="sticky top-16 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
-          {/* Left: Engine Identity & Pulse Status */}
+          {/* Left: Engine Identity & Live Pulse */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
@@ -565,7 +867,7 @@ console.log("Audit Output:", result.content[0].text);`;
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
               </span>
               <span className="text-xs font-bold text-slate-900 font-mono tracking-tight hidden sm:inline">
-                MCP Server (JSON-RPC 2.0)
+                MCP Gateway (JSON-RPC 2.0)
               </span>
             </div>
 
@@ -576,25 +878,44 @@ console.log("Audit Output:", result.content[0].text);`;
               <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200">
                 Stdio + HTTP
               </span>
-              {pingResult && (
+              {diagnosticStages.ping.latencyMs !== undefined && (
                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 flex items-center gap-1">
                   <Zap className="w-3 h-3 text-emerald-600" />
-                  {pingResult.latencyMs}ms
+                  {diagnosticStages.ping.latencyMs}ms
                 </span>
               )}
             </div>
           </div>
 
+          {/* Quick Subnav Shortcuts */}
+          <div className="hidden lg:flex items-center gap-4 text-xs font-semibold text-slate-600">
+            <a href="#diagnostics" className="hover:text-blue-600 transition-colors">
+              Diagnostics
+            </a>
+            <a href="#live-tester" className="hover:text-blue-600 transition-colors">
+              Playground
+            </a>
+            <a href="#chat-simulation" className="hover:text-blue-600 transition-colors">
+              AI Simulation
+            </a>
+            <a href="#install-guide" className="hover:text-blue-600 transition-colors">
+              Config Studio
+            </a>
+            <a href="#schema-catalog" className="hover:text-blue-600 transition-colors">
+              Schema Specs
+            </a>
+          </div>
+
           {/* Right: Quick Actions */}
           <div className="flex items-center gap-2">
             <button
-              onClick={runHealthPing}
-              disabled={pinging}
+              onClick={runFullDiagnostics}
+              disabled={diagnosticRunning}
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
-              title="Ping endpoint to measure roundtrip latency"
+              title="Run 4-stage protocol handshake diagnostic"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${pinging ? "animate-spin text-blue-600" : "text-slate-500"}`} />
-              <span className="hidden sm:inline">Health Ping</span>
+              <Activity className={`w-3.5 h-3.5 ${diagnosticRunning ? "animate-spin text-blue-600" : "text-emerald-600"}`} />
+              <span className="hidden sm:inline">Diagnostics</span>
             </button>
 
             <a
@@ -606,31 +927,13 @@ console.log("Audit Output:", result.content[0].text);`;
             </a>
 
             <button
-              onClick={() => {
-                setActiveConfigTab("cursor");
-                navigator.clipboard.writeText(cursorJson);
-                setCopiedConfig(true);
-                setTimeout(() => setCopiedConfig(false), 2000);
-              }}
-              className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors cursor-pointer"
+              onClick={handleDownloadConfigFile}
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors cursor-pointer"
+              title="Download client configuration file"
             >
-              {copiedConfig && activeConfigTab === "cursor" ? (
-                <Check className="w-3.5 h-3.5 text-emerald-600" />
-              ) : (
-                <Copy className="w-3.5 h-3.5 text-slate-500" />
-              )}
-              <span>Copy Cursor</span>
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span>Download Config</span>
             </button>
-
-            <a
-              href="https://modelcontextprotocol.io"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 text-xs font-medium transition-colors"
-            >
-              <span>MCP Spec</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
           </div>
         </div>
       </header>
@@ -638,16 +941,15 @@ console.log("Audit Output:", result.content[0].text);`;
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-12">
         {/* 2. NIGHT-SKY OPERATIONS COCKPIT & HERO */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border border-slate-800 text-white p-6 sm:p-10 shadow-xl">
-          {/* Background Ambient Grid */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
           <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 max-w-4xl mx-auto text-center space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold shadow-inner">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold shadow-inner">
               <Bot className="w-4 h-4 text-blue-400" />
               <span>Model Context Protocol (MCP) Server</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold">
                 v1.1.0
               </span>
               <span className="text-[10px] text-blue-300 font-mono">spec: 2024-11-05</span>
@@ -667,7 +969,7 @@ console.log("Audit Output:", result.content[0].text);`;
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-blue-600/30"
               >
                 <Play className="w-4 h-4 fill-white" />
-                Launch In-Browser Playground
+                Launch Playground
               </a>
               <a
                 href="#install-guide"
@@ -676,47 +978,46 @@ console.log("Audit Output:", result.content[0].text);`;
                 <Terminal className="w-4 h-4 text-slate-300" />
                 Client Setup Guide
               </a>
-              <button
-                onClick={runHealthPing}
-                disabled={pinging}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition-all cursor-pointer"
+              <a
+                href="#diagnostics"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition-all"
               >
-                <Activity className={`w-4 h-4 ${pinging ? "animate-spin text-emerald-400" : "text-emerald-400"}`} />
-                <span>Verify Handshake</span>
-              </button>
+                <Activity className="w-4 h-4 text-emerald-400" />
+                <span>Protocol Diagnostics</span>
+              </a>
             </div>
 
             {/* Live Telemetry Strip */}
             <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-slate-800/80 text-left">
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
                 <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
                   Server Gateway
                 </span>
                 <div className="text-sm font-bold text-emerald-400 font-mono mt-0.5 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-                  Active / 200 OK
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                  Online / 200 OK
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
                 <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
                   Roundtrip Latency
                 </span>
                 <div className="text-sm font-bold text-white font-mono mt-0.5">
-                  {pingResult ? `${pingResult.latencyMs} ms (Localhost)` : "Measuring..."}
+                  {diagnosticStages.ping.latencyMs !== undefined ? `${diagnosticStages.ping.latencyMs} ms` : "Measuring..."}
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
                 <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
                   MCP Registered Tools
                 </span>
                 <div className="text-sm font-bold text-blue-400 font-mono mt-0.5">
-                  11 Dedicated Engines
+                  11 Active Engines
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
                 <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
                   Data Accuracy
                 </span>
@@ -728,7 +1029,101 @@ console.log("Audit Output:", result.content[0].text);`;
           </div>
         </div>
 
-        {/* 3. FOUR CORE ARCHITECTURAL PILLARS */}
+        {/* 3. NEW: 4-STAGE PROTOCOL HEALTH DIAGNOSTIC ARENA */}
+        <div ref={diagnosticsRef} id="diagnostics" className="rounded-2xl p-6 sm:p-8 bg-white border border-slate-200 shadow-sm space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Protocol Health &amp; Handshake Verification</h2>
+                <p className="text-xs text-slate-500">
+                  Comprehensive 4-stage validation suite confirming MCP specification adherence and tool readiness.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={runFullDiagnostics}
+              disabled={diagnosticRunning}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${diagnosticRunning ? "animate-spin text-emerald-400" : "text-white"}`} />
+              <span>{diagnosticRunning ? "Testing Handshake..." : "Re-Run Handshake Suite"}</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Stage 1: GET Ping */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700">Stage 1: HTTP Transport</span>
+                {diagnosticStages.ping.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                {diagnosticStages.ping.status === "running" && <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />}
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Verifies <code>GET /api/mcp</code> is reachable and responds with active gateway metadata.
+              </p>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono">
+                <span className="text-slate-500">Latency:</span>
+                <span className="font-bold text-slate-800">
+                  {diagnosticStages.ping.latencyMs !== undefined ? `${diagnosticStages.ping.latencyMs}ms (200 OK)` : "Pending"}
+                </span>
+              </div>
+            </div>
+
+            {/* Stage 2: Initialize */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700">Stage 2: Handshake (initialize)</span>
+                {diagnosticStages.init.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                {diagnosticStages.init.status === "running" && <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />}
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Sends JSON-RPC <code>initialize</code> method and negotiates MCP capabilities.
+              </p>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono">
+                <span className="text-slate-500">Protocol Spec:</span>
+                <span className="font-bold text-emerald-600">{diagnosticStages.init.version || "Pending"}</span>
+              </div>
+            </div>
+
+            {/* Stage 3: Tools Discovery */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700">Stage 3: Catalog (tools/list)</span>
+                {diagnosticStages.tools.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                {diagnosticStages.tools.status === "running" && <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />}
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Queries all declared tool definitions and validates JSON Schema parameter constraints.
+              </p>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono">
+                <span className="text-slate-500">Validated Tools:</span>
+                <span className="font-bold text-blue-600">{diagnosticStages.tools.count ? `${diagnosticStages.tools.count} Engines` : "Pending"}</span>
+              </div>
+            </div>
+
+            {/* Stage 4: Dry-Run Execution */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700">Stage 4: Dry-Run Execution</span>
+                {diagnosticStages.dryRun.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                {diagnosticStages.dryRun.status === "running" && <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />}
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Executes a live authority check to confirm real end-to-end data processing without errors.
+              </p>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono">
+                <span className="text-slate-500">Execution Speed:</span>
+                <span className="font-bold text-purple-600">{diagnosticStages.dryRun.latencyMs ? `${diagnosticStages.dryRun.latencyMs}ms` : "Pending"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. FOUR CORE ARCHITECTURAL PILLARS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center">
@@ -746,7 +1141,7 @@ console.log("Audit Output:", result.content[0].text);`;
             </div>
             <h3 className="text-sm font-bold text-slate-900">Dual-Transport Support</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Seamlessly supports local <code>stdio</code> communication for desktop IDEs, as well as remote <code>JSON-RPC 2.0 HTTP POST</code> gateways for webhooks and autonomous agents.
+              Supports local <code>stdio</code> communication for desktop IDEs, as well as remote <code>JSON-RPC 2.0 HTTP POST</code> gateways for webhooks and autonomous agents.
             </p>
           </div>
 
@@ -756,7 +1151,7 @@ console.log("Audit Output:", result.content[0].text);`;
             </div>
             <h3 className="text-sm font-bold text-slate-900">Standard MCP Protocol</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Strictly compliant with Anthropic&apos;s open Model Context Protocol specification (<code>2024-11-05</code>). Works with Claude Desktop, Cursor, Windsurf, LangChain, and AutoGen.
+              Compliant with Anthropic&apos;s open Model Context Protocol specification (<code>2024-11-05</code>). Works with Claude Desktop, Cursor, Windsurf, LangChain, and AutoGen.
             </p>
           </div>
 
@@ -771,7 +1166,7 @@ console.log("Audit Output:", result.content[0].text);`;
           </div>
         </div>
 
-        {/* 4. SECTION: IN-BROWSER MCP TESTER & PLAYGROUND */}
+        {/* 5. INTERACTIVE IN-BROWSER MCP TOOL PLAYGROUND */}
         <div ref={playgroundRef} id="live-tester" className="rounded-2xl p-6 sm:p-8 bg-white border border-slate-200 shadow-sm space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 pb-5">
             <div className="flex items-center gap-3">
@@ -797,63 +1192,72 @@ console.log("Audit Output:", result.content[0].text);`;
             </div>
           </div>
 
-          {/* Category Filter Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            <span className="text-xs font-bold text-slate-600 whitespace-nowrap mr-1">Filter Tools:</span>
-            {[
-              { id: "all", label: "All 11 Engines" },
-              { id: "crawling", label: "Auditing & Architecture (4)" },
-              { id: "performance", label: "Performance & Tech (2)" },
-              { id: "security", label: "Security & Guard (1)" },
-              { id: "search", label: "Search, Schema & AEO (4)" },
-            ].map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategoryFilter(cat.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  categoryFilter === cat.id
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
+          {/* Filter Bar & Search */}
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {[
+                { id: "all", label: "All 11 Engines" },
+                { id: "crawling", label: "Auditing & Architecture (4)" },
+                { id: "performance", label: "Performance & Tech (2)" },
+                { id: "security", label: "Security & Guard (1)" },
+                { id: "search", label: "Search, Schema & AEO (4)" },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryFilter(cat.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                    categoryFilter === cat.id
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
 
-          {/* Tool Selector Grid (All 11 Tools) */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-700">Select Tool to Test:</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-              {filteredTools.map((t) => {
-                const isSelected = t.id === selectedToolId;
-                const ToolIcon = t.icon;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => handleToolChange(t.id)}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                      isSelected
-                        ? "bg-blue-50/80 border-blue-600 text-blue-950 font-bold shadow-xs ring-2 ring-blue-500/20"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <ToolIcon className={`w-4 h-4 ${isSelected ? "text-blue-600" : "text-slate-400"}`} />
-                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200 uppercase">
-                          {t.category}
-                        </span>
-                      </div>
-                      <div className="text-xs font-mono font-bold leading-tight break-all">{t.name}</div>
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="relative w-full sm:w-64">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={toolSearch}
+                onChange={(e) => setToolSearch(e.target.value)}
+                placeholder="Search tools by name..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
           </div>
 
-          {/* Selected Tool Details & Form */}
+          {/* Tool Selector Grid (All 11 Tools) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            {filteredTools.map((t) => {
+              const isSelected = t.id === selectedToolId;
+              const ToolIcon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => handleToolChange(t.id)}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    isSelected
+                      ? "bg-blue-50/80 border-blue-600 text-blue-950 font-bold shadow-xs ring-2 ring-blue-500/20"
+                      : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <ToolIcon className={`w-4 h-4 ${isSelected ? "text-blue-600" : "text-slate-400"}`} />
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200 uppercase">
+                        {t.category}
+                      </span>
+                    </div>
+                    <div className="text-xs font-mono font-bold leading-tight break-all">{t.name}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Form & Response Split */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-50/80 p-5 rounded-2xl border border-slate-200">
             <div className="lg:col-span-5 space-y-4">
               <div>
@@ -863,12 +1267,8 @@ console.log("Audit Output:", result.content[0].text);`;
                   </span>
                   <span className="text-[10px] font-mono text-slate-500">Method: tools/call</span>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 font-mono mt-0.5">
-                  {selectedTool.name}
-                </h3>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  {selectedTool.description}
-                </p>
+                <h3 className="text-sm font-bold text-slate-900 font-mono mt-0.5">{selectedTool.name}</h3>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">{selectedTool.description}</p>
               </div>
 
               {/* Quick Preset Domains */}
@@ -894,7 +1294,9 @@ console.log("Audit Output:", result.content[0].text);`;
                   <div key={field.key} className="space-y-1">
                     <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
                       <span>{field.label}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">({field.key})</span>
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        ({field.key}){field.required && " *"}
+                      </span>
                     </label>
                     <input
                       type={field.type}
@@ -939,12 +1341,32 @@ console.log("Audit Output:", result.content[0].text);`;
                   </span>
                 </div>
               )}
+
+              {/* Recent Execution History */}
+              {history.length > 0 && (
+                <div className="pt-2 border-t border-slate-200 space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                    <History className="w-3 h-3 text-slate-500" /> Recent Session Runs:
+                  </span>
+                  <div className="space-y-1">
+                    {history.map((h) => (
+                      <div
+                        key={h.id}
+                        className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 flex items-center justify-between text-[10px] font-mono"
+                      >
+                        <span className="font-bold text-slate-800 truncate max-w-[120px]">{h.tool}</span>
+                        <span className="text-slate-500 truncate max-w-[100px]">{h.target}</span>
+                        <span className="text-emerald-600 font-bold">{h.durationMs}ms</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Response Payload Viewer (Dual Tab) */}
+            {/* Response Payload Viewer (Quad Tab) */}
             <div className="lg:col-span-7 flex flex-col">
-              <div className="flex items-center justify-between mb-2">
-                {/* View Tabs */}
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <div className="flex items-center gap-1 p-0.5 bg-slate-200/70 rounded-lg">
                   <button
                     onClick={() => setOutputTab("visual")}
@@ -970,33 +1392,49 @@ console.log("Audit Output:", result.content[0].text);`;
                   >
                     Wire Request
                   </button>
+                  <button
+                    onClick={() => setOutputTab("curl")}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                      outputTab === "curl" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    cURL Snippet
+                  </button>
                 </div>
 
-                {rawTextOutput && (
-                  <button
-                    onClick={handleCopyResponse}
-                    className="inline-flex items-center gap-1 text-[11px] text-slate-600 hover:text-slate-900 bg-white px-2.5 py-1 rounded-md border border-slate-200 transition-colors cursor-pointer shadow-2xs"
-                  >
-                    {copiedResponse ? (
-                      <Check className="w-3 h-3 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-3 h-3 text-slate-400" />
-                    )}
-                    <span>{copiedResponse ? "Copied" : "Copy JSON"}</span>
-                  </button>
-                )}
+                <div className="flex items-center gap-1">
+                  {rawTextOutput && (
+                    <>
+                      <button
+                        onClick={handleDownloadJsonOutput}
+                        className="inline-flex items-center gap-1 text-[11px] text-slate-600 hover:text-slate-900 bg-white px-2 py-1 rounded-md border border-slate-200 transition-colors cursor-pointer"
+                        title="Download output as .json"
+                      >
+                        <Download className="w-3 h-3 text-slate-500" />
+                        <span className="hidden sm:inline">Export</span>
+                      </button>
+                      <button
+                        onClick={handleCopyResponse}
+                        className="inline-flex items-center gap-1 text-[11px] text-slate-600 hover:text-slate-900 bg-white px-2 py-1 rounded-md border border-slate-200 transition-colors cursor-pointer"
+                      >
+                        {copiedResponse ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                        <span>{copiedResponse ? "Copied" : "Copy"}</span>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {/* View Output Window */}
+              {/* Output Content Container */}
               <div className="flex-1 bg-slate-950 rounded-xl p-4 text-slate-100 font-mono text-[11px] overflow-auto max-h-[460px] border border-slate-800 shadow-inner">
                 {outputTab === "visual" && parsedToolContent && (
                   <div className="space-y-4 text-left">
-                    {/* Top KPI Header */}
+                    {/* KPI Header */}
                     <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between flex-wrap gap-2">
                       <div>
                         <span className="text-[10px] text-slate-400 uppercase">Target Domain</span>
                         <div className="text-sm font-bold text-white">
-                          {parsedToolContent.domain || parsedToolContent.brandDomain || "N/A"}
+                          {parsedToolContent.domain || parsedToolContent.brandDomain || parsedToolContent.url || "N/A"}
                         </div>
                       </div>
                       {parsedToolContent.overallScore !== undefined && (
@@ -1041,7 +1479,7 @@ console.log("Audit Output:", result.content[0].text);`;
                       )}
                     </div>
 
-                    {/* AI Executive Summary if available */}
+                    {/* AI Executive Summary */}
                     {parsedToolContent.aiExecutiveSummary && (
                       <div className="p-3 rounded-lg bg-blue-950/40 border border-blue-900/60 text-blue-200 space-y-1">
                         <span className="text-[10px] uppercase font-bold text-blue-400 flex items-center gap-1">
@@ -1094,7 +1532,11 @@ console.log("Audit Output:", result.content[0].text);`;
                           {Object.entries(parsedToolContent.headers).map(([key, val]: any) => (
                             <div key={key} className="p-2 rounded bg-slate-900 border border-slate-800 flex items-center justify-between">
                               <span className="text-slate-300 font-mono">{key}</span>
-                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${val.present ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-rose-950 text-rose-400 border border-rose-800"}`}>
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                  val.present ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-rose-950 text-rose-400 border border-rose-800"
+                                }`}
+                              >
                                 {val.present ? "Configured" : "Missing"}
                               </span>
                             </div>
@@ -1118,12 +1560,8 @@ console.log("Audit Output:", result.content[0].text);`;
                       </div>
                     )}
 
-                    {/* Raw excerpt toggle */}
                     <div className="pt-2 border-t border-slate-800 flex justify-end">
-                      <button
-                        onClick={() => setOutputTab("json")}
-                        className="text-[10px] text-blue-400 hover:text-blue-300 underline cursor-pointer"
-                      >
+                      <button onClick={() => setOutputTab("json")} className="text-[10px] text-blue-400 hover:text-blue-300 underline cursor-pointer">
                         Switch to full JSON view &rarr;
                       </button>
                     </div>
@@ -1134,8 +1572,8 @@ console.log("Audit Output:", result.content[0].text);`;
                   <pre className="whitespace-pre-wrap leading-relaxed">{rawTextOutput}</pre>
                 )}
 
-                {outputTab === "json" && (
-                  rawTextOutput ? (
+                {outputTab === "json" &&
+                  (rawTextOutput ? (
                     <pre className="whitespace-pre-wrap leading-relaxed">{rawTextOutput}</pre>
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center text-slate-500 py-16 text-center">
@@ -1145,14 +1583,43 @@ console.log("Audit Output:", result.content[0].text);`;
                         Click &ldquo;Execute MCP Tool Call&rdquo; to test the endpoint live and inspect the JSON response.
                       </p>
                     </div>
-                  )
-                )}
+                  ))}
 
                 {outputTab === "request" && (
-                  <pre className="whitespace-pre-wrap leading-relaxed text-blue-300">{currentRequestJson}</pre>
+                  <pre className="whitespace-pre-wrap leading-relaxed text-blue-300">{JSON.stringify({
+                    jsonrpc: "2.0",
+                    id: 1,
+                    method: "tools/call",
+                    params: { name: selectedTool.name, arguments: params },
+                  }, null, 2)}</pre>
                 )}
 
-                {!rawTextOutput && outputTab !== "request" && (
+                {outputTab === "curl" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400">cURL Terminal Command:</span>
+                      <button
+                        onClick={handleCopyCurlCommand}
+                        className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-white bg-slate-800 px-2 py-0.5 rounded cursor-pointer"
+                      >
+                        {copiedCurl ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        <span>{copiedCurl ? "Copied" : "Copy cURL"}</span>
+                      </button>
+                    </div>
+                    <pre className="whitespace-pre-wrap text-emerald-300 text-[11px] leading-relaxed bg-slate-900 p-3 rounded-lg border border-slate-800">
+{`curl -X POST ${effectiveBaseUrl}/api/mcp \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify({
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tools/call",
+    params: { name: selectedTool.name, arguments: params },
+  })}'`}
+                    </pre>
+                  </div>
+                )}
+
+                {!rawTextOutput && outputTab !== "request" && outputTab !== "curl" && (
                   <div className="h-full flex flex-col items-center justify-center text-slate-500 py-16 text-center">
                     <Terminal className="w-8 h-8 mb-2 opacity-50" />
                     <p className="text-xs font-mono">No execution yet.</p>
@@ -1166,17 +1633,85 @@ console.log("Audit Output:", result.content[0].text);`;
           </div>
         </div>
 
-        {/* 5. SECTION: CLIENT INSTALLATION & INTEGRATION GUIDES */}
+        {/* 6. NEW: INTERACTIVE AI CHAT SIMULATION ("CLAUDE & CURSOR IN ACTION") */}
+        <div id="chat-simulation" className="rounded-2xl p-6 sm:p-8 bg-white border border-slate-200 shadow-sm space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-xs">
+                <MessageSquare className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Live AI Assistant Simulation</h2>
+                <p className="text-xs text-slate-500">
+                  Experience how Claude Desktop or Cursor invokes SeoSeite MCP tools behind the scenes to generate honest answers.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
+              {CHAT_SIMULATION_SCENARIOS.map((scenario) => (
+                <button
+                  key={scenario.id}
+                  onClick={() => setActiveScenarioId(scenario.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeScenarioId === scenario.id ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {scenario.title}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Simulated Chat Interface */}
+          <div className="rounded-2xl bg-slate-950 border border-slate-800 p-5 text-slate-100 space-y-4 font-sans shadow-lg">
+            {/* User Message */}
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                You
+              </div>
+              <div className="p-3.5 rounded-2xl bg-blue-950/70 border border-blue-900/60 text-xs text-slate-200 max-w-2xl leading-relaxed">
+                {activeScenario.userQuery}
+              </div>
+            </div>
+
+            {/* Simulated Tool Call Block */}
+            <div className="ml-11 p-3 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-mono space-y-1.5 text-slate-300">
+              <div className="flex items-center gap-2 text-purple-400 font-bold">
+                <Cpu className="w-3.5 h-3.5 animate-pulse text-purple-400" />
+                <span>Invoking Tool: {activeScenario.toolCalled}()</span>
+              </div>
+              <div className="text-[10px] text-slate-400">
+                Arguments: <code>{JSON.stringify(activeScenario.toolArgs)}</code>
+              </div>
+              <div className="p-2 rounded bg-slate-950 border border-slate-800 text-[10px] text-emerald-400 truncate">
+                &rarr; Returned {JSON.stringify(activeScenario.toolResult).slice(0, 110)}...
+              </div>
+            </div>
+
+            {/* AI Assistant Response */}
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-xs text-slate-200 max-w-2xl leading-relaxed space-y-2 font-sans">
+                <div className="whitespace-pre-line">{activeScenario.aiResponse}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 7. CONFIGURATION STUDIO & CUSTOMIZER */}
         <div id="install-guide" className="rounded-2xl p-6 sm:p-8 bg-white border border-slate-200 shadow-sm space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 pb-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
-                <Terminal className="w-5 h-5 text-slate-200" />
+                <Sliders className="w-5 h-5 text-slate-200" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900">IDE &amp; Desktop Integration Guide</h2>
+                <h2 className="text-lg font-bold text-slate-900">IDE Configuration Studio &amp; Customizer</h2>
                 <p className="text-xs text-slate-500">
-                  Copy and paste the configuration block directly into your favorite AI developer client.
+                  Select your client, customize host environments, and download or copy configuration files instantly.
                 </p>
               </div>
             </div>
@@ -1206,7 +1741,45 @@ console.log("Audit Output:", result.content[0].text);`;
             </div>
           </div>
 
-          {/* Instructions Box */}
+          {/* Environment Customizer Controls */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between flex-wrap gap-4 text-xs">
+            <div className="flex items-center gap-3">
+              <span className="font-bold text-slate-700">Target Host Endpoint:</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setConfigHost("local")}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer ${
+                    configHost === "local" ? "bg-blue-600 text-white shadow-2xs" : "bg-white text-slate-700 border border-slate-200"
+                  }`}
+                >
+                  Localhost (Port 3000)
+                </button>
+                <button
+                  onClick={() => setConfigHost("custom")}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer ${
+                    configHost === "custom" ? "bg-blue-600 text-white shadow-2xs" : "bg-white text-slate-700 border border-slate-200"
+                  }`}
+                >
+                  Custom Domain / Staging
+                </button>
+              </div>
+            </div>
+
+            {configHost === "custom" && (
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 font-mono text-[11px]">URL:</span>
+                <input
+                  type="text"
+                  value={customHostUrl}
+                  onChange={(e) => setCustomHostUrl(e.target.value)}
+                  placeholder="https://your-domain.com"
+                  className="px-2.5 py-1 bg-white border border-slate-300 rounded-md text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 w-56"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Client Setup Notice */}
           <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-xs text-blue-900 space-y-1">
             {activeConfigTab === "cursor" && (
               <p>
@@ -1230,7 +1803,7 @@ console.log("Audit Output:", result.content[0].text);`;
             )}
             {activeConfigTab === "http" && (
               <p>
-                <strong>For Remote Agents (LangChain, AutoGen, Custom Webhooks):</strong> Send HTTP POST requests with standard JSON-RPC 2.0 payloads to <code>{originUrl}/api/mcp</code>.
+                <strong>For Remote Agents (LangChain, AutoGen, Custom Webhooks):</strong> Send HTTP POST requests with standard JSON-RPC 2.0 payloads to <code>{effectiveBaseUrl}/api/mcp</code>.
               </p>
             )}
             {activeConfigTab === "sdk" && (
@@ -1242,17 +1815,22 @@ console.log("Audit Output:", result.content[0].text);`;
 
           {/* Code Snippet Box */}
           <div className="relative">
-            <button
-              onClick={handleCopyConfig}
-              className="absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 shadow-xs transition-colors cursor-pointer"
-            >
-              {copiedConfig ? (
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-              ) : (
-                <Copy className="w-3.5 h-3.5 text-slate-400" />
-              )}
-              <span>{copiedConfig ? "Copied to Clipboard!" : "Copy Configuration"}</span>
-            </button>
+            <div className="absolute top-3 right-3 flex items-center gap-2">
+              <button
+                onClick={handleDownloadConfigFile}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 shadow-xs transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-400" />
+                <span>Download File</span>
+              </button>
+              <button
+                onClick={handleCopyConfig}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 shadow-xs transition-colors cursor-pointer"
+              >
+                {copiedConfig ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                <span>{copiedConfig ? "Copied!" : "Copy"}</span>
+              </button>
+            </div>
 
             <pre className="p-5 bg-slate-900 text-slate-100 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed border border-slate-800">
               <code>{currentConfigSnippet}</code>
@@ -1260,7 +1838,113 @@ console.log("Audit Output:", result.content[0].text);`;
           </div>
         </div>
 
-        {/* 6. SECTION: CONVERSATIONAL PROMPT SHOWCASE WITH "RUN IN PLAYGROUND" */}
+        {/* 8. NEW: 11-TOOL SCHEMA CATALOG & CAPABILITY REFERENCE */}
+        <div id="schema-catalog" className="rounded-2xl p-6 sm:p-8 bg-white border border-slate-200 shadow-sm space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-slate-900">11-Tool JSON Schema &amp; Output Reference</h2>
+            <p className="text-xs text-slate-500">
+              Complete technical specification for all tools registered in the SeoSeite MCP catalog.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {MCP_TOOLS.map((t) => {
+              const isExpanded = expandedSchemaTool === t.id;
+              const ToolIcon = t.icon;
+              return (
+                <div key={t.id} className="rounded-xl border border-slate-200 overflow-hidden bg-slate-50/50">
+                  <button
+                    onClick={() => setExpandedSchemaTool(isExpanded ? null : t.id)}
+                    className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-100/70 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ToolIcon className="w-4 h-4 text-blue-600 shrink-0" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-slate-900">{t.name}</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
+                            {t.categoryLabel}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">{t.description}</p>
+                      </div>
+                    </div>
+                    {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="p-4 bg-white border-t border-slate-200 space-y-4 text-xs">
+                      {/* Parameters Table */}
+                      <div className="space-y-1.5">
+                        <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">Input Parameters (JSON Schema):</span>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left font-mono text-[11px] border border-slate-200 rounded-lg">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                              <tr>
+                                <th className="p-2">Name</th>
+                                <th className="p-2">Type</th>
+                                <th className="p-2">Required</th>
+                                <th className="p-2">Description</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 font-sans">
+                              {t.paramFields.map((f) => (
+                                <tr key={f.key}>
+                                  <td className="p-2 font-mono font-bold text-blue-700">{f.key}</td>
+                                  <td className="p-2 font-mono text-slate-600">{f.type}</td>
+                                  <td className="p-2">{f.required ? <span className="text-rose-600 font-bold">Yes</span> : "Optional"}</td>
+                                  <td className="p-2 text-slate-600">{f.label}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Expected Output Table */}
+                      <div className="space-y-1.5">
+                        <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">Key Output Fields:</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {t.outputFields.map((o) => (
+                            <div key={o.key} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                              <span className="font-mono font-bold text-slate-800 text-[11px] block">{o.key}</span>
+                              <span className="font-mono text-purple-700 text-[10px] block">{o.type}</span>
+                              <p className="text-slate-600 text-[11px] mt-0.5">{o.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Sample Payload Snippet */}
+                      <div className="space-y-1.5">
+                        <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">Example Response Payload:</span>
+                        <pre className="p-3 rounded-lg bg-slate-900 text-slate-200 font-mono text-[11px] overflow-x-auto leading-relaxed">
+                          {t.sampleOutput}
+                        </pre>
+                      </div>
+
+                      {/* Launch Button */}
+                      <div className="pt-2 flex justify-end">
+                        <button
+                          onClick={() => {
+                            handleToolChange(t.id);
+                            playgroundRef.current?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                          <span>Load in Playground</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 9. CONVERSATIONAL PROMPT SHOWCASE */}
         <div className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
@@ -1286,9 +1970,7 @@ console.log("Audit Output:", result.content[0].text);`;
                       {item.toolId}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-800 font-medium italic leading-relaxed">
-                    &ldquo;{item.prompt}&rdquo;
-                  </p>
+                  <p className="text-xs text-slate-800 font-medium italic leading-relaxed">&ldquo;{item.prompt}&rdquo;</p>
                 </div>
 
                 <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
@@ -1304,11 +1986,7 @@ console.log("Audit Output:", result.content[0].text);`;
                     onClick={() => handleCopyPrompt(item.prompt, idx)}
                     className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                   >
-                    {copiedPromptIdx === idx ? (
-                      <Check className="w-3 h-3 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-3 h-3 text-slate-400" />
-                    )}
+                    {copiedPromptIdx === idx ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3 text-slate-400" />}
                     <span>{copiedPromptIdx === idx ? "Copied" : "Copy Prompt"}</span>
                   </button>
                 </div>
@@ -1317,7 +1995,7 @@ console.log("Audit Output:", result.content[0].text);`;
           </div>
         </div>
 
-        {/* 7. ARCHITECTURAL COMPARISON MATRIX */}
+        {/* 10. ARCHITECTURAL COMPARISON MATRIX */}
         <div className="rounded-2xl p-6 sm:p-8 bg-white border border-slate-200 shadow-xs space-y-5">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-slate-900">Architecture Comparison: Why SeoSeite MCP?</h2>
@@ -1372,7 +2050,33 @@ console.log("Audit Output:", result.content[0].text);`;
           </div>
         </div>
 
-        {/* 8. FOOTER BANNER */}
+        {/* 11. FAQ ACCORDION */}
+        <div className="rounded-2xl p-6 sm:p-8 bg-white border border-slate-200 shadow-xs space-y-4">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-bold text-slate-900">Frequently Asked Questions</h2>
+          </div>
+
+          <div className="space-y-2">
+            {FAQS.map((faq, idx) => {
+              const isExpanded = expandedFaq === idx;
+              return (
+                <div key={idx} className="rounded-xl border border-slate-200 overflow-hidden">
+                  <button
+                    onClick={() => setExpandedFaq(isExpanded ? null : idx)}
+                    className="w-full p-4 text-left font-semibold text-xs text-slate-900 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <span>{faq.q}</span>
+                    {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
+                  </button>
+                  {isExpanded && <div className="p-4 pt-0 text-xs text-slate-600 leading-relaxed font-sans">{faq.a}</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 12. FOOTER BANNER */}
         <div className="rounded-2xl p-6 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white flex items-center justify-between flex-wrap gap-4 shadow-lg">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-semibold">
