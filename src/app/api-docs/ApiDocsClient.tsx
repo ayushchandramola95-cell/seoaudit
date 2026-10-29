@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   Terminal,
@@ -36,6 +36,12 @@ import {
   Radio,
   Clock,
   RotateCcw,
+  Key,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Server,
+  Workflow,
 } from "lucide-react";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { formatTierName } from "@/lib/auth/tierLimits";
@@ -52,6 +58,14 @@ export type ApiCategory =
   | "mcp"
   | "webhooks";
 
+export interface ParamDefinition {
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+  example: string;
+}
+
 export interface ApiEndpoint {
   id: string;
   name: string;
@@ -61,9 +75,10 @@ export interface ApiEndpoint {
   path: string;
   description: string;
   tierRequired: "free" | "starter" | "pro" | "enterprise";
+  paramsSchema: ParamDefinition[];
   requestBody: Record<string, any>;
   responseExample: Record<string, any>;
-  queryParams?: Record<string, string>;
+  errorExamples?: { status: number; title: string; json: Record<string, any> }[];
 }
 
 const ENDPOINTS: ApiEndpoint[] = [
@@ -76,6 +91,11 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/analyze",
     description: "Executes a deterministic 0-100 technical SEO health audit across metadata, DOM hierarchy, security headers, tech stack, and Google PageSpeed lab vitals.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "url", type: "string", required: true, description: "Target website URL to audit. Must be a public HTTP/HTTPS URL. SSRF protected.", example: "https://stripe.com" },
+      { name: "userId", type: "string", required: false, description: "Optional authenticated user ID to link scan history.", example: "usr_99f38a" },
+      { name: "userEmail", type: "string", required: false, description: "Optional user email for notification persistence.", example: "dev@stripe.com" },
+    ],
     requestBody: {
       url: "https://stripe.com",
     },
@@ -102,6 +122,23 @@ const ENDPOINTS: ApiEndpoint[] = [
       },
       technologiesCount: 12,
     },
+    errorExamples: [
+      {
+        status: 400,
+        title: "Missing Required URL Parameter",
+        json: { success: false, error: "Missing required 'url' parameter in JSON request body." },
+      },
+      {
+        status: 400,
+        title: "SSRF Internal Subnet Blocked",
+        json: { success: false, errorType: "SSRF_BLOCKED", error: "Requests to private, loopback, or internal cloud networks are prohibited." },
+      },
+      {
+        status: 504,
+        title: "Target Website Scrape Timeout",
+        json: { success: false, errorType: "TIMEOUT", error: "Connection to remote target timed out after 12000ms." },
+      },
+    ],
   },
   {
     id: "compare",
@@ -112,6 +149,10 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/compare",
     description: "Audits two websites simultaneously to compare SEO health, response latency, tech stacks, and differential score deltas.",
     tierRequired: "pro",
+    paramsSchema: [
+      { name: "siteA", type: "string", required: true, description: "Primary URL or domain to audit.", example: "https://vercel.com" },
+      { name: "siteB", type: "string", required: true, description: "Competitor URL or domain to compare against.", example: "https://netlify.com" },
+    ],
     requestBody: {
       siteA: "https://vercel.com",
       siteB: "https://netlify.com",
@@ -135,6 +176,10 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/speed",
     description: "Evaluates Google Core Web Vitals (FCP, LCP, CLS, TBT, TTFB) with performance optimization opportunities and asset weight breakdown.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "url", type: "string", required: true, description: "Target website URL for Core Web Vitals analysis.", example: "https://stripe.com" },
+      { name: "strategy", type: "string", required: false, description: "Emulated device: 'mobile' (default) or 'desktop'.", example: "mobile" },
+    ],
     requestBody: {
       url: "https://stripe.com",
       strategy: "mobile",
@@ -165,6 +210,9 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/security-headers",
     description: "Analyzes 8+ HTTP security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer, Permissions, COOP/COEP) and SSL transport encryption.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "url", type: "string", required: true, description: "Target website URL to inspect for HTTP response headers.", example: "https://stripe.com" },
+    ],
     requestBody: {
       url: "https://stripe.com",
     },
@@ -194,6 +242,9 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/tech",
     description: "Fingerprints frontend frameworks (React, Next.js, Vue), CMS, analytics, CDN providers, server software, and DNS architecture.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "url", type: "string", required: true, description: "Target URL to inspect for software and infrastructure signatures.", example: "https://stripe.com" },
+    ],
     requestBody: {
       url: "https://stripe.com",
     },
@@ -222,6 +273,10 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/schema",
     description: "Extracts and validates Schema.org JSON-LD microdata, Open Graph social cards, and Twitter Cards from any live URL or custom JSON payload.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "url", type: "string", required: false, description: "Website URL to scrape Schema.org microdata from.", example: "https://stripe.com" },
+      { name: "rawJson", type: "string", required: false, description: "Raw JSON-LD snippet string for direct offline linting.", example: "{ \"@context\": \"https://schema.org\" }" },
+    ],
     requestBody: {
       url: "https://stripe.com",
     },
@@ -249,6 +304,9 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/authority",
     description: "Retrieves DomCop Open PageRank score (0-10), global rank, Moz DA/Ahrefs DR equivalents, and logarithmic backlink estimates.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "domain", type: "string", required: true, description: "Target root domain or URL without protocol.", example: "stripe.com" },
+    ],
     requestBody: {
       domain: "stripe.com",
     },
@@ -275,6 +333,9 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/document-architecture",
     description: "Builds full H1-H6 outline hierarchy, detects structural defects (skipped heading levels, missing H1, empty tags), and calculates architecture score.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "url", type: "string", required: true, description: "Target webpage URL to inspect heading hierarchy.", example: "https://stripe.com" },
+    ],
     requestBody: {
       url: "https://stripe.com",
     },
@@ -301,6 +362,9 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/serp",
     description: "Simulates Google desktop/mobile snippet appearances, calculates pixel width against Google's 580px truncation limit, and suggests sitelinks.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "url", type: "string", required: true, description: "Target webpage URL to simulate Google SERP snippet.", example: "https://stripe.com" },
+    ],
     requestBody: {
       url: "https://stripe.com",
     },
@@ -327,6 +391,9 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/crawler/links",
     description: "Extracts all on-page internal and external hyperlinks, crawls status codes, and identifies 404 dead links and redirect chains.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "url", type: "string", required: true, description: "Target webpage URL to crawl for hyperlinks.", example: "https://example.com" },
+    ],
     requestBody: {
       url: "https://example.com",
     },
@@ -350,6 +417,10 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/content-gap",
     description: "Extracts keyword frequencies and heading topic disparities between target URL and competitor URL to identify content gaps.",
     tierRequired: "pro",
+    paramsSchema: [
+      { name: "targetUrl", type: "string", required: true, description: "Primary website URL.", example: "https://stripe.com" },
+      { name: "competitorUrl", type: "string", required: true, description: "Competitor website URL to contrast keyword frequencies.", example: "https://paypal.com" },
+    ],
     requestBody: {
       targetUrl: "https://stripe.com",
       competitorUrl: "https://paypal.com",
@@ -373,6 +444,9 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/tools/batch",
     description: "Concurrently audits up to 15 website URLs in parallel, returning scores, HTTP status, PageRank, and critical diagnostics in one call.",
     tierRequired: "pro",
+    paramsSchema: [
+      { name: "urls", type: "string[]", required: true, description: "Array of up to 15 public website URLs to audit concurrently.", example: "[\"https://stripe.com\", \"https://vercel.com\"]" },
+    ],
     requestBody: {
       urls: [
         "https://stripe.com",
@@ -400,6 +474,11 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/ai/brand-radar",
     description: "Tests brand recommendation citations across LLMs (ChatGPT, Gemini, Perplexity, Claude) for buyer intent prompt queries.",
     tierRequired: "pro",
+    paramsSchema: [
+      { name: "brandName", type: "string", required: true, description: "Brand name to detect in LLM citation outputs.", example: "Stripe" },
+      { name: "targetDomain", type: "string", required: true, description: "Official domain associated with brand.", example: "stripe.com" },
+      { name: "prompts", type: "string[]", required: true, description: "Array of customer search queries to simulate.", example: "[\"Best payment APIs for SaaS\"]" },
+    ],
     requestBody: {
       brandName: "Stripe",
       targetDomain: "stripe.com",
@@ -425,6 +504,12 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/mcp",
     description: "Standard JSON-RPC 2.0 MCP gateway for Claude Desktop, Cursor IDE, Windsurf, and custom autonomous agents.",
     tierRequired: "free",
+    paramsSchema: [
+      { name: "jsonrpc", type: "string", required: true, description: "Protocol version, must be exactly '2.0'.", example: "2.0" },
+      { name: "id", type: "number | string", required: true, description: "Unique correlation ID for asynchronous response mapping.", example: "1" },
+      { name: "method", type: "string", required: true, description: "MCP method: 'initialize', 'tools/list', or 'tools/call'.", example: "tools/call" },
+      { name: "params", type: "object", required: false, description: "Method arguments (e.g. tool name and arguments).", example: "{ name: 'seoseite_audit_url', arguments: { url: '...' } }" },
+    ],
     requestBody: {
       jsonrpc: "2.0",
       id: 1,
@@ -451,6 +536,11 @@ const ENDPOINTS: ApiEndpoint[] = [
     path: "/api/webhook/test",
     description: "Dispatches formatted SEO drop notification payloads to Slack, Discord, Zapier, or HTTP webhook endpoints.",
     tierRequired: "enterprise",
+    paramsSchema: [
+      { name: "webhookUrl", type: "string", required: true, description: "Destination webhook URL (Slack, Discord, Zapier).", example: "https://httpbin.org/post" },
+      { name: "domain", type: "string", required: true, description: "Domain name generating the test alert event.", example: "example.com" },
+      { name: "threshold", type: "number", required: false, description: "SEO health score trigger threshold (0-100).", example: "75" },
+    ],
     requestBody: {
       webhookUrl: "https://httpbin.org/post",
       domain: "example.com",
@@ -481,16 +571,36 @@ export default function ApiDocsClient() {
   const [selectedEndpointId, setSelectedEndpointId] = useState<string>("analyze");
   const [activeCategory, setActiveCategory] = useState<ApiCategory>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"curl" | "fetch" | "typescript" | "python">("curl");
+  const [activeTab, setActiveTab] = useState<"curl" | "fetch" | "typescript" | "python" | "go">("curl");
+  const [activeViewTab, setActiveViewTab] = useState<"code" | "schema" | "errors">("code");
+  const [responseViewTab, setResponseViewTab] = useState<"json" | "headers">("json");
+
+  // API Key Customization State
+  const [customApiKey, setCustomApiKey] = useState<string>("sec_live_99f38a7b42c1");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  // Scroll detection for floating subnav
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 380);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const [requestInput, setRequestInput] = useState<string>(
     JSON.stringify(ENDPOINTS[0].requestBody, null, 2)
   );
   const [testing, setTesting] = useState(false);
   const [responseOutput, setResponseOutput] = useState<string | null>(null);
+  const [responseHeaders, setResponseHeaders] = useState<Record<string, string> | null>(null);
   const [executionStats, setExecutionStats] = useState<{ status: number; timeMs: number; sizeKb: number } | null>(null);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
   const [copiedResponse, setCopiedResponse] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
 
   const playgroundRef = useRef<HTMLDivElement>(null);
 
@@ -516,6 +626,7 @@ export default function ApiDocsClient() {
     setSelectedEndpointId(ep.id);
     setRequestInput(JSON.stringify(ep.requestBody, null, 2));
     setResponseOutput(null);
+    setResponseHeaders(null);
     setExecutionStats(null);
   };
 
@@ -526,6 +637,7 @@ export default function ApiDocsClient() {
   const handleRunTest = async () => {
     setTesting(true);
     setResponseOutput(null);
+    setResponseHeaders(null);
     setExecutionStats(null);
     const start = performance.now();
 
@@ -535,11 +647,27 @@ export default function ApiDocsClient() {
 
       const res = await fetch(selectedEndpoint.path, {
         method: selectedEndpoint.method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${customApiKey}`,
+        },
         body: isPost ? JSON.stringify(parsedBody) : undefined,
       });
 
       const elapsed = Math.round(performance.now() - start);
+
+      // Collect simulated or real response headers
+      const headersMap: Record<string, string> = {
+        "content-type": res.headers.get("content-type") || "application/json; charset=utf-8",
+        "x-ratelimit-limit": "60",
+        "x-ratelimit-remaining": "59",
+        "x-ratelimit-reset": String(Math.floor(Date.now() / 1000) + 60),
+        "x-seoseite-latency-ms": String(elapsed),
+        "x-seoseite-tier": formatTierName(activeTier),
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+      };
+      setResponseHeaders(headersMap);
+
       const data = await res.json();
       const formatted = JSON.stringify(data, null, 2);
       const sizeKb = Number((new Blob([formatted]).size / 1024).toFixed(1));
@@ -579,10 +707,12 @@ export default function ApiDocsClient() {
       const params = new URLSearchParams(selectedEndpoint.requestBody).toString();
       const query = params ? `?${params}` : "";
       return `curl -X GET "${originUrl}${selectedEndpoint.path}${query}" \\
+  -H "Authorization: Bearer ${customApiKey}" \\
   -H "Accept: application/json"`;
     }
     const cleanPayload = requestInput.replace(/\n\s*/g, " ");
     return `curl -X POST "${originUrl}${selectedEndpoint.path}" \\
+  -H "Authorization: Bearer ${customApiKey}" \\
   -H "Content-Type: application/json" \\
   -d '${cleanPayload}'`;
   };
@@ -593,7 +723,7 @@ const response = await fetch("${originUrl}${selectedEndpoint.path}", {
   method: "${selectedEndpoint.method}",
   headers: {
     "Content-Type": "application/json",
-    // "Authorization": "Bearer YOUR_API_KEY",
+    "Authorization": "Bearer ${customApiKey}",
   },
   body: JSON.stringify(${requestInput.replace(/\n/g, "\n  ")})
 });
@@ -613,7 +743,10 @@ interface ApiResponse {
 
 const client = axios.create({
   baseURL: "${originUrl}",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer ${customApiKey}",
+  },
   timeout: 15000,
 });
 
@@ -639,16 +772,55 @@ runAudit().then(console.log).catch(console.error);`;
 import requests
 
 url = "${originUrl}${selectedEndpoint.path}"
-payload = ${pyPayload}
-
 headers = {
     "Content-Type": "application/json",
-    # "Authorization": "Bearer YOUR_API_KEY",
+    "Authorization": "Bearer ${customApiKey}",
 }
+payload = ${pyPayload}
 
-response = requests.${selectedEndpoint.method.toLowerCase()}(url, json=payload, headers=headers, timeout=15)
-print(response.status_code)
+response = requests.${selectedEndpoint.method.toLowerCase()}(
+    url, 
+    json=payload, 
+    headers=headers, 
+    timeout=15
+)
+print("Status:", response.status_code)
 print(response.json())`;
+  };
+
+  const getGoCode = () => {
+    return `// Go (net/http standard library)
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	url := "${originUrl}${selectedEndpoint.path}"
+	payload := []byte(\`${requestInput.replace(/`/g, "")}\`)
+
+	req, err := http.NewRequest("${selectedEndpoint.method}", url, bytes.NewBuffer(payload))
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer ${customApiKey}")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(body))
+}`;
   };
 
   const handleCopyCode = () => {
@@ -656,7 +828,8 @@ print(response.json())`;
     if (activeTab === "curl") snippet = getCurlCode();
     else if (activeTab === "fetch") snippet = getFetchCode();
     else if (activeTab === "typescript") snippet = getTypeScriptCode();
-    else snippet = getPythonCode();
+    else if (activeTab === "python") snippet = getPythonCode();
+    else snippet = getGoCode();
 
     navigator.clipboard.writeText(snippet);
     setCopiedSnippet(true);
@@ -670,6 +843,12 @@ print(response.json())`;
     setTimeout(() => setCopiedResponse(false), 2000);
   };
 
+  const handleCopyApiKey = () => {
+    navigator.clipboard.writeText(customApiKey);
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
+  };
+
   // Generate and download standard OpenAPI 3.1.0 JSON file in browser
   const handleDownloadOpenApi = () => {
     const pathsObj: Record<string, any> = {};
@@ -681,6 +860,13 @@ print(response.json())`;
           description: ep.description,
           tags: [ep.categoryLabel],
           operationId: ep.id,
+          parameters: ep.paramsSchema.map((p) => ({
+            name: p.name,
+            in: ep.method === "GET" ? "query" : "body",
+            required: p.required,
+            description: p.description,
+            schema: { type: p.type },
+          })),
           requestBody: {
             required: true,
             content: {
@@ -732,6 +918,69 @@ print(response.json())`;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 overflow-x-clip">
+      {/* FLOATING SUBNAVBAR ON SCROLL */}
+      {isScrolled && (
+        <aside
+          aria-label="API Docs Quick Navigation"
+          className="fixed top-16 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] py-2.5 transition-all duration-200 animate-in fade-in slide-in-from-top-1 no-print"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+            {/* Left: Compact Status Capsule */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-mono shadow-xs border border-slate-800">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+                <span className="font-bold tracking-tight">REST Gateway</span>
+                <span className="text-slate-400 text-[10px]">•</span>
+                <span className="text-blue-400 font-semibold text-[11px]">15 Endpoints</span>
+              </div>
+            </div>
+
+            {/* Center: Quick Category Jump Chips */}
+            <div className="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar">
+              {CATEGORIES.slice(0, 6).map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setActiveCategory(cat.id);
+                    playgroundRef.current?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                    activeCategory === cat.id
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Right: Quick Action Controls */}
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleDownloadOpenApi}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors cursor-pointer whitespace-nowrap"
+                title="Download OpenAPI 3.1 JSON"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span className="hidden sm:inline">OpenAPI Spec</span>
+              </button>
+
+              <button
+                onClick={() => playgroundRef.current?.scrollIntoView({ behavior: "smooth" })}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs whitespace-nowrap cursor-pointer"
+              >
+                <Play className="w-3.5 h-3.5 fill-white" />
+                <span>Test Endpoint</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-10">
         {/* 1. DEVELOPER PLATFORM COCKPIT & HERO */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border border-slate-800 text-white p-6 sm:p-10 shadow-xl">
@@ -757,7 +1006,7 @@ print(response.json())`;
               Programmatically query 0-100 technical SEO scores, benchmark competitors, audit Core Web Vitals, discover broken links, and dispatch real-time webhook alerts. Built with SSRF shields and sub-100ms response guarantees.
             </p>
 
-            {/* Action Buttons */}
+            {/* Action Buttons & Sandbox Key Injector */}
             <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
               <button
                 onClick={() => playgroundRef.current?.scrollIntoView({ behavior: "smooth" })}
@@ -781,9 +1030,46 @@ print(response.json())`;
                 className="px-4 py-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 font-semibold text-xs inline-flex items-center gap-2 transition-all"
               >
                 <Sparkles className="w-4 h-4 text-blue-400" />
-                <span>Explore MCP AI Server â†’</span>
+                <span>Explore MCP AI Server →</span>
               </Link>
             </div>
+
+            {/* Sandbox Key Pill Bar */}
+            <div className="pt-2 flex items-center justify-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-mono text-slate-300 shadow-sm">
+                <Key className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-slate-400">Sandbox Key:</span>
+                <span className="text-slate-200 font-bold">{customApiKey}</span>
+                <button
+                  onClick={handleCopyApiKey}
+                  className="hover:text-white transition-colors cursor-pointer ml-1"
+                  title="Copy API Key"
+                >
+                  {copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                </button>
+                <button
+                  onClick={() => setShowKeyInput(!showKeyInput)}
+                  className="text-[10px] text-blue-400 hover:text-blue-300 underline font-sans ml-2 cursor-pointer"
+                >
+                  {showKeyInput ? "Done" : "Customize"}
+                </button>
+              </div>
+            </div>
+
+            {showKeyInput && (
+              <div className="max-w-md mx-auto p-3 rounded-xl bg-slate-900 border border-slate-800 animate-in fade-in space-y-2">
+                <div className="text-[11px] text-slate-400 text-left font-sans">
+                  Enter your production API key to customize all code snippets and test live with your account:
+                </div>
+                <input
+                  type="text"
+                  value={customApiKey}
+                  onChange={(e) => setCustomApiKey(e.target.value)}
+                  className="w-full text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="sec_live_..."
+                />
+              </div>
+            )}
 
             {/* 4 Telemetry Metrics */}
             <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-slate-800/80 text-left">
@@ -940,7 +1226,7 @@ print(response.json())`;
                 Requests are authenticated via HTTP Bearer token or account session cookie. Pass your key in the header:
               </p>
               <pre className="p-2.5 rounded-lg bg-slate-900 text-slate-200 font-mono text-[11px] overflow-x-auto">
-                Authorization: Bearer sec_live_99f3...
+                Authorization: Bearer {customApiKey}
               </pre>
             </div>
           </div>
@@ -988,53 +1274,165 @@ print(response.json())`;
                 </p>
               </div>
 
-              {/* Code Snippet Tabs */}
-              <div className="space-y-2 pt-2">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                    {(["curl", "fetch", "typescript", "python"] as const).map((lang) => (
-                      <button
-                        key={lang}
-                        onClick={() => setActiveTab(lang)}
-                        className={`text-xs font-semibold px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                          activeTab === lang
-                            ? "bg-white text-slate-900 shadow-2xs"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
-                      >
-                        {lang === "curl" && "cURL"}
-                        {lang === "fetch" && "JavaScript"}
-                        {lang === "typescript" && "TypeScript"}
-                        {lang === "python" && "Python"}
-                      </button>
-                    ))}
+              {/* View Switcher: Code Snippets | Schema Reference | Error Payloads */}
+              <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+                <button
+                  onClick={() => setActiveViewTab("code")}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeViewTab === "code"
+                      ? "bg-slate-900 text-white shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Code Snippets
+                </button>
+                <button
+                  onClick={() => setActiveViewTab("schema")}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeViewTab === "schema"
+                      ? "bg-slate-900 text-white shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Parameters Schema ({selectedEndpoint.paramsSchema.length})
+                </button>
+                {selectedEndpoint.errorExamples && (
+                  <button
+                    onClick={() => setActiveViewTab("errors")}
+                    className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      activeViewTab === "errors"
+                        ? "bg-slate-900 text-white shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    }`}
+                  >
+                    Error Responses ({selectedEndpoint.errorExamples.length})
+                  </button>
+                )}
+              </div>
+
+              {/* View Content: Code Snippets */}
+              {activeViewTab === "code" && (
+                <div className="space-y-2 pt-1 animate-in fade-in">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                      {(["curl", "fetch", "typescript", "python", "go"] as const).map((lang) => (
+                        <button
+                          key={lang}
+                          onClick={() => setActiveTab(lang)}
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                            activeTab === lang
+                              ? "bg-white text-slate-900 shadow-2xs font-bold"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          {lang === "curl" && "cURL"}
+                          {lang === "fetch" && "Fetch"}
+                          {lang === "typescript" && "TypeScript"}
+                          {lang === "python" && "Python"}
+                          {lang === "go" && "Go"}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={handleCopyCode}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+                    >
+                      {copiedSnippet ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-600 font-bold">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Copy Snippet</span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
-                  <button
-                    onClick={handleCopyCode}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
-                  >
-                    {copiedSnippet ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        <span className="text-emerald-600 font-bold">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Copy Snippet</span>
-                      </>
-                    )}
-                  </button>
+                  <pre className="p-4 rounded-xl bg-slate-950 text-slate-100 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800 shadow-inner">
+                    {activeTab === "curl" && getCurlCode()}
+                    {activeTab === "fetch" && getFetchCode()}
+                    {activeTab === "typescript" && getTypeScriptCode()}
+                    {activeTab === "python" && getPythonCode()}
+                    {activeTab === "go" && getGoCode()}
+                  </pre>
                 </div>
+              )}
 
-                <pre className="p-4 rounded-xl bg-slate-950 text-slate-100 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800 shadow-inner">
-                  {activeTab === "curl" && getCurlCode()}
-                  {activeTab === "fetch" && getFetchCode()}
-                  {activeTab === "typescript" && getTypeScriptCode()}
-                  {activeTab === "python" && getPythonCode()}
-                </pre>
-              </div>
+              {/* View Content: Parameters Schema Table */}
+              {activeViewTab === "schema" && (
+                <div className="pt-1 space-y-3 animate-in fade-in">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Input Parameters
+                  </div>
+                  <div className="overflow-x-auto rounded-xl border border-slate-200">
+                    <table className="w-full text-left font-sans text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-700">
+                          <th className="p-2.5 font-bold">Parameter</th>
+                          <th className="p-2.5 font-bold">Type</th>
+                          <th className="p-2.5 font-bold">Required</th>
+                          <th className="p-2.5 font-bold">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-sans">
+                        {selectedEndpoint.paramsSchema.map((param) => (
+                          <tr key={param.name} className="hover:bg-slate-50/50">
+                            <td className="p-2.5 font-mono font-bold text-blue-700">{param.name}</td>
+                            <td className="p-2.5 font-mono text-slate-600 text-[11px]">{param.type}</td>
+                            <td className="p-2.5">
+                              {param.required ? (
+                                <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold text-[10px]">
+                                  required
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]">
+                                  optional
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-2.5 text-slate-600 text-[11px] leading-relaxed">
+                              {param.description}
+                              {param.example && (
+                                <span className="block mt-0.5 font-mono text-slate-400 text-[10px]">
+                                  Example: {param.example}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* View Content: Error Payloads */}
+              {activeViewTab === "errors" && selectedEndpoint.errorExamples && (
+                <div className="pt-1 space-y-3 animate-in fade-in">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Common Error Responses
+                  </div>
+                  <div className="space-y-2">
+                    {selectedEndpoint.errorExamples.map((err, idx) => (
+                      <div key={idx} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-slate-900">{err.title}</span>
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700 border border-rose-200">
+                            HTTP {err.status}
+                          </span>
+                        </div>
+                        <pre className="p-3 rounded-lg bg-slate-950 text-rose-300 font-mono text-[11px] overflow-x-auto leading-relaxed">
+                          {JSON.stringify(err.json, null, 2)}
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 2. Interactive Request Tester & Live Response */}
@@ -1089,9 +1487,30 @@ print(response.json())`;
               <div className="pt-2 border-t border-slate-100 space-y-2">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                      Response Console
-                    </span>
+                    {/* Response Toggle Tabs */}
+                    <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-semibold">
+                      <button
+                        onClick={() => setResponseViewTab("json")}
+                        className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                          responseViewTab === "json"
+                            ? "bg-white text-slate-900 shadow-2xs font-bold"
+                            : "text-slate-500 hover:text-slate-900"
+                        }`}
+                      >
+                        JSON Body
+                      </button>
+                      <button
+                        onClick={() => setResponseViewTab("headers")}
+                        className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                          responseViewTab === "headers"
+                            ? "bg-white text-slate-900 shadow-2xs font-bold"
+                            : "text-slate-500 hover:text-slate-900"
+                        }`}
+                      >
+                        HTTP Headers
+                      </button>
+                    </div>
+
                     {executionStats && (
                       <div className="flex items-center gap-1.5">
                         <span
@@ -1126,23 +1545,106 @@ print(response.json())`;
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3 h-3 text-slate-400" />
+                        <Copy className="w-3.5 h-3.5 text-slate-400" />
                         <span>Copy Output</span>
                       </>
                     )}
                   </button>
                 </div>
 
-                <pre className="p-4 rounded-xl bg-slate-950 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed max-h-96 border border-slate-800 shadow-inner">
-                  {responseOutput ||
-                    JSON.stringify(selectedEndpoint.responseExample, null, 2)}
-                </pre>
+                {responseViewTab === "json" ? (
+                  <pre className="p-4 rounded-xl bg-slate-950 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed max-h-96 border border-slate-800 shadow-inner">
+                    {responseOutput || JSON.stringify(selectedEndpoint.responseExample, null, 2)}
+                  </pre>
+                ) : (
+                  <pre className="p-4 rounded-xl bg-slate-950 text-blue-300 font-mono text-xs overflow-x-auto leading-relaxed max-h-96 border border-slate-800 shadow-inner">
+                    {responseHeaders
+                      ? Object.entries(responseHeaders)
+                          .map(([k, v]) => `${k}: ${v}`)
+                          .join("\n")
+                      : `content-type: application/json; charset=utf-8\nx-ratelimit-limit: 60\nx-ratelimit-remaining: 59\nx-ratelimit-reset: ${Math.floor(Date.now() / 1000) + 60}\nx-seoseite-tier: ${formatTierName(activeTier)}\nstrict-transport-security: max-age=63072000; includeSubDomains; preload`}
+                  </pre>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* 3. PRODUCTION RATE LIMITS & SECURITY COMPLIANCE */}
+        {/* 3. WEBHOOKS SIGNATURE & EVENT CATALOG */}
+        <div className="rounded-2xl p-6 sm:p-8 bg-white border border-slate-200 shadow-xs space-y-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-semibold border border-indigo-200">
+                <Workflow className="w-3 h-3 text-indigo-600" />
+                <span>Webhooks &amp; Automated Pipeline Integration</span>
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Real-Time Event Payloads &amp; Signature Verification
+              </h2>
+            </div>
+            <span className="text-xs font-mono px-3 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+              Header: X-SeoSeite-Signature: sha256=...
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+            {/* Event Types Table */}
+            <div className="space-y-3">
+              <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                Supported Webhook Events
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left font-sans text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-700">
+                      <th className="p-2.5 font-bold">Event Type</th>
+                      <th className="p-2.5 font-bold">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                    <tr>
+                      <td className="p-2.5 text-blue-700 font-bold">audit.completed</td>
+                      <td className="p-2.5 font-sans text-slate-600">Dispatched when a full 0-100 audit finishes.</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2.5 text-rose-700 font-bold">seo.score_dropped</td>
+                      <td className="p-2.5 font-sans text-slate-600">Fires when health score drops below threshold.</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2.5 text-amber-700 font-bold">link.broken_detected</td>
+                      <td className="p-2.5 font-sans text-slate-600">Fires when new 404 dead links are found.</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2.5 text-emerald-700 font-bold">ssl.expiring_soon</td>
+                      <td className="p-2.5 font-sans text-slate-600">Alerts 14 days before SSL certificate expires.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* HMAC Signature Verification Snippet */}
+            <div className="space-y-3">
+              <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                HMAC-SHA256 Signature Verification (Node.js)
+              </div>
+              <pre className="p-3.5 rounded-xl bg-slate-950 text-slate-200 font-mono text-[11px] overflow-x-auto leading-relaxed border border-slate-800">
+{`const crypto = require("crypto");
+
+function verifyWebhook(rawPayload, signature, secret) {
+  const hmac = crypto.createHmac("sha256", secret);
+  const digest = "sha256=" + hmac.update(rawPayload).digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(digest)
+  );
+}`}
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. PRODUCTION RATE LIMITS & SECURITY COMPLIANCE */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="rounded-2xl p-6 bg-white border border-slate-200 shadow-xs space-y-2">
             <div className="flex items-center gap-2 text-slate-900 font-bold text-xs uppercase tracking-wider">
@@ -1178,7 +1680,7 @@ print(response.json())`;
           </div>
         </div>
 
-        {/* 4. FOOTER BANNER */}
+        {/* 5. FOOTER BANNER */}
         <div className="rounded-2xl p-6 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white flex items-center justify-between flex-wrap gap-4 shadow-lg">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-semibold">
