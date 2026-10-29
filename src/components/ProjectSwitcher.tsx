@@ -75,7 +75,7 @@ export default function ProjectSwitcher() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-80 sm:w-88 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="absolute left-0 mt-2 w-80 sm:w-88 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150">
           {/* Header */}
           <div className="p-3.5 bg-slate-50 border-b border-slate-100">
             <div className="flex items-center justify-between">

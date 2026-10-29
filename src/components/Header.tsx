@@ -94,10 +94,10 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/90">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="flex items-center justify-between h-16 gap-3">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-4 xl:gap-6 min-w-0">
+      <div className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="flex items-center justify-between h-16 gap-3 lg:gap-6">
+          {/* Logo & Brand & Active Project Workspace */}
+          <div className="flex items-center gap-3 shrink-0">
             <Link href="/" className="flex items-center gap-2.5 font-bold text-lg sm:text-xl text-slate-900 tracking-tight shrink-0 whitespace-nowrap">
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs shrink-0">
                 <Globe className="w-4 h-4" />
@@ -110,8 +110,16 @@ export default function Header() {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 shrink-0">
+            <span className="text-slate-300 font-light text-base hidden sm:inline select-none">/</span>
+
+            {/* Active Workspace Site Switcher (Vercel/Linear style next to brand) */}
+            <div className="hidden sm:block shrink-0">
+              <ProjectSwitcher />
+            </div>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0">
               {/* Product Mega Menu (Clickable Only) */}
               <div ref={productRef} className="static">
                 <button
@@ -133,7 +141,7 @@ export default function Header() {
 
                 {/* Expansive, Full-Width Product Mega Dropdown (Modeled on Ahrefs & Semrush) */}
                 {productOpen && (
-                  <div className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
+                  <div className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 max-w-[1360px] mx-auto top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
                     <div className="grid grid-cols-12 divide-x divide-slate-100">
                       {/* Column 1: Core Technical Health (Ahrefs Style) */}
                       <div className="col-span-3 p-6 lg:p-7 space-y-4">
@@ -751,7 +759,7 @@ export default function Header() {
 
                 {/* Expansive Resources Mega Dropdown */}
                 {resourcesOpen && (
-                  <div className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
+                  <div className="absolute left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 max-w-[1280px] mx-auto top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150 z-50">
                     <div className="grid grid-cols-12 divide-x divide-slate-100">
                       {/* Column 1: Specifications & Architecture */}
                       <div className="col-span-3 p-6 lg:p-7 space-y-4">
@@ -980,12 +988,9 @@ export default function Header() {
                 Pricing
               </Link>
             </nav>
-          </div>
 
           {/* Right Action buttons */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Active Workspace Site Switcher */}
-            <ProjectSwitcher />
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
 
             {/* Global Ctrl+K Command Palette Trigger */}
             <button
@@ -1091,21 +1096,14 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 p-1 pl-1.5 rounded-full border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                  className="flex items-center gap-1.5 p-1 rounded-full border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer whitespace-nowrap shrink-0"
                   aria-expanded={userMenuOpen}
+                  title={`${user?.name} (${formatTierName(tier)})`}
                 >
-                  <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center shadow-2xs">
                     {user?.name?.charAt(0) || "U"}
                   </div>
-                  <div className="hidden lg:flex flex-col text-left pr-1">
-                    <span className="text-xs font-bold text-slate-900 leading-none truncate max-w-[90px]">
-                      {user?.name?.split(" ")[0]}
-                    </span>
-                    <span className="text-[10px] text-blue-600 font-semibold leading-none mt-0.5">
-                      {formatTierName(tier)}
-                    </span>
-                  </div>
-                  <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-3 h-3 text-slate-400 mr-1 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {userMenuOpen && (
@@ -1196,6 +1194,13 @@ export default function Header() {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white p-4 space-y-4">
+          {/* Active Project Switcher for Mobile */}
+          <div className="sm:hidden p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">
+              Active Project Site
+            </div>
+            <ProjectSwitcher />
+          </div>
           {/* User Status Bar in Mobile */}
           {isAuthenticated ? (
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
