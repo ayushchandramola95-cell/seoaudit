@@ -120,3 +120,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: (err as Error)?.message || "Failed to fetch authority data." }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const target = body.domain || body.url || req.nextUrl.searchParams.get("domain") || req.nextUrl.searchParams.get("url");
+
+    if (!target || typeof target !== "string") {
+      return NextResponse.json({ success: false, error: "Missing required 'domain' or 'url' parameter in JSON request body." }, { status: 400 });
+    }
+
+    const urlWithParams = new URL(req.url);
+    urlWithParams.searchParams.set("domain", target);
+
+    const syntheticGetReq = new NextRequest(urlWithParams, {
+      method: "GET",
+      headers: req.headers,
+    });
+
+    return GET(syntheticGetReq);
+  } catch (err: unknown) {
+    return NextResponse.json({ success: false, error: (err as Error)?.message || "Invalid JSON payload." }, { status: 400 });
+  }
+}

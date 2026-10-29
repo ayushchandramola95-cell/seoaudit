@@ -148,3 +148,26 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const targetUrl = body.url || req.nextUrl.searchParams.get("url");
+
+    if (!targetUrl || typeof targetUrl !== "string") {
+      return NextResponse.json({ success: false, error: "Missing required 'url' parameter in JSON request body." }, { status: 400 });
+    }
+
+    const urlWithParams = new URL(req.url);
+    urlWithParams.searchParams.set("url", targetUrl);
+
+    const syntheticGetReq = new NextRequest(urlWithParams, {
+      method: "GET",
+      headers: req.headers,
+    });
+
+    return GET(syntheticGetReq);
+  } catch (err: unknown) {
+    return NextResponse.json({ success: false, error: (err as Error)?.message || "Invalid JSON payload." }, { status: 400 });
+  }
+}

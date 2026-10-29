@@ -173,3 +173,36 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json().catch(() => ({}));
+    const targetUrl = body.url || request.nextUrl.searchParams.get("url");
+    const userId = body.userId || request.headers.get("x-user-id") || null;
+    const userEmail = body.userEmail || request.headers.get("x-user-email") || null;
+
+    if (!targetUrl || typeof targetUrl !== "string" || targetUrl.trim().length === 0) {
+      return NextResponse.json(
+        { success: false, error: "Missing required 'url' parameter in JSON request body." },
+        { status: 400 }
+      );
+    }
+
+    const urlWithParams = new URL(request.url);
+    urlWithParams.searchParams.set("url", targetUrl);
+    if (userId) urlWithParams.searchParams.set("userId", userId);
+    if (userEmail) urlWithParams.searchParams.set("userEmail", userEmail);
+
+    const syntheticGetReq = new NextRequest(urlWithParams, {
+      method: "GET",
+      headers: request.headers,
+    });
+
+    return GET(syntheticGetReq);
+  } catch (err: unknown) {
+    return NextResponse.json(
+      { success: false, error: (err as Error)?.message || "Invalid JSON payload." },
+      { status: 400 }
+    );
+  }
+}
