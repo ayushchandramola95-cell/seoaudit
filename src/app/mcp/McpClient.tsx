@@ -855,13 +855,12 @@ console.log("Audit Output:", result.content[0].text);`;
     CHAT_SIMULATION_SCENARIOS.find((s) => s.id === activeScenarioId) || CHAT_SIMULATION_SCENARIOS[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 overflow-x-hidden">
       {/* 1. DOCKED STICKY SUBNAVBAR ON SCROLL */}
-      <header className="sticky top-16 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] py-2 px-4 sm:px-6 lg:px-8 transition-all">
+      <header className="sticky top-16 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-xs py-2 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-          {/* Left: Unified Status Capsule & Telemetry Chips */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            {/* Dark Pill Capsule */}
+          {/* Left: Compact Status Capsule & Live Ping */}
+          <div className="flex items-center gap-2 shrink-0">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-mono shadow-xs border border-slate-800 whitespace-nowrap">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -872,13 +871,9 @@ console.log("Audit Output:", result.content[0].text);`;
               <span className="text-blue-400 font-semibold text-[11px]">JSON-RPC 2.0</span>
             </div>
 
-            {/* Telemetry Chips (Always Single Line) */}
             <div className="hidden sm:flex items-center gap-1.5 whitespace-nowrap">
               <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-semibold border border-slate-200/80">
-                11 Active Engines
-              </span>
-              <span className="hidden md:inline-flex px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-200/70">
-                Stdio + HTTP
+                11 Engines
               </span>
               {diagnosticStages.ping.latencyMs !== undefined && (
                 <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200/70 flex items-center gap-1">
@@ -889,55 +884,49 @@ console.log("Audit Output:", result.content[0].text);`;
             </div>
           </div>
 
-          {/* Center: Segmented Navigation Dock */}
-          <nav className="hidden xl:flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 text-xs font-semibold text-slate-600">
+          {/* Center: Clean Segmented Jump Links */}
+          <nav className="hidden lg:flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 text-xs font-semibold text-slate-600 shrink">
             <a
               href="#diagnostics"
-              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap"
             >
-              <Activity className="w-3.5 h-3.5 text-slate-400" />
-              <span>Diagnostics</span>
+              Diagnostics
             </a>
             <a
               href="#live-tester"
-              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap"
             >
-              <Play className="w-3.5 h-3.5 text-slate-400" />
-              <span>Playground</span>
+              Playground
             </a>
             <a
               href="#chat-simulation"
-              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
-              <span>AI Simulation</span>
+              AI Chat
             </a>
             <a
               href="#install-guide"
-              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap"
             >
-              <Sliders className="w-3.5 h-3.5 text-slate-400" />
-              <span>Config Studio</span>
+              Config Studio
             </a>
             <a
               href="#schema-catalog"
-              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap flex items-center gap-1.5"
+              className="px-2.5 py-1 rounded-lg hover:text-slate-900 hover:bg-white transition-all whitespace-nowrap"
             >
-              <Code2 className="w-3.5 h-3.5 text-slate-400" />
-              <span>Schemas</span>
+              Schemas
             </a>
           </nav>
 
-          {/* Right: Focused Action Controls (No Redundant Links) */}
+          {/* Right: Focused Action Controls (Only 2 Essential Actions) */}
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={runFullDiagnostics}
-              disabled={diagnosticRunning}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors cursor-pointer whitespace-nowrap"
-              title="Run 4-stage protocol handshake diagnostic"
+              onClick={handleDownloadConfigFile}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
+              title="Download client configuration file"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${diagnosticRunning ? "animate-spin text-blue-600" : "text-slate-500"}`} />
-              <span className="hidden sm:inline">Handshake Test</span>
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline">Download Config</span>
             </button>
 
             <a
@@ -945,17 +934,8 @@ console.log("Audit Output:", result.content[0].text);`;
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs whitespace-nowrap"
             >
               <Play className="w-3.5 h-3.5 fill-white" />
-              <span>Test Tools</span>
+              <span>Playground</span>
             </a>
-
-            <button
-              onClick={handleDownloadConfigFile}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
-              title="Download client configuration file"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden md:inline">Download Config</span>
-            </button>
           </div>
         </div>
       </header>
