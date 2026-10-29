@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useProject } from "@/context/ProjectContext";
 import {
   Link2,
   Zap,
@@ -49,11 +50,18 @@ interface ToolCard {
 }
 
 export default function ToolsHubClient() {
+  const { activeDomain } = useProject();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [quickUrl, setQuickUrl] = useState("");
+  const [quickUrl, setQuickUrl] = useState(activeDomain ? `https://${activeDomain}` : "");
   const [selectedToolForLaunch, setSelectedToolForLaunch] = useState("/tools/broken-links");
   const [copiedToast, setCopiedToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeDomain && !quickUrl) {
+      setQuickUrl(`https://${activeDomain}`);
+    }
+  }, [activeDomain, quickUrl]);
 
   const tools: ToolCard[] = [
     {
@@ -311,6 +319,66 @@ export default function ToolsHubClient() {
       metric: "Global Rank",
       features: ["Formula Lab", "E-E-A-T Index", "Anchor Text Distribution"],
     },
+    {
+      id: "geo-readiness",
+      name: "AI Search & GEO Readiness Engine",
+      description:
+        "Audit how ChatGPT Search, Perplexity AI, Google Gemini, and Claude index your website. Inspect AI bot permissions, detect /llms.txt, and score entity clarity.",
+      href: "/tools/geo-readiness",
+      category: "ai",
+      badge: "Generative Engine",
+      badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
+      icon: Bot,
+      iconColor: "text-purple-600",
+      iconBg: "bg-purple-50 border-purple-200",
+      metric: "GEO Score 0-100",
+      features: ["ChatGPT & Perplexity", "/llms.txt Standard", "Entity Grounding"],
+    },
+    {
+      id: "canonical-inspector",
+      name: "Canonical & Duplicate Content Inspector",
+      description:
+        "Verify rel=canonical tags, detect multiple conflicting tags, test trailing slashes and HTTP vs. HTTPS variants, and prevent duplicate content penalties.",
+      href: "/tools/canonical-inspector",
+      category: "crawl",
+      badge: "Index Integrity",
+      badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+      icon: Link2,
+      iconColor: "text-blue-600",
+      iconBg: "bg-blue-50 border-blue-200",
+      metric: "Singularity Check",
+      features: ["Protocol & Slash Tests", "Self-Ref Verification", "Conflict Detection"],
+    },
+    {
+      id: "hreflang-auditor",
+      name: "Hreflang & International SEO Auditor",
+      description:
+        "Audit alternate language tags, verify return links and self-referencing hreflangs, validate ISO 639-1 / 3166-1 codes, and ensure accurate global targeting.",
+      href: "/tools/hreflang-auditor",
+      category: "meta",
+      badge: "Multilingual",
+      badgeColor: "bg-teal-100 text-teal-800 border-teal-200",
+      icon: Globe,
+      iconColor: "text-teal-600",
+      iconBg: "bg-teal-50 border-teal-200",
+      metric: "ISO Compliance",
+      features: ["x-default Standard", "Bidirectional Return Tags", "Cluster Generator"],
+    },
+    {
+      id: "image-optimizer",
+      name: "Image SEO & Next-Gen Format Scanner",
+      description:
+        "Audit image alt text coverage, detect legacy PNGs/JPEGs, check for WebP/AVIF compression, and prevent Cumulative Layout Shift (CLS) penalties.",
+      href: "/tools/image-optimizer",
+      category: "speed",
+      badge: "Media Performance",
+      badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
+      icon: Layers,
+      iconColor: "text-amber-600",
+      iconBg: "bg-amber-50 border-amber-200",
+      metric: "Next-Gen Adoption",
+      features: ["Alt Text Guard", "AVIF / WebP Savings", "Explicit Dimensions"],
+    },
   ];
 
   const categories = [
@@ -413,7 +481,7 @@ export default function ToolsHubClient() {
             The Complete SEO Intelligence Suite
           </h1>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            17 specialized growth and diagnostic engines engineered for sub-second crawl speed, competitive intelligence, Core Web Vitals benchmarking, and AI Search visibility.
+            21 specialized growth and diagnostic engines engineered for sub-second crawl speed, competitive intelligence, Core Web Vitals benchmarking, and AI Search visibility.
           </p>
 
           {/* Universal Quick Launch Bar */}

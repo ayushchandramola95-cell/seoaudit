@@ -36,10 +36,13 @@ import {
   Bot,
   BarChart3,
   Repeat,
+  Languages,
+  FileImage,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlan } from "@/lib/auth/PlanContext";
 import { formatTierName, PlanTier } from "@/lib/auth/tierLimits";
+import ProjectSwitcher from "@/components/ProjectSwitcher";
 
 export default function Header() {
   const pathname = usePathname();
@@ -331,7 +334,7 @@ export default function Header() {
                             Specialized SEO Engines
                           </span>
                           <Link href="/tools" onClick={() => setProductOpen(false)} className="text-[11px] font-bold text-blue-600 hover:underline">
-                            All 17 Engines →
+                            All 21 Engines →
                           </Link>
                         </div>
                         <div className="space-y-1 max-h-[380px] overflow-y-auto pr-1.5 custom-scrollbar">
@@ -426,6 +429,70 @@ export default function Header() {
                                 </div>
                                 <div className="text-xs text-slate-500 leading-snug mt-0.5">
                                   Multi-site GSC clicks, rankings &amp; GA4 traffic.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/geo-readiness" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Bot className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                                  AI Search &amp; GEO Readiness
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  ChatGPT, Perplexity, Gemini &amp; /llms.txt.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/canonical-inspector" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Link2 className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                  Canonical &amp; Duplicate Guard
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Verify rel=canonical, HTTP vs HTTPS &amp; slashes.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/hreflang-auditor" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Languages className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
+                                  Hreflang &amp; International SEO
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Multilingual tags, return links &amp; ISO codes.
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+
+                          <Link href="/tools/image-optimizer" onClick={() => setProductOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <FileImage className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                                  Image SEO &amp; Next-Gen Formats
+                                </div>
+                                <div className="text-xs text-slate-500 leading-snug mt-0.5">
+                                  Alt text coverage, WebP/AVIF &amp; CLS dimensions.
                                 </div>
                               </div>
                             </div>
@@ -917,6 +984,9 @@ export default function Header() {
 
           {/* Right Action buttons */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Active Workspace Site Switcher */}
+            <ProjectSwitcher />
+
             {/* Global Ctrl+K Command Palette Trigger */}
             <button
               type="button"

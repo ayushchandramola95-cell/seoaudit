@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import CommandPalette from "@/components/CommandPalette";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { PlanProvider } from "@/lib/auth/PlanContext";
+import { ProjectProvider } from "@/context/ProjectContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,10 +35,12 @@ export default function RootLayout({
         <Suspense fallback={<div className="h-16 border-b border-slate-200 bg-white" />}>
           <AuthProvider>
             <PlanProvider>
-              <Header />
-              <CommandPalette />
-              <main className="flex-1">{children}</main>
-              <Footer />
+              <ProjectProvider>
+                <Header />
+                <CommandPalette />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </ProjectProvider>
             </PlanProvider>
           </AuthProvider>
         </Suspense>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useProject } from "@/context/ProjectContext";
 import {
   FileText,
   Search,
@@ -45,10 +46,17 @@ const PRESET_DOMAINS = [
 ];
 
 export default function KeywordResearchClient() {
-  const [urlInput, setUrlInput] = useState("");
+  const { activeDomain } = useProject();
+  const [urlInput, setUrlInput] = useState(activeDomain ? `https://${activeDomain}` : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<KeywordApiResponse | null>(null);
+
+  useEffect(() => {
+    if (activeDomain && !urlInput) {
+      setUrlInput(`https://${activeDomain}`);
+    }
+  }, [activeDomain, urlInput]);
   const [activeTab, setActiveTab] = useState<"1gram" | "2gram" | "3gram" | "matrix" | "warnings">("1gram");
   const [searchTerm, setSearchTerm] = useState("");
   const [intentFilter, setIntentFilter] = useState<string>("all");

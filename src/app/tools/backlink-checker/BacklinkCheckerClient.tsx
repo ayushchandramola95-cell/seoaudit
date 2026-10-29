@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useProject } from "@/context/ProjectContext";
 import {
   Link2,
   Search,
@@ -51,10 +52,17 @@ const PRESET_DOMAINS = [
 ];
 
 export default function BacklinkCheckerClient() {
-  const [domainInput, setDomainInput] = useState("");
+  const { activeDomain } = useProject();
+  const [domainInput, setDomainInput] = useState(activeDomain || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<BacklinkApiResponse | null>(null);
+
+  useEffect(() => {
+    if (activeDomain && !domainInput) {
+      setDomainInput(activeDomain);
+    }
+  }, [activeDomain, domainInput]);
   const [activeTab, setActiveTab] = useState<"anchors" | "tlds" | "authority">("anchors");
   const [copiedSummary, setCopiedSummary] = useState(false);
 

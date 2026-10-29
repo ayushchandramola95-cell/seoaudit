@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { usePlan } from "@/lib/auth/PlanContext";
+import { useProject } from "@/context/ProjectContext";
 import {
   Link2,
   AlertTriangle,
@@ -442,13 +443,20 @@ const DEMO_PRESETS: Record<string, CrawlReport> = {
 };
 
 export default function BrokenLinksClient() {
+  const { activeDomain } = useProject();
   const searchParams = useSearchParams();
   const urlParam = searchParams.get("url");
 
-  const [url, setUrl] = useState("https://stripe.com");
+  const [url, setUrl] = useState(activeDomain ? `https://${activeDomain}` : "https://stripe.com");
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<CrawlReport | null>(DEMO_PRESETS["https://stripe.com"]);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeDomain && !urlParam) {
+      setUrl(`https://${activeDomain}`);
+    }
+  }, [activeDomain, urlParam]);
   const [filter, setFilter] = useState<"all" | "broken" | "redirect" | "healthy">("all");
   const [scopeFilter, setScopeFilter] = useState<"all" | "internal" | "external">("all");
   const [protocolFilter, setProtocolFilter] = useState<"all" | "insecure">("all");

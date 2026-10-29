@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useProject } from "@/context/ProjectContext";
 import {
   Repeat,
   Search,
@@ -42,10 +43,17 @@ const PRESET_DOMAINS = [
 ];
 
 export default function RedirectTracerClient() {
-  const [urlInput, setUrlInput] = useState("");
+  const { activeDomain } = useProject();
+  const [urlInput, setUrlInput] = useState(activeDomain ? `https://${activeDomain}` : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RedirectApiResponse | null>(null);
+
+  useEffect(() => {
+    if (activeDomain && !urlInput) {
+      setUrlInput(`https://${activeDomain}`);
+    }
+  }, [activeDomain, urlInput]);
   const [copiedChain, setCopiedChain] = useState(false);
 
   // STRICT REQUIREMENT: NO AUTO-FETCHING!

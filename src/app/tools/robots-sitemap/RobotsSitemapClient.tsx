@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useProject } from "@/context/ProjectContext";
 import {
   Bot,
   FileCode,
@@ -41,9 +42,16 @@ const PRESET_DOMAINS = [
 ];
 
 export default function RobotsSitemapClient() {
-  const [urlInput, setUrlInput] = useState("");
+  const { activeDomain } = useProject();
+  const [urlInput, setUrlInput] = useState(activeDomain ? `https://${activeDomain}` : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeDomain && !urlInput) {
+      setUrlInput(`https://${activeDomain}`);
+    }
+  }, [activeDomain, urlInput]);
   const [result, setResult] = useState<AuditResult | null>(null);
   const [activeTab, setActiveTab] = useState<"bots" | "robots" | "sitemap" | "geo" | "tester">("bots");
   const [copiedSnippet, setCopiedSnippet] = useState(false);

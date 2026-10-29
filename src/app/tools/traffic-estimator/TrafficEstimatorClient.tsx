@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useProject } from "@/context/ProjectContext";
 import {
   TrendingUp,
   Search,
@@ -117,10 +118,17 @@ const CHART_INNER_H = CHART_HEIGHT - CHART_PAD_T - CHART_PAD_B;
 const CHART_BASELINE_Y = CHART_HEIGHT - CHART_PAD_B;
 
 export default function TrafficEstimatorClient() {
-  const [domainInput, setDomainInput] = useState("");
+  const { activeDomain } = useProject();
+  const [domainInput, setDomainInput] = useState(activeDomain || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TrafficApiResponse | null>(null);
+
+  useEffect(() => {
+    if (activeDomain && !domainInput) {
+      setDomainInput(activeDomain);
+    }
+  }, [activeDomain, domainInput]);
 
   // Chart & View Controls
   const [timeRange, setTimeRange] = useState<"6m" | "12m" | "forecast">("12m");
