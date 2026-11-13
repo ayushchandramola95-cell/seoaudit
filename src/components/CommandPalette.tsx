@@ -26,6 +26,7 @@ import {
   X,
   Command,
   Database,
+  Palette,
 } from "lucide-react";
 
 interface CommandItem {
@@ -69,6 +70,7 @@ const COMMAND_ITEMS: CommandItem[] = [
 
   // Developer & Docs
   { id: "doc-mcp", title: "MCP Server for Claude & Cursor IDE", subtitle: "Connect SEO Audit tools directly to AI coding agents via stdio/REST", href: "/mcp", category: "Developer & Docs", badge: "AI Agent", icon: Terminal, keywords: "mcp model context protocol claude cursor ide agent" },
+  { id: "doc-design-skills", title: "Claude & Agent UI/UX Design Skills", subtitle: "Top anti-slop, spring physics, bento craft & motion directives", href: "/design-skills", category: "Developer & Docs", badge: "Design System", icon: Palette, keywords: "design skills claude ui ux motion animation frontend anti-slop framer taste" },
   { id: "doc-api", title: "REST API Reference & Playground", subtitle: "Interactive endpoint documentation for /api/analyze and /api/compare", href: "/api-docs", category: "Developer & Docs", badge: "REST JSON", icon: FileCode, keywords: "api docs reference endpoints json webhook" },
   { id: "doc-architecture", title: "System Architecture & Cloud Topology", subtitle: "Google Cloud Run, Cloud SQL, SSRF guard & hybrid scoring", href: "/architecture", category: "Developer & Docs", badge: "System Spec", icon: Cpu, keywords: "architecture cloud run sql ssrf diagram system" },
   { id: "doc-capstone", title: "Scoring Methodology & Capstone Defense", subtitle: "Mathematical formulas, rubric breakdown & academic defense", href: "/capstone", category: "Developer & Docs", badge: "Methodology", icon: BookOpen, keywords: "capstone methodology scoring formula defense report" },
