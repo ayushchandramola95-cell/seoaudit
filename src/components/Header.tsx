@@ -888,17 +888,6 @@ export default function Header() {
                               </p>
                             </Link>
                           </li>
-                          <li>
-                            <Link href="/design-skills" onClick={() => setResourcesOpen(false)} className="p-2.5 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block group">
-                              <div className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors flex items-center gap-1.5">
-                                Claude UI/UX Design Skills
-                                <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-purple-100 text-purple-700">Guide</span>
-                              </div>
-                              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
-                                Top anti-slop, spring physics &amp; motion skills.
-                              </p>
-                            </Link>
-                          </li>
                         </ul>
                       </div>
 
