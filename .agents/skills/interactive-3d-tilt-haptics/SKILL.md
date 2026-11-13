@@ -37,3 +37,4 @@ For decorative badges, status beacons, and illustration cards:
 - Animate a smooth, non-intrusive floating loop:
   `@keyframes floatSlow { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }`
 - Duration: 4s–6s with `easeInOutSine` to keep motion gentle and backgrounded.
+

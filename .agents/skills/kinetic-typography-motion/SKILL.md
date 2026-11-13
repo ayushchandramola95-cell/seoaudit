@@ -38,3 +38,4 @@ For key brand phrases and flagship capabilities:
 For crawler logs, MCP server responses, and technical audits:
 - Append characters at 15–25ms intervals with a blinking cursor indicator (`inline-block w-1.5 h-4 bg-emerald-400 animate-pulse`).
 - Auto-scroll terminal containers to the bottom (`scrollTop = scrollHeight`) as new lines arrive.
+

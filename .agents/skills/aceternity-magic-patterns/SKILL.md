@@ -46,3 +46,4 @@ For real-time crawlers, active scans, and live monitoring indicators:
 - Apply a dynamic radial gradient on an absolute overlay:
   `background: radial-gradient(500px circle at ${x}px ${y}px, rgba(59, 130, 246, 0.12), transparent 40%)`
 - Run strictly on GPU composited layers (`opacity`, `transform`) without triggering layout reflow.
+

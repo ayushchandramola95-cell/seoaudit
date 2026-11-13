@@ -39,3 +39,4 @@ For showcasing horizontal comparison sets or multi-domain matrices:
 ## 5. Performance Safeguards
 - Always use `requestAnimationFrame` or CSS transforms for scroll-bound calculations.
 - Never measure DOM geometry (`offsetHeight`, `offsetTop`) inside an active scroll listener without caching.
+
