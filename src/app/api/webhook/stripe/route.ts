@@ -113,3 +113,4 @@ export async function GET() {
     secretConfigured: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
   });
 }
+
