@@ -40,3 +40,4 @@ Every interactive component (buttons, cards, links, select menus, input boxes) M
   - Immediate optimistic state update.
   - Micro-toast notification upon clipboard copy or settings save.
   - Contextual retry triggers on network failure instead of generic dead-end errors.
+

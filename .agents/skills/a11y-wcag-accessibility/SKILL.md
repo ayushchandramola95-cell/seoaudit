@@ -32,3 +32,4 @@ This skill ensures that all interfaces are universally operable, accessible to s
 ## 4. Semantic Hierarchy
 - Strictly follow single-H1 per page rules, followed by sequential H2 and H3 tags. Never skip heading levels for visual styling alone.
 - Wrap main content areas in `<main>`, global header in `<header>`, navigation links in `<nav>`, and side panels in `<aside>`.
+

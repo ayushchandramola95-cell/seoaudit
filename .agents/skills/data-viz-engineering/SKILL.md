@@ -32,3 +32,4 @@ Never connect discrete time-series points with jagged, sharp polylines.
 
 ## 5. Tabular Monospace Alignment
 - All metric labels and axes tick marks must use `font-mono tabular-nums` to ensure numbers do not wobble horizontally as values increment.
+

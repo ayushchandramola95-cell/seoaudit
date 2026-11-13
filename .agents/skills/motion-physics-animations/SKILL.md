@@ -58,3 +58,4 @@ In Framer Motion:
 const shouldReduceMotion = useReducedMotion();
 const transition = shouldReduceMotion ? { duration: 0 } : springTransition;
 ```
+

@@ -48,3 +48,4 @@ Never rely solely on heavy, blurry drop shadows. Build tactile depth using:
 - Pair bold display headlines with crisp tabular numbers (`font-mono font-bold`) for metrics.
 - Keep body paragraph line lengths between 45–75 characters (`max-w-prose` or `max-w-2xl`).
 - Maintain consistent spacing using the 8pt rhythm: `p-3`, `p-4`, `p-6`, `gap-3`, `gap-6`.
+
